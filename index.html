@@ -814,6 +814,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div class="muted" style="margin-top:8px">선택한 이수학기를 그대로 사용합니다. 2024-2까지 일반 과목은 기본 2학점, 2025-1부터 기본 3학점으로 제안합니다.</div>
     </div>
     <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>성적</th><th>상태</th><th></th></tr></thead><tbody id="historyBody"></tbody></table></div>
+    <div id="historySwitchableNotice" class="selection-note"></div>
     <div class="semester-gpa-heading"><h3>학기별 평점</h3></div>
     <div id="semesterGpaGrid" class="semester-gpa-grid"></div>
   </details>
@@ -894,7 +895,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.2:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.3:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1117,10 +1118,15 @@ function historyCatalogCourse(r){
 }
 function isSwitchableMajorTeachingHistory(r){
   const c=historyCatalogCourse(r);
-  if(!c)return false;
-  const opts=Array.isArray(c.categoryOptions)?c.categoryOptions:[];
-  return (opts.includes('teaching') && opts.includes('major_elective')) ||
-         (c.major===state.profile.major && c.category==='teaching');
+  const code=canonicalCode(r?.courseCode);
+  const portalTeaching=String(r?.portalCategory||'').replace(/\s+/g,'').includes('교직');
+  if(c){
+    const opts=Array.isArray(c.categoryOptions)?c.categoryOptions:[];
+    if((opts.includes('teaching') && opts.includes('major_elective')) ||
+       (c.major===state.profile.major && c.category==='teaching')) return true;
+  }
+  // 과거/미등재 전공교직은 카탈로그에 없어도 포털의 '교직' 종별을 근거로 변경 가능 표기를 유지한다.
+  return portalTeaching && !/^SPT/.test(code);
 }
 function switchableMajorTeachingBadge(r){
   return isSwitchableMajorTeachingHistory(r)
@@ -1133,7 +1139,9 @@ function courseStatusForHistory(r){
   const matches=[...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses].some(c =>
     (code && canonicalCode(c.courseCode)===code) || (!code && normName(c.courseName)===name) || (c.aliases||[]).some(a=>normName(a)===name)
   );
-  return matches ? 'match' : 'historical';
+  if(matches)return 'match';
+  if(isSwitchableMajorTeachingHistory(r))return 'teaching_portal';
+  return 'historical';
 }
 function getCatalogMasters(scopeMode='mine'){
   const major=state.profile.major;
@@ -1540,12 +1548,14 @@ function renderHistory(){
   const body=document.getElementById('historyBody');
   if(!state.history.length){
     body.innerHTML=`<tr><td colspan="7" class="empty">입력된 기존 수강이력이 없습니다.</td></tr>`;
+    const switchNote=document.getElementById('historySwitchableNotice');
+    if(switchNote)switchNote.innerHTML='';
     renderSemesterGpa();
     return;
   }
   body.innerHTML=state.history.map((r,i)=>{
     const st=courseStatusForHistory(r);
-    const badge=st==='match'?`<span class="badge match">카탈로그 매칭</span>`:`<span class="badge manual">과거·폐지·미등재</span>`;
+    const badge=st==='match'?`<span class="badge match">카탈로그 매칭</span>`:st==='teaching_portal'?`<span class="badge match">교직 종별 인식</span>`:`<span class="badge manual">과거·폐지·미등재</span>`;
     const g=normalizeGrade(r.grade);
     const gp=gradePasses(g);
     const pass=r.passed===false?`<span class="badge missing">${g?`${esc(g)} · 미이수`:'NP/미이수'}</span>`:(g?`<span class="badge match">${esc(g)} · 이수</span>`:'');
@@ -1564,6 +1574,13 @@ function renderHistory(){
       <td><div class="statusline">${badge}${pass}</div></td>
       <td><button class="btn small danger hist-del" data-i="${i}">삭제</button></td></tr>`;
   }).join('');
+  const switchNote=document.getElementById('historySwitchableNotice');
+  if(switchNote){
+    const hasSwitchable=state.history.some(isSwitchableMajorTeachingHistory);
+    switchNote.innerHTML=hasSwitchable
+      ? `<div class="callout warnbox" style="margin-top:10px"><b>전공교직 종별 변경 안내:</b> 등록된 전공교직 과목은 위 <b>종별</b> 드롭다운에서 <b>교직 ↔ 전공선택</b>으로 변경할 수 있습니다. 실제 인정 종별은 본인의 신청·학점인정 결과에 맞춰 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`
+      : '';
+  }
   document.querySelectorAll('.hist-term').forEach(x=>x.onchange=()=>{
     const i=+x.dataset.i;
     const r=state.history[i];
@@ -2157,8 +2174,15 @@ async function refineOcrGradesByRow(candidates,tsv,worker,prepared){
 function finalizeOcrConfidence(candidates){
   for(const r of candidates){
     const gradeRequired=!['common','audit'].includes(r.category);
+    const portalTeaching=r.category==='teaching' && String(r.portalCategory||'').replace(/\s+/g,'').includes('교직');
     let level='high', reason='학정번호·성적 확인';
-    if(!r.matched){level='low';reason='카탈로그 미매칭';}
+    if(!r.matched && portalTeaching){
+      if(gradeRequired&&!r.grade){level='review';reason='교직 종별 인식 · 성적 확인 필요';}
+      else if(r.codeMethod==='fuzzy'){level='review';reason='교직 종별 인식 · 학정번호 1글자 보정';}
+      else if(Number.isFinite(r.lineConfidence)&&r.lineConfidence<55){level='review';reason='교직 종별 인식 · 문자 인식 신뢰도 낮음';}
+      else {level='high';reason='교직 종별 인식';}
+    }
+    else if(!r.matched){level='low';reason='카탈로그 미매칭';}
     else if(r.codeMethod==='name'){level='low';reason='과목명으로만 감지';}
     else if(gradeRequired&&!r.grade){level='review';reason='성적 확인 필요';}
     else if(r.codeMethod==='fuzzy'){level='review';reason='학정번호 1글자 보정';}
@@ -2189,7 +2213,8 @@ function renderOcrCandidates(){
           const cls=r.confidenceLevel==='low'?'ocr-row-low':r.confidenceLevel==='review'?'ocr-row-review':'';
           const badgeClass=r.confidenceLevel==='high'?'conf-high':r.confidenceLevel==='review'?'conf-review':'conf-low';
           const badgeLabel=r.confidenceLevel==='high'?'높음':r.confidenceLevel==='review'?'확인 필요':'낮음';
-          const matchLabel=r.codeMethod==='fuzzy'?'학정번호 보정':r.codeMethod==='name'?'과목명 감지':r.matched?'학정번호 매칭':'미매칭';
+          const portalTeaching=r.category==='teaching' && String(r.portalCategory||'').replace(/\s+/g,'').includes('교직');
+          const matchLabel=(!r.matched&&portalTeaching)?'교직 종별 인식':r.codeMethod==='fuzzy'?'학정번호 보정':r.codeMethod==='name'?'과목명 감지':r.matched?'학정번호 매칭':'미매칭';
           return `<tr class="${cls}">
           <td><input class="ocr-check ocr-select" data-i="${i}" type="checkbox" ${r.selected?'checked':''}></td>
           <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''} · ${esc(r.term)}</div><div class="muted">${esc(matchLabel)}</div></td>
@@ -2448,7 +2473,7 @@ function selectedPlanCourse(){
 function renderHistorySelectionNote(c){
   const box=document.getElementById('historySelectionNote');
   if(!c){box.innerHTML='';return;}
-  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 이 과목은 기본적으로 교직으로 표시됩니다. 전공선택으로 변경·인정되는 경우가 있을 수 있으나 자동 전환하지 않습니다. 실제 수강신청/학점인정 결과에 맞춰 <b>인정 종별</b>을 교직 또는 전공선택으로 선택하십시오.</div>`;
+  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 이 과목은 기본적으로 교직으로 표시됩니다. 전공선택으로 변경·인정되는 경우가 있을 수 있으나 자동 전환하지 않습니다. 실제 수강신청/학점인정 결과에 맞춰 <b>인정 종별</b>을 교직 또는 전공선택으로 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
   else if(isOtherMajorCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>타 전공 개설 과목:</b> 소속 전공은 ${esc(c.major)}입니다. 공통·전공선택 등 실제 인정 종별을 확인한 뒤 직접 선택하십시오.</div>`;
   else if(c.scope==='certificate') box.innerHTML=`<div class="callout warnbox"><b>교원자격 관련 교과:</b> 개인별 자격증 이수요건과 학점 인정 여부를 별도로 확인하십시오.</div>`;
   else box.innerHTML='';
@@ -2456,7 +2481,7 @@ function renderHistorySelectionNote(c){
 function renderPlanSelectionNote(c){
   const box=document.getElementById('planSelectionNote');
   if(!c){box.innerHTML='';return;}
-  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 교직으로 수강할지 전공선택으로 인정받을지는 개인의 신청/인정 결과에 따라 달라질 수 있습니다. 계획 단계에서는 원하는 인정 종별을 선택하되 최종 확인은 행정 안내를 따르십시오.</div>`;
+  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 교직으로 수강할지 전공선택으로 인정받을지는 개인의 신청/인정 결과에 따라 달라질 수 있습니다. 계획 단계에서는 원하는 인정 종별을 선택하되 최종 확인은 행정 안내를 따르십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
   else if(isOtherMajorCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>타 전공 과목:</b> ${esc(c.major)} 개설 과목입니다. 본인 전공에서의 인정 종별을 확인하십시오.</div>`;
   else if(c.scope==='certificate') box.innerHTML=`<div class="callout warnbox"><b>교원자격 관련 교과:</b> 자격증 취득 트랙 여부에 따라 필요성이 달라질 수 있습니다.</div>`;
   else box.innerHTML='';
