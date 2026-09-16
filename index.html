@@ -83,6 +83,13 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .ocr-result table th{position:static}
 .ocr-preview{display:none;max-width:100%;max-height:260px;border:1px solid #d8dee8;border-radius:8px;margin-top:10px}
 .ocr-check{width:18px;height:18px}
+.ocr-row-review{background:#fffaf0}
+.ocr-row-low{background:#fff5f4}
+.ocr-confidence{display:flex;flex-direction:column;gap:4px;min-width:92px}
+.ocr-confidence .badge{width:max-content}
+.badge.conf-high{background:#e8f5e9;color:#176b2c}
+.badge.conf-review{background:#fff3d6;color:#8a5700}
+.badge.conf-low{background:#fdecec;color:#9f1d1d}
 @media(max-width:760px){.ocr-grid{grid-template-columns:1fr}.ocr-grid .btn{width:100%}}
 
 
@@ -747,7 +754,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <h3 style="margin:0 0 8px">성적 캡처 → OCR 일괄등록</h3>
       <div class="muted" style="margin-bottom:10px">
         먼저 <b>수강했던 학기</b>를 선택하고 해당 학기의 성적 화면 캡처를 올리십시오.
-        OCR은 학정번호·과목명·과목종별·학점·성적을 읽고, 카탈로그와 대조한 뒤 등록 후보를 보여줍니다.<br><b class="warn">성적이 읽히지 않는다면 임의 입력이 필요합니다.</b>
+        OCR은 <b>학정번호를 우선 인식</b>하고 과목명·종별·학점은 카탈로그에서 자동 보완합니다. 성적이 불명확한 과목은 해당 영역을 한 번 더 인식합니다.<br><b class="warn">노란색 ‘확인 필요’ 항목은 성적 등을 확인한 뒤 등록하십시오.</b>
       </div>
       <div class="ocr-grid">
         <div>
@@ -761,7 +768,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
           </div>
           <div class="paste-hint">
             PC에서는 Windows 캡처(Win+Shift+S) 후 이 영역을 클릭하고 <b>Ctrl+V</b> 하십시오.<br>
-            iPhone/Android에서는 <b>파일 선택 → 사진 보관함</b>에서 성적 캡처를 선택하십시오.
+            iPhone/Android에서는 <b>파일 선택 → 사진 보관함</b>에서 성적 캡처를 선택하십시오.<br>
+            사진 촬영본보다 <b>연세포털 화면 스크린샷</b>을 권장하며, 학정번호와 성적이 잘리지 않게 캡처하면 정확도가 높아집니다.
           </div>
           <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp" style="margin-top:8px">
           <img id="ocrPreview" class="ocr-preview" alt="OCR 미리보기">
@@ -886,7 +894,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.8.2:</b> 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.2:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1062,6 +1070,39 @@ function defaultCredit(term, category, code){
 }
 function categoryOptionsHtml(selected){
   return CATEGORY_OPTIONS.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${CATEGORY_LABELS[c]}</option>`).join('');
+}
+const PRE_ADMISSION_TERM='__PRE_ADMISSION__';
+function isPreAdmissionTerm(term){
+  const admission=state.profile.admissionTerm;
+  const s=String(term||'');
+  if(s===PRE_ADMISSION_TERM || /\s*이전$/.test(s)) return true;
+  return termIndex(s)>-999999 && termIndex(s)<termIndex(admission);
+}
+function displayAcademicTerm(term){
+  return isPreAdmissionTerm(term) ? `${state.profile.admissionTerm} 이전` : String(term||'');
+}
+function nextAcademicTerm(term){
+  const m=String(term||'').match(/^(\d{4})-(1|2)$/);
+  if(!m)return term;
+  const y=Number(m[1]), sem=Number(m[2]);
+  return sem===1 ? `${y}-2` : `${y+1}-1`;
+}
+function academicTermOptionsHtml(selected){
+  const admission=state.profile.admissionTerm;
+  const endTerm=RULES.snapshot;
+  const terms=[];
+  let t=admission;
+  const maxIndex=Math.max(termIndex(endTerm),termIndex(admission));
+  while(termIndex(t)<=maxIndex){
+    terms.push(t);
+    t=nextAcademicTerm(t);
+  }
+  if(selected && !isPreAdmissionTerm(selected) && termIndex(selected)>maxIndex && !terms.includes(selected)){
+    terms.push(selected);
+  }
+  const preSelected=isPreAdmissionTerm(selected);
+  return `<option value="${PRE_ADMISSION_TERM}" ${preSelected?'selected':''}>${esc(admission)} 이전</option>`+
+    terms.map(t=>`<option value="${t}" ${t===selected?'selected':''}>${t}</option>`).join('');
 }
 function recordKey(r){return canonicalCode(r.courseCode)||normName(r.courseName);}
 
@@ -1509,7 +1550,7 @@ function renderHistory(){
     const gp=gradePasses(g);
     const pass=r.passed===false?`<span class="badge missing">${g?`${esc(g)} · 미이수`:'NP/미이수'}</span>`:(g?`<span class="badge match">${esc(g)} · 이수</span>`:'');
     return `<tr>
-      <td>${esc(r.term)}</td>
+      <td><select class="inline-select hist-term" data-i="${i}" style="min-width:92px">${academicTermOptionsHtml(r.term)}</select></td>
       <td>
         <div class="history-course-title">
           <span class="course-name">${esc(r.courseName)}</span>
@@ -1523,6 +1564,21 @@ function renderHistory(){
       <td><div class="statusline">${badge}${pass}</div></td>
       <td><button class="btn small danger hist-del" data-i="${i}">삭제</button></td></tr>`;
   }).join('');
+  document.querySelectorAll('.hist-term').forEach(x=>x.onchange=()=>{
+    const i=+x.dataset.i;
+    const r=state.history[i];
+    const nextTerm=x.value;
+    const nextKey=historyRecordKey(nextTerm,r.courseCode,r.courseName);
+    const duplicated=state.history.some((h,j)=>j!==i&&historyRecordKey(h.term,h.courseCode,h.courseName)===nextKey);
+    if(duplicated){
+      alert('해당 학기에 동일 과목이 이미 등록되어 있습니다.');
+      render();
+      return;
+    }
+    r.term=nextTerm;
+    save();
+    render();
+  });
   document.querySelectorAll('.hist-cat').forEach(x=>x.onchange=()=>{state.history[+x.dataset.i].category=x.value;if(['common','audit'].includes(x.value))state.history[+x.dataset.i].credits=0;save();render();});
   document.querySelectorAll('.hist-credit').forEach(x=>x.onchange=()=>{state.history[+x.dataset.i].credits=Number(x.value||0);save();render();});
   document.querySelectorAll('.hist-grade').forEach(x=>x.onchange=()=>{
@@ -1544,7 +1600,7 @@ function renderSemesterGpa(){
     const status=s.gpa==null?'평점자료 없음':s.missingGradeCount>0?'성적 일부 미입력':s.gpa>=CUMULATIVE_GPA_MIN?'B0 이상':'B0 미만';
     const cls=s.gpa!=null&&s.missingGradeCount===0?(s.gpa>=CUMULATIVE_GPA_MIN?'grade-pass':'grade-fail'):'';
     return `<div class="semester-gpa-card">
-      <div class="term">${esc(s.term)}</div>
+      <div class="term">${esc(displayAcademicTerm(s.term))}</div>
       <div class="metric"><span class="muted">이수학점</span><b>${fmtCredits(s.earnedCredits)}</b></div>
       <div class="metric ${cls}"><span class="muted">성적</span><b>${fmtGpa(s.gpa)}</b><span class="muted">${status}</span></div>
     </div>`;
@@ -1906,54 +1962,135 @@ function parseCourseName(block){
   }
   return '';
 }
+function knownCatalogCodeList(){
+  if(knownCatalogCodeList.cache)return knownCatalogCodeList.cache;
+  const seen=new Set(), out=[];
+  for(const c of allCatalogEntries()){
+    const code=canonicalCode(c.courseCode);
+    if(code && !seen.has(code)){seen.add(code);out.push(code);}
+  }
+  knownCatalogCodeList.cache=out;
+  return out;
+}
+function editDistanceAtMostOne(a,b){
+  a=String(a||'');b=String(b||'');
+  if(a===b)return 0;
+  if(Math.abs(a.length-b.length)>1)return 2;
+  if(a.length===b.length){
+    let diff=0;
+    for(let i=0;i<a.length;i++)if(a[i]!==b[i]&&++diff>1)return 2;
+    return diff;
+  }
+  const long=a.length>b.length?a:b, short=a.length>b.length?b:a;
+  let i=0,j=0,diff=0;
+  while(i<long.length&&j<short.length){
+    if(long[i]===short[j]){i++;j++;continue;}
+    if(++diff>1)return 2;
+    i++;
+  }
+  return 1;
+}
+function detectCatalogCodeInText(raw){
+  const upper=String(raw||'').toUpperCase().replace(/[−–—‐]/g,'-');
+  const known=new Set(knownCatalogCodeList());
+  const strict=[...upper.matchAll(/\b([A-Z]{2,5}\s*\d{4})(?:\s*-\s*(\d{2}))?\b/g)];
+  for(const m of strict){
+    const base=canonicalCode(m[1]);
+    return {code:base,section:m[2]||'',method:known.has(base)?'exact':'exact_unmatched',raw:m[0]};
+  }
+  // 학정번호 한 글자 오인식(S↔5, O↔0 등)을 카탈로그에 존재하는 코드에 한해서만 복원한다.
+  const tokens=[...upper.matchAll(/\b([A-Z0-9]{6,10})(?:\s*-\s*(\d{2}))?\b/g)];
+  const splitLike=[...upper.matchAll(/\b([A-Z0-9]{2,5})\s+([A-Z0-9]{4})(?:\s*-\s*(\d{2}))?\b/g)].map(m=>({0:m[0],1:m[1]+m[2],2:m[3]||''}));
+  for(const m of splitLike)tokens.push(m);
+  for(const m of tokens){
+    const token=m[1].replace(/\s+/g,'');
+    const candidates=[];
+    for(const code of knownCatalogCodeList()){
+      if(Math.abs(code.length-token.length)>1)continue;
+      const d=editDistanceAtMostOne(token,code);
+      if(d<=1)candidates.push({code,d});
+    }
+    candidates.sort((a,b)=>a.d-b.d);
+    if(candidates.length && candidates[0].d===1 && (candidates.length===1 || candidates[1].d>1)){
+      return {code:candidates[0].code,section:m[2]||'',method:'fuzzy',raw:m[0]};
+    }
+  }
+  return null;
+}
+function parseTsvLines(tsv){
+  const rows=String(tsv||'').split(/\r?\n/).filter(Boolean);
+  if(rows.length<2)return [];
+  const groups=new Map();
+  for(let i=1;i<rows.length;i++){
+    const p=rows[i].split('\t');
+    if(p.length<12 || p[0]!=='5')continue;
+    const txt=p.slice(11).join('\t').trim();
+    if(!txt)continue;
+    const key=[p[1],p[2],p[3],p[4]].join('|');
+    const word={text:txt,left:Number(p[6])||0,top:Number(p[7])||0,width:Number(p[8])||0,height:Number(p[9])||0,conf:Number(p[10])};
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(word);
+  }
+  return [...groups.values()].map(words=>{
+    words.sort((a,b)=>a.left-b.left);
+    const left=Math.min(...words.map(w=>w.left)), top=Math.min(...words.map(w=>w.top));
+    const right=Math.max(...words.map(w=>w.left+w.width)), bottom=Math.max(...words.map(w=>w.top+w.height));
+    const validConf=words.map(w=>w.conf).filter(x=>Number.isFinite(x)&&x>=0);
+    return {text:words.map(w=>w.text).join(' '),left,top,right,bottom,width:right-left,height:bottom-top,conf:validConf.length?validConf.reduce((a,b)=>a+b,0)/validConf.length:null};
+  }).sort((a,b)=>a.top-b.top||a.left-b.left);
+}
+function buildCandidateFromCode(detected,block,term,lineConf=null){
+  const code=canonicalCode(detected.code);
+  let matched=preferredCatalogMatchByCode(code);
+  const ocrName=parseCourseName(block);
+  if(!matched && ocrName)matched=preferredCatalogMatchByName(ocrName);
+  const portalCategory=parsePortalCategory(block);
+  const category=mapPortalCategory(portalCategory,matched);
+  let credits=parseCredits(block);
+  if(category==='common'||category==='audit')credits=0;
+  if(credits==null)credits=matched?.credits ?? defaultCredit(term,category,code);
+  if(/^SPT/.test(code))credits=2;
+  else if(category!=='common' && category!=='audit' && !DATA.specialCourses.some(x=>canonicalCode(x.courseCode)===code) && termIndex(term)<termIndex('2025-1'))credits=2;
+  let grade=parseGrade(block);
+  if(category==='common'){credits=0;grade='P';}
+  if(category==='audit')credits=0;
+  const gradePass=gradePasses(grade);
+  const passed=['common','audit'].includes(category)?true:(gradePass==null?true:gradePass);
+  return {
+    selected:true,term,courseCode:code,section:detected.section||'',
+    courseName:matched?.courseName||ocrName||`미확인 과목 ${code}`,
+    ocrCourseName:ocrName,portalCategory,category,credits:Number(credits||0),grade,passed,
+    matched:!!matched,matchMajor:matched?.major||'',confidence:matched?'code':'ocr',
+    codeMethod:detected.method||'exact',lineConfidence:lineConf,gradeSource:grade?'initial':''
+  };
+}
 function parseOcrCandidates(text,term){
   const cleaned=cleanOcrText(text);
-  const codeRe=/\b([A-Z]{2,5}\s*\d{4}(?:\s*-\s*\d{2})?)\b/g;
+  const codeRe=/\b([A-Z]{2,5}\s*\d{4})(?:\s*-\s*(\d{2}))?\b/g;
   const matches=[...cleaned.matchAll(codeRe)];
-  const results=[];
-  const seen=new Set();
+  const results=[],seen=new Set();
   for(let i=0;i<matches.length;i++){
-    const rawCode=matches[i][1].replace(/\s+/g,'');
-    const code=canonicalCode(rawCode);
-    if(!code || seen.has(code))continue;
+    const detected=detectCatalogCodeInText(matches[i][0]);
+    if(!detected || seen.has(detected.code))continue;
     const start=matches[i].index;
     const end=i+1<matches.length?matches[i+1].index:cleaned.length;
     const block=cleaned.slice(start,end);
-    let matched=preferredCatalogMatchByCode(code);
-    const ocrName=parseCourseName(block);
-    if(!matched && ocrName)matched=preferredCatalogMatchByName(ocrName);
-    const portalCategory=parsePortalCategory(block);
-    const category=mapPortalCategory(portalCategory,matched);
-    let credits=parseCredits(block);
-    if(category==='common'||category==='audit')credits=0;
-    if(credits==null)credits=matched?.credits ?? defaultCredit(term,category,code);
-    if(category!=='common' && !DATA.specialCourses.some(x=>canonicalCode(x.courseCode)===code) && termIndex(term)<termIndex('2025-1')) credits=2;
-    let grade=parseGrade(block);
-    if(category==='common'){credits=0;grade='P';}
-    if(category==='audit'){credits=0;}
-    const gradePass=gradePasses(grade);
-    const passed=['common','audit'].includes(category)?true:(gradePass==null?true:gradePass);
-    results.push({
-      selected:true,
-      term,
-      courseCode:code,
-      section:(rawCode.match(/-(\d{2})$/)||[])[1]||'',
-      courseName:matched?.courseName||ocrName||`미확인 과목 ${code}`,
-      ocrCourseName:ocrName,
-      portalCategory,
-      category,
-      credits:Number(credits||0),
-      grade,
-      passed,
-      matched:!!matched,
-      matchMajor:matched?.major||'',
-      confidence:matched?'code':'ocr'
-    });
-    seen.add(code);
+    results.push(buildCandidateFromCode(detected,block,term));
+    seen.add(detected.code);
   }
   return results;
 }
-
+function supplementCandidatesByTsvLines(results,tsv,term){
+  const seen=new Set(results.map(r=>canonicalCode(r.courseCode)));
+  const lines=parseTsvLines(tsv);
+  for(const line of lines){
+    const detected=detectCatalogCodeInText(line.text);
+    if(!detected || seen.has(detected.code))continue;
+    results.push(buildCandidateFromCode(detected,line.text,term,line.conf));
+    seen.add(detected.code);
+  }
+  return results;
+}
 function supplementCandidatesByCatalogName(results,text,term){
   const seen=new Set(results.map(r=>canonicalCode(r.courseCode)||normName(r.courseName)));
   const compact=normName(text);
@@ -1966,37 +2103,103 @@ function supplementCandidatesByCatalogName(results,text,term){
     const key=code||normName(c.courseName);
     if(seen.has(key))continue;
     results.push({
-      selected:true,term,courseCode:code,section:'',courseName:c.courseName,
+      selected:false,term,courseCode:code,section:'',courseName:c.courseName,
       ocrCourseName:c.courseName,portalCategory:'',category:c.category||'unknown',
-      credits:c.category==='common'?0:(c.credits??defaultCredit(term,c.category,code)),
-      grade:c.category==='common'?'P':'',passed:true,matched:true,matchMajor:c.major||'',confidence:'name'
+      credits:c.category==='common'||c.category==='audit'?0:(/^SPT/.test(code)?2:(c.credits??defaultCredit(term,c.category,code))),
+      grade:c.category==='common'?'P':'',passed:true,matched:true,matchMajor:c.major||'',confidence:'name',codeMethod:'name',gradeSource:'',lineConfidence:null
     });
     seen.add(key);
   }
   return results;
 }
+function parseGradeLoose(block){
+  const normalized=String(block||'').toUpperCase().replace(/[−–—‐]/g,'-').replace(/[ＯO○]/g,'0');
+  const tokens=[...normalized.matchAll(/(?:^|[\s|:：])((?:A|B|C|D)\s*[+\-0]|F|NP|P)(?=$|[\s|,])/g)].map(m=>normalizeGrade(m[1].replace(/\s+/g,''))).filter(Boolean);
+  const valid=tokens.filter(g=>Object.prototype.hasOwnProperty.call(GRADE_POINTS,g)||g==='P'||g==='NP');
+  return valid.length?valid[valid.length-1]:'';
+}
+function findOcrLineForCandidate(lines,candidate){
+  const code=canonicalCode(candidate.courseCode);
+  return lines.find(line=>detectCatalogCodeInText(line.text)?.code===code)||null;
+}
+async function refineOcrGradesByRow(candidates,tsv,worker,prepared){
+  const lines=parseTsvLines(tsv);
+  if(!lines.length)return candidates;
+  const anchors=candidates.map(r=>({r,line:findOcrLineForCandidate(lines,r)})).filter(x=>x.line).sort((a,b)=>a.line.top-b.line.top);
+  const targets=anchors.filter(x=>!x.r.grade && !['common','audit'].includes(x.r.category)).slice(0,10);
+  if(!targets.length)return candidates;
+  await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+  for(let i=0;i<targets.length;i++){
+    const {r,line}=targets[i];
+    if(Number.isFinite(line.conf))r.lineConfidence=line.conf;
+    const anchorIndex=anchors.findIndex(x=>x.r===r);
+    const next=anchorIndex>=0?anchors[anchorIndex+1]:null;
+    const pad=Math.max(10,Math.round(line.height*0.8));
+    const top=Math.max(0,Math.round(line.top-pad));
+    let bottom=next?Math.round(next.line.top-pad):Math.round(line.bottom+Math.max(220,line.height*10));
+    bottom=Math.min(prepared.height,Math.max(top+Math.max(80,line.height*3),bottom));
+    const rectangle={left:0,top,width:prepared.width,height:bottom-top};
+    document.getElementById('ocrStatus').textContent=`성적 보강 인식 중 · ${i+1}/${targets.length}`;
+    document.getElementById('ocrProgressBar').style.width=`${85+Math.round((i+1)/targets.length*13)}%`;
+    try{
+      const rr=await worker.recognize(prepared,{rectangle},{text:true});
+      const rowText=rr?.data?.text||'';
+      const grade=parseGrade(rowText)||parseGradeLoose(rowText);
+      if(grade){
+        r.grade=grade;r.gradeSource='row';
+        const p=gradePasses(grade);if(p!=null)r.passed=p;
+      }
+    }catch(e){console.warn('row OCR retry failed',e);}
+  }
+  await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+  return candidates;
+}
+function finalizeOcrConfidence(candidates){
+  for(const r of candidates){
+    const gradeRequired=!['common','audit'].includes(r.category);
+    let level='high', reason='학정번호·성적 확인';
+    if(!r.matched){level='low';reason='카탈로그 미매칭';}
+    else if(r.codeMethod==='name'){level='low';reason='과목명으로만 감지';}
+    else if(gradeRequired&&!r.grade){level='review';reason='성적 확인 필요';}
+    else if(r.codeMethod==='fuzzy'){level='review';reason='학정번호 1글자 보정';}
+    else if(Number.isFinite(r.lineConfidence)&&r.lineConfidence<55){level='review';reason='문자 인식 신뢰도 낮음';}
+    r.confidenceLevel=level;r.confidenceReason=reason;
+    r.needsReview=level!=='high';
+    if(r.needsReview)r.selected=false;
+  }
+  return candidates;
+}
 
 function renderOcrCandidates(){
   const box=document.getElementById('ocrResult');
   if(!ocrCandidates.length){
-    box.innerHTML=`<div class="callout badbox">학정번호가 포함된 과목을 찾지 못했습니다. 캡처에 <b>학정번호-분반</b>과 교과목 정보가 보이도록 다시 캡처하거나 직접 입력하십시오.</div>`;
+    box.innerHTML=`<div class="callout badbox">학정번호가 포함된 과목을 찾지 못했습니다. 캡처에 <b>학정번호-분반</b>과 성적이 보이도록 다시 캡처하거나 직접 입력하십시오.</div>`;
     return;
   }
+  const high=ocrCandidates.filter(r=>r.confidenceLevel==='high').length;
+  const review=ocrCandidates.length-high;
   box.innerHTML=`
-    <div class="callout"><b>${ocrCandidates.length}개 과목 후보를 찾았습니다.</b> 학정번호로 카탈로그와 매칭한 뒤 아래에서 종별·학점·성적을 확인하고 등록하십시오.<br><span class="warn">성적이 읽히지 않는다면 임의 입력이 필요합니다.</span></div>
+    <div class="callout"><b>${ocrCandidates.length}개 과목 후보</b> · 자동확인 ${high}개 · 확인 필요 ${review}개<br>
+    학정번호를 중심으로 카탈로그를 대조했으며, 성적이 불명확한 항목은 영역 재인식을 수행했습니다. <span class="warn">확인 필요 항목은 기본 선택이 해제됩니다.</span></div>
     <div class="table-wrap" style="margin-top:10px;max-height:420px">
       <table>
-        <thead><tr><th>등록</th><th>과목</th><th>OCR 종별</th><th>계산 종별</th><th>학점</th><th>성적</th><th>매칭</th></tr></thead>
+        <thead><tr><th>등록</th><th>과목</th><th>OCR 종별</th><th>계산 종별</th><th>학점</th><th>성적</th><th>신뢰도</th></tr></thead>
         <tbody>
-        ${ocrCandidates.map((r,i)=>`<tr>
+        ${ocrCandidates.map((r,i)=>{
+          const cls=r.confidenceLevel==='low'?'ocr-row-low':r.confidenceLevel==='review'?'ocr-row-review':'';
+          const badgeClass=r.confidenceLevel==='high'?'conf-high':r.confidenceLevel==='review'?'conf-review':'conf-low';
+          const badgeLabel=r.confidenceLevel==='high'?'높음':r.confidenceLevel==='review'?'확인 필요':'낮음';
+          const matchLabel=r.codeMethod==='fuzzy'?'학정번호 보정':r.codeMethod==='name'?'과목명 감지':r.matched?'학정번호 매칭':'미매칭';
+          return `<tr class="${cls}">
           <td><input class="ocr-check ocr-select" data-i="${i}" type="checkbox" ${r.selected?'checked':''}></td>
-          <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''} · ${esc(r.term)}</div></td>
+          <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''} · ${esc(r.term)}</div><div class="muted">${esc(matchLabel)}</div></td>
           <td>${esc(r.portalCategory||'미인식')}</td>
           <td><select class="inline-select ocr-cat" data-i="${i}">${categoryOptionsHtml(r.category)}</select></td>
           <td><select class="inline-select ocr-credit" data-i="${i}">${creditOptionsHtml(r.credits)}</select></td>
           <td><select class="inline-select ocr-grade" data-i="${i}">${gradeOptionsHtml(r.grade,true)}</select></td>
-          <td>${r.matched?`<span class="badge match">${r.confidence==='name'?'과목명 매칭':'학정번호 매칭'}</span>`:'<span class="badge manual">직접 확인</span>'}</td>
-        </tr>`).join('')}
+          <td><div class="ocr-confidence"><span class="badge ${badgeClass}">${badgeLabel}</span><span class="muted">${esc(r.confidenceReason||'')}</span></div></td>
+        </tr>`;
+        }).join('')}
         </tbody>
       </table>
     </div>
@@ -2007,19 +2210,26 @@ function renderOcrCandidates(){
   document.querySelectorAll('.ocr-select').forEach(x=>x.onchange=()=>{ocrCandidates[+x.dataset.i].selected=x.checked;});
   document.querySelectorAll('.ocr-cat').forEach(x=>x.onchange=()=>{
     const r=ocrCandidates[+x.dataset.i];r.category=x.value;
-    if(r.category==='common'){r.credits=0;r.grade='P';r.passed=true;renderOcrCandidates();}
-    else if(r.category==='audit'){r.credits=0;r.passed=true;renderOcrCandidates();}
+    if(r.category==='common'){r.credits=0;r.grade='P';r.passed=true;}
+    else if(r.category==='audit'){r.credits=0;r.passed=true;}
+    finalizeOcrConfidence([r]);
+    if(!r.needsReview)r.selected=true;
+    renderOcrCandidates();
   });
   document.querySelectorAll('.ocr-credit').forEach(x=>x.onchange=()=>{ocrCandidates[+x.dataset.i].credits=Number(x.value||0);});
   document.querySelectorAll('.ocr-grade').forEach(x=>x.onchange=()=>{
     const r=ocrCandidates[+x.dataset.i];
     r.grade=normalizeGrade(x.value);
-    const p=gradePasses(r.grade);
-    if(p!=null)r.passed=p;
+    const p=gradePasses(r.grade);if(p!=null)r.passed=p;
+    if(r.grade)r.gradeSource='manual';
+    finalizeOcrConfidence([r]);
+    if(!r.needsReview)r.selected=true;
+    renderOcrCandidates();
   });
   document.getElementById('importOcrCandidates').onclick=importOcrCandidates;
   document.getElementById('clearOcrCandidates').onclick=()=>{ocrCandidates=[];box.innerHTML='';};
 }
+
 async function ensureOcrWorker(){
   if(ocrWorker)return ocrWorker;
   if(typeof Tesseract==='undefined')throw new Error('OCR 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하십시오.');
@@ -2107,22 +2317,37 @@ async function runOcr(){
     const worker=await ensureOcrWorker();
 
     await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
-    let result=await worker.recognize(prepared);
+    let result=await worker.recognize(prepared,{}, {text:true,tsv:true});
     let text=result?.data?.text||'';
+    let tsv=result?.data?.tsv||'';
 
-    // If course codes are still poorly recognized, retry with a denser layout mode.
-    if(countCourseCodes(text)===0){
-      document.getElementById('ocrStatus').textContent='1차 인식에서 학정번호가 잡히지 않아 보조 인식 중…';
+    ocrCandidates=parseOcrCandidates(text,term);
+    ocrCandidates=supplementCandidatesByTsvLines(ocrCandidates,tsv,term);
+
+    // 학정번호가 하나도 잡히지 않았을 때만 더 조밀한 페이지 분할 방식으로 전체 재인식한다.
+    if(!ocrCandidates.length){
+      document.getElementById('ocrStatus').textContent='학정번호 보조 인식 중…';
+      document.getElementById('ocrProgressBar').style.width='68%';
       await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300'});
-      const retry=await worker.recognize(prepared);
+      const retry=await worker.recognize(prepared,{}, {text:true,tsv:true});
       const text2=retry?.data?.text||'';
+      const tsv2=retry?.data?.tsv||'';
       text = text + '\n' + text2;
+      tsv = tsv + '\n' + tsv2;
+      ocrCandidates=parseOcrCandidates(text,term);
+      ocrCandidates=supplementCandidatesByTsvLines(ocrCandidates,tsv,term);
       await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
     }
 
-    ocrCandidates=parseOcrCandidates(text,term);
+    // 학정번호가 핵심 키이며, 과목명은 학정번호가 실패했을 때만 보조 후보로 사용한다.
     ocrCandidates=supplementCandidatesByCatalogName(ocrCandidates,text,term);
-    document.getElementById('ocrStatus').textContent=`OCR 완료 · ${ocrCandidates.length}개 과목 후보 감지`;
+    document.getElementById('ocrProgressBar').style.width='84%';
+    ocrCandidates=await refineOcrGradesByRow(ocrCandidates,tsv,worker,prepared);
+    ocrCandidates=finalizeOcrConfidence(ocrCandidates);
+
+    const high=ocrCandidates.filter(r=>r.confidenceLevel==='high').length;
+    const review=ocrCandidates.length-high;
+    document.getElementById('ocrStatus').textContent=`OCR 완료 · ${ocrCandidates.length}개 후보 · 자동확인 ${high} · 확인 필요 ${review}`;
     document.getElementById('ocrProgressBar').style.width='100%';
     renderOcrCandidates();
     const box=document.getElementById('ocrResult');
@@ -2135,6 +2360,7 @@ async function runOcr(){
     btn.disabled=false; btn.textContent='OCR로 읽어오기';
   }
 }
+
 function importOcrCandidates(){
   const selected=ocrCandidates.filter(x=>x.selected);
   if(!selected.length){alert('등록할 과목을 선택하십시오.');return;}
