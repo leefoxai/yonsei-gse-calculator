@@ -1160,7 +1160,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.6:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.7:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1344,7 +1344,10 @@ function isPreAdmissionTerm(term){
   const admission=state.profile.admissionTerm;
   const s=String(term||'');
   if(s===PRE_ADMISSION_TERM || /\s*이전$/.test(s)) return true;
-  return termIndex(s)>-999999 && termIndex(s)<termIndex(admission);
+
+  const t=termIndex(s), a=termIndex(admission);
+  // 입학학기 자체는 '이전'이 아니다. 오직 엄격히 앞선 학기만 이전으로 묶는다.
+  return t>-999999 && a>-999999 && t<a;
 }
 function displayAcademicTerm(term){
   return isPreAdmissionTerm(term) ? `${state.profile.admissionTerm} 이전` : String(term||'');
@@ -3339,9 +3342,14 @@ function parsePortalPdfSequential(items){
     const hit=codes[ci];
     currentTerm=pdfSequentialTermAt(items,hit.start,currentTerm);
 
-    // '인정학점'은 포털에서 정규학기와 별도 블록으로 출력
-    for(let j=Math.max(0,hit.start-12);j<hit.start;j++){
-      if(pdfNormalizeTerm(items[j].str)===PRE_ADMISSION_TERM){currentTerm=PRE_ADMISSION_TERM;break;}
+    // '인정학점'은 해당 행에만 적용한다.
+    // currentTerm을 PRE_ADMISSION_TERM으로 바꾸면 다른 정규학기 행까지 오염될 수 있다.
+    let rowTerm=currentTerm;
+    for(let j=Math.max(0,hit.start-4);j<hit.start;j++){
+      if(pdfNormalizeTerm(items[j].str)===PRE_ADMISSION_TERM){
+        rowTerm=PRE_ADMISSION_TERM;
+        break;
+      }
     }
 
     const nextStart=ci+1<codes.length?codes[ci+1].start:Math.min(items.length,hit.end+16);
@@ -3398,7 +3406,7 @@ function parsePortalPdfSequential(items){
 
     rows.push({
       selected:true,
-      term:currentTerm||state.profile.admissionTerm,
+      term:rowTerm||state.profile.admissionTerm,
       courseCode:code,
       section,
       courseName,
@@ -3428,7 +3436,11 @@ function pdfTermMarkersFromItems(items){
     for(let len=1;len<=8 && i+len<=items.length;len++){
       joined+=pdfValueText(items[i+len-1].str);
       const term=pdfNormalizeTerm(joined);
-      if(term){
+
+      // '인정학점'은 정규학기 경계가 아니라 해당 행만의 구분값이다.
+      // 전역 마커로 사용하면 2023-1 같은 입학학기 수업까지
+      // '입학학기 이전'으로 덮어쓰는 문제가 생길 수 있다.
+      if(term && term!==PRE_ADMISSION_TERM){
         markers.push({index:i,term});
         break;
       }
@@ -3463,7 +3475,9 @@ function applyPdfOccurrenceTerms(parsedRows,items){
       if(occ[j].code===code){found=j;break;}
     }
     if(found>=0){
-      if(occ[found].term)row.term=occ[found].term;
+      // 인정학점 행은 개별 행 판정을 보존하고,
+      // 정규학기 행만 학기 발생순서 후처리를 적용한다.
+      if(row.term!==PRE_ADMISSION_TERM && occ[found].term)row.term=occ[found].term;
       oi=found+1;
     }
   }
