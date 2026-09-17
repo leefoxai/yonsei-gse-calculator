@@ -166,7 +166,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   .profile-confirm-bar .btn{width:100%}
 }
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
-@media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}}
+@media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan,.history-course-grid{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}.history-course-grid .course-search{min-width:0}}
 @media(max-width:620px){.app{padding:10px}.header{border-radius:12px;padding:18px}.header h1{font-size:22px}.grid.profile{grid-template-columns:1fr}.grid.kpi{grid-template-columns:1fr 1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr}.form-grid button{grid-column:auto}th{position:static}.card{padding:14px}}
 
 
@@ -222,6 +222,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .manual-panel.open{display:block}
 .selection-note{margin-top:8px}
 .course-search{min-width:180px}
+.history-course-grid{
+  grid-template-columns:.9fr 1fr 1.25fr 2.35fr 2.1fr 1fr
+}
+.history-course-grid .course-search{width:100%;min-width:280px}
 .timetable-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .timetable-table .period{white-space:nowrap;font-weight:700}
 .quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -1156,7 +1160,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.5:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.6:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -2983,6 +2987,105 @@ function pdfFindCreditIndex(items,gradeIndex,codeIndex){
   }
   return -1;
 }
+function parsePortalPdfYonseiFixed(rows,pageWidth){
+  // 연세포털 전체성적조회 [출력] PDF의 표 열 경계.
+  // 절대 px가 아니라 A4 페이지 폭 대비 비율로 계산한다.
+  const ratios=[
+    0,       // page left
+    .207,    // 학기 | 신청
+    .250,    // 신청 | 취득
+    .292,    // 취득 | 평균
+    .343,    // 평균 | 종별
+    .392,    // 종별 | 학정번호
+    .470,    // 학정번호 | 분반
+    .509,    // 분반 | 교과목명
+    .697,    // 교과목명 | 담당교수
+    .763,    // 담당교수 | 학점
+    .807,    // 학점 | 평가
+    .857,    // 평가 | 비고
+    1.01
+  ];
+  const labels=['학기','신청','취득','평균','종별','학정번호','분반','교과목명','담당교수','학점','평가','비고'];
+  const bounds=ratios.map(r=>r*pageWidth);
+  const courseRows=[];
+  let currentTerm='';
+  let detectedCodeCount=0;
+
+  for(const row of rows){
+    const cells=Object.fromEntries(labels.map(x=>[x,[]]));
+
+    for(const it of row.items){
+      const x=Number(it.x||0);
+      let ci=0;
+      while(ci<labels.length-1 && x>=bounds[ci+1])ci++;
+      cells[labels[Math.min(ci,labels.length-1)]].push(it);
+    }
+
+    const val={};
+    for(const label of labels){
+      val[label]=cells[label]
+        .sort((a,b)=>Number(a.x||0)-Number(b.x||0))
+        .map(x=>pdfValueText(x.str))
+        .join(' ')
+        .trim();
+    }
+
+    const term=pdfNormalizeTerm(val['학기']);
+    if(term)currentTerm=term;
+
+    const codeRaw=pdfTokenCompact(val['학정번호']);
+    const codeMatch=codeRaw.match(/([A-Z]{2,5}\d{4})/);
+    if(!codeMatch)continue;
+    detectedCodeCount++;
+
+    const code=canonicalCode(codeMatch[1]);
+    const matched=preferredCatalogMatchByCode(code);
+    const portalCategory=pdfKnownCategory(val['종별'])||pdfValueText(val['종별']);
+    const category=mapPortalCategory(portalCategory,matched);
+
+    const sectionMatch=pdfValueText(val['분반']).match(/\d{1,2}/);
+    const section=sectionMatch?sectionMatch[0].padStart(2,'0'):'';
+    const parsedName=pdfValueText(val['교과목명']);
+    const professor=pdfValueText(val['담당교수']);
+
+    const creditMatch=pdfValueText(val['학점']).match(/\d+(?:\.\d+)?/);
+    const credits=creditMatch
+      ? Number(creditMatch[0])
+      : (matched?.credits??defaultCredit(currentTerm||state.profile.admissionTerm,category,code));
+
+    const rawGrade=pdfValueText(val['평가']);
+    const grade=pdfGradeValue(rawGrade);
+    const passed=grade==='W'?false:(grade?gradePasses(grade)!==false:true);
+    const courseName=matched?.courseName||parsedName||code;
+    const note=pdfValueText(val['비고']);
+
+    courseRows.push({
+      selected:true,
+      term:currentTerm||state.profile.admissionTerm,
+      courseCode:code,
+      section,
+      courseName,
+      pdfCourseName:parsedName,
+      professor,
+      portalCategory,
+      category,
+      credits:['common','audit'].includes(category)?0:credits,
+      grade,
+      rawGrade,
+      passed,
+      note,
+      matched:!!matched,
+      matchMajor:matched?.major||'',
+      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) &&
+        matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      confidenceLevel:'high',
+      confidenceReason:matched?'연세포털 PDF 표 직접 추출 · 카탈로그 확인':'연세포털 PDF 표 직접 추출',
+      source:'portal_pdf'
+    });
+  }
+
+  return {rows:courseRows,detectedCodeCount,parser:'yonsei_fixed'};
+}
 function pdfHeaderGeometry(rows){
   const labels=['학기','신청','취득','평균','종별','학정번호','분반','교과목명','담당교수','학점','평가','비고'];
   for(const row of rows){
@@ -3318,6 +3421,54 @@ function parsePortalPdfSequential(items){
   }
   return {rows,detectedCodeCount:codes.length};
 }
+function pdfTermMarkersFromItems(items){
+  const markers=[];
+  for(let i=0;i<items.length;i++){
+    let joined='';
+    for(let len=1;len<=8 && i+len<=items.length;len++){
+      joined+=pdfValueText(items[i+len-1].str);
+      const term=pdfNormalizeTerm(joined);
+      if(term){
+        markers.push({index:i,term});
+        break;
+      }
+    }
+  }
+  // 같은 학기 문자열에서 여러 중복 마커가 생기면 첫 번째만 유지
+  return markers.filter((m,i,a)=>i===0 || m.term!==a[i-1].term || m.index-a[i-1].index>3);
+}
+function pdfCourseOccurrencesWithTerms(items){
+  const markers=pdfTermMarkersFromItems(items);
+  const codes=pdfFindSequentialCodes(items);
+  const result=[];
+  let mi=0,currentTerm='';
+  for(const c of codes){
+    while(mi<markers.length && markers[mi].index<c.start){
+      currentTerm=markers[mi].term;
+      mi++;
+    }
+    result.push({code:c.code,term:currentTerm});
+  }
+  return result;
+}
+function applyPdfOccurrenceTerms(parsedRows,items){
+  const occ=pdfCourseOccurrencesWithTerms(items);
+  if(!occ.length)return parsedRows;
+
+  let oi=0;
+  for(const row of parsedRows){
+    const code=canonicalCode(row.courseCode);
+    let found=-1;
+    for(let j=oi;j<occ.length;j++){
+      if(occ[j].code===code){found=j;break;}
+    }
+    if(found>=0){
+      if(occ[found].term)row.term=occ[found].term;
+      oi=found+1;
+    }
+  }
+  return parsedRows;
+}
 async function extractPortalPdfCandidates(file){
   const data=await file.arrayBuffer();
   const pdf=await loadPdfDocument(data);
@@ -3330,20 +3481,26 @@ async function extractPortalPdfCandidates(file){
     const items=content.items||[];
     totalTextItems+=items.length;
     const rows=groupPdfItemsIntoLines(items);
+    const viewport=page.getViewport({scale:1});
 
-    // 1순위: 포털 표의 헤더 좌표를 읽어 각 셀을 직접 복원한다.
-    let parsed=parsePortalPdfGeometry(rows);
+    // 1순위: 연세포털 전체성적조회 출력물의 고정 표 열 위치를 사용.
+    // 제공된 실제 PDF에서 학기/종별/학정번호/과목/교수/학점/평가를 가장 안정적으로 분리한다.
+    let parsed=parsePortalPdfYonseiFixed(rows,viewport.width);
 
-    // 2순위: 헤더 좌표를 얻지 못한 환경에서는 행 단위 파싱
+    // 고정표 파서가 충분한 과목을 읽지 못한 경우 헤더 좌표 기반으로 재시도
+    if(parsed.rows.length<3)parsed=parsePortalPdfGeometry(rows);
+
+    // 그마저 실패하면 행 단위 파싱
     if(!parsed.rows.length)parsed=parsePortalPdfRows(rows);
 
-    // 3순위: 같은 행의 텍스트가 심하게 분절된 환경에서는 문서 순서 기반 재시도
+    // 마지막으로 텍스트 조각 순서 기반 복구
     if(!parsed.rows.length){
       const sequential=parsePortalPdfSequential(items);
       if(sequential.rows.length)parsed=sequential;
       else parsed.detectedCodeCount=Math.max(parsed.detectedCodeCount||0,sequential.detectedCodeCount||0);
     }
 
+    parsed.rows=applyPdfOccurrenceTerms(parsed.rows,items);
     totalDetectedCodes+=parsed.detectedCodeCount;
     if(parsed.rows.length)pagesWithRows++;
     all.push(...parsed.rows);
@@ -3432,7 +3589,8 @@ async function readPortalPdf(){
     const academicTerms=terms.filter(t=>t!==PRE_ADMISSION_TERM).sort((a,b)=>termIndex(a)-termIndex(b));
     const termLabel=[...academicTerms.map(displayAcademicTerm),...(terms.includes(PRE_ADMISSION_TERM)?['입학 전 인정학점']:[])].join(' · ');
     const wCount=portalPdfCandidates.filter(x=>x.grade==='W').length;
-    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}`;
+    const suspiciousSingleTerm=portalPdfCandidates.length>=5 && academicTerms.length<=1;
+    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}`;
     renderPortalPdfCandidates();
   }catch(err){
     console.error(err);
