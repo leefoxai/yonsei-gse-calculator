@@ -646,13 +646,26 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     margin:0!important;
     break-before:page!important;
     page-break-before:always!important;
-    padding:9px!important;
-    border-radius:7px!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
     box-shadow:none!important;
     align-self:start!important;
   }
   #planSection h2{font-size:13px!important;margin:0 0 5px!important}
-  #planSection h3{font-size:9px!important}
+  #planSection h3{font-size:10px!important}
+  /* PDF 계획 페이지는 시간표만 출력 */
+  #planSection > .section-title-row,
+  #planSection > .form-grid.plan,
+  #planSection > #planSelectionNote,
+  #planSection > .callout,
+  #planSection > #planWarnings,
+  #planSection > .table-wrap{
+    display:none!important;
+  }
+  #planSection .plan-unplaced{display:none!important}
+  #planSection .reference-pane.print-empty{display:none!important}
+  #planSection .reference-pane > .section-title-row{display:none!important}
   #planSection .form-grid.plan{
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     gap:4px!important;
@@ -672,8 +685,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   #planSection th,#planSection td{font-size:7px!important;padding:4px!important;position:static!important}
   #planSection .schedule-compare{
     grid-template-columns:1fr!important;
-    gap:7px!important;
-    margin-top:6px!important;
+    gap:6px!important;
+    margin-top:0!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
   }
   #planSection .schedule-pane{padding:6px!important;border-radius:6px!important}
   #planSection .weekly-schedule{overflow:visible!important}
@@ -687,8 +702,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   #planSection .timeline-course b{font-size:9px!important;line-height:1.25!important;margin-bottom:2px!important}
   #planSection .timeline-course span{font-size:7.5px!important;line-height:1.25!important}
   #planSection .reference-snapshot{width:100%!important;min-width:0!important;padding:6px!important}
-  #planSection .reference-viewer{width:100%!important;min-height:0!important;display:block!important;overflow:visible!important}
-  #planSection .reference-viewer{margin-top:4px!important}
+  #planSection .reference-viewer{width:100%!important;min-height:0!important;display:block!important;overflow:visible!important;border:0!important;margin-top:0!important}
+  #planSection .reference-snapshot .snapshot-title{font-size:10px!important;margin-bottom:4px!important}
   #planSection .reference-viewer img{max-height:165px!important}
   #planSection .reference-feed{margin-top:4px!important;gap:3px!important}
   #planSection .reference-thumb{min-width:40px!important;width:40px!important;height:40px!important;border-radius:4px!important}
@@ -886,11 +901,11 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
         <div id="planTimetableGrid" class="weekly-schedule"></div>
         <div id="planTimetableUnplaced" class="plan-unplaced"></div>
       </div>
-      <div class="schedule-pane reference-pane">
+      <div class="schedule-pane reference-pane" id="scheduleReferencePane">
         <div class="section-title-row"><h3>저장한 계획 시간표</h3><button class="btn small no-print" id="savePlanTimetableBtn" type="button">현재 시간표 저장</button></div>
-        <div class="muted" style="margin:7px 0 10px">왼쪽의 현재 학기 시간표를 스냅샷으로 저장합니다. 저장된 시간표를 선택하면 왼쪽의 현재 계획과 나란히 비교할 수 있습니다.</div>
+        <div class="muted no-print" style="margin:7px 0 10px">왼쪽의 현재 학기 시간표를 스냅샷으로 저장합니다. 저장된 시간표를 선택하면 왼쪽의 현재 계획과 나란히 비교할 수 있습니다.</div>
         <div id="scheduleReferenceViewer" class="reference-viewer"><div class="empty">저장한 계획 시간표가 없습니다.</div></div>
-        <div id="scheduleReferenceFeed" class="reference-feed"></div>
+        <div id="scheduleReferenceFeed" class="reference-feed no-print"></div>
       </div>
     </div>
   </section>
@@ -935,7 +950,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.12:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.13:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1884,6 +1899,9 @@ function renderScheduleReferences(){
   if(refs.length&&!refs.some(r=>r.id===state.activeReferenceId))state.activeReferenceId=refs[0].id;
   const active=refs.find(r=>r.id===state.activeReferenceId);
   const viewer=document.getElementById('scheduleReferenceViewer');
+  const pane=document.getElementById('scheduleReferencePane');
+  const printableReference=!!(active && ((active.type==='plan_snapshot' && (active.entries||[]).length) || active.dataUrl));
+  if(pane)pane.classList.toggle('print-empty',!printableReference);
   if(!active)viewer.innerHTML=`<div class="empty">저장한 계획 시간표가 없습니다.</div>`;
   else if(active.type==='plan_snapshot')viewer.innerHTML=renderSnapshotSchedule(active);
   else if(active.dataUrl)viewer.innerHTML=`<img src="${active.dataUrl}" alt="${esc(active.name||'기존 시간표 이미지')}">`;
