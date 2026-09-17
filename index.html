@@ -1160,7 +1160,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.7:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.8:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -3033,8 +3033,15 @@ function parsePortalPdfYonseiFixed(rows,pageWidth){
         .trim();
     }
 
-    const term=pdfNormalizeTerm(val['학기']);
-    if(term)currentTerm=term;
+    const detectedTerm=pdfNormalizeTerm(val['학기']);
+    let rowTerm=currentTerm;
+    if(detectedTerm===PRE_ADMISSION_TERM){
+      // 인정학점은 이 행만 입학 전으로 분류. 정규학기 currentTerm을 덮어쓰지 않는다.
+      rowTerm=PRE_ADMISSION_TERM;
+    }else if(detectedTerm){
+      currentTerm=detectedTerm;
+      rowTerm=currentTerm;
+    }
 
     const codeRaw=pdfTokenCompact(val['학정번호']);
     const codeMatch=codeRaw.match(/([A-Z]{2,5}\d{4})/);
@@ -3064,7 +3071,7 @@ function parsePortalPdfYonseiFixed(rows,pageWidth){
 
     courseRows.push({
       selected:true,
-      term:currentTerm||state.profile.admissionTerm,
+      term:rowTerm||currentTerm||state.profile.admissionTerm,
       courseCode:code,
       section,
       courseName,
@@ -3132,8 +3139,14 @@ function parsePortalPdfGeometry(rows){
 
   for(const row of rows){
     const cells=pdfCellsByGeometry(row.items,geometry);
-    const term=pdfNormalizeTerm(cells['학기']);
-    if(term)currentTerm=term;
+    const detectedTerm=pdfNormalizeTerm(cells['학기']);
+    let rowTerm=currentTerm;
+    if(detectedTerm===PRE_ADMISSION_TERM){
+      rowTerm=PRE_ADMISSION_TERM;
+    }else if(detectedTerm){
+      currentTerm=detectedTerm;
+      rowTerm=currentTerm;
+    }
 
     const codeRaw=pdfTokenCompact(cells['학정번호']);
     const codeMatch=codeRaw.match(/([A-Z]{2,5}\d{4})/);
@@ -3163,7 +3176,7 @@ function parsePortalPdfGeometry(rows){
 
     courseRows.push({
       selected:true,
-      term:currentTerm||state.profile.admissionTerm,
+      term:rowTerm||currentTerm||state.profile.admissionTerm,
       courseCode:code,
       section,
       courseName,
@@ -3192,8 +3205,14 @@ function parsePortalPdfRows(rows){
   let detectedCodeCount=0;
 
   for(const row of rows){
-    const term=pdfTermFromRowItems(row.items);
-    if(term)currentTerm=term;
+    const detectedTerm=pdfTermFromRowItems(row.items);
+    let rowTerm=currentTerm;
+    if(detectedTerm===PRE_ADMISSION_TERM){
+      rowTerm=PRE_ADMISSION_TERM;
+    }else if(detectedTerm){
+      currentTerm=detectedTerm;
+      rowTerm=currentTerm;
+    }
 
     const codeInfo=pdfFindCode(row.items);
     if(!codeInfo)continue;
@@ -3246,7 +3265,7 @@ function parsePortalPdfRows(rows){
 
     courseRows.push({
       selected:true,
-      term:currentTerm||state.profile.admissionTerm,
+      term:rowTerm||currentTerm||state.profile.admissionTerm,
       courseCode:code,
       section,
       courseName,
@@ -3514,7 +3533,9 @@ async function extractPortalPdfCandidates(file){
       else parsed.detectedCodeCount=Math.max(parsed.detectedCodeCount||0,sequential.detectedCodeCount||0);
     }
 
-    parsed.rows=applyPdfOccurrenceTerms(parsed.rows,items);
+    // 표 기반 파서가 결정한 학기를 최종값으로 사용한다.
+    // PDF.js의 원시 text item 순서는 시각적 행 순서와 다를 수 있으므로,
+    // 문서 순서 기반 학기 후처리로 정상 학기를 덮어쓰지 않는다.
     totalDetectedCodes+=parsed.detectedCodeCount;
     if(parsed.rows.length)pagesWithRows++;
     all.push(...parsed.rows);
@@ -3548,7 +3569,7 @@ function renderPortalPdfCandidates(){
         const status=r.majorTeachingSwitchable?'전공교직 · 종별 변경 가능':r.matched?'카탈로그 확인':'PDF 직접 추출';
         return `<tr class="${duplicate?'pdf-row-review':''}">
           <td><input class="ocr-check pdf-select" data-i="${i}" type="checkbox" ${r.selected&&!duplicate?'checked':''} ${duplicate?'disabled':''}></td>
-          <td>${esc(r.term===PRE_ADMISSION_TERM?'입학 전 인정학점':displayAcademicTerm(r.term))}</td>
+          <td><select class="inline-select pdf-term" data-i="${i}" style="min-width:105px">${academicTermOptionsHtml(r.term)}</select></td>
           <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''}</div></td>
           <td>${esc(r.portalCategory||'')}</td>
           <td><select class="inline-select pdf-cat" data-i="${i}">${categoryOptionsHtml(r.category)}</select></td>
@@ -3565,6 +3586,10 @@ function renderPortalPdfCandidates(){
   </div>`;
 
   document.querySelectorAll('.pdf-select').forEach(x=>x.onchange=()=>{portalPdfCandidates[+x.dataset.i].selected=x.checked;});
+  document.querySelectorAll('.pdf-term').forEach(x=>x.onchange=()=>{
+    portalPdfCandidates[+x.dataset.i].term=x.value;
+    renderPortalPdfCandidates();
+  });
   document.querySelectorAll('.pdf-cat').forEach(x=>x.onchange=()=>{
     const r=portalPdfCandidates[+x.dataset.i];
     r.category=x.value;
@@ -3604,7 +3629,12 @@ async function readPortalPdf(){
     const termLabel=[...academicTerms.map(displayAcademicTerm),...(terms.includes(PRE_ADMISSION_TERM)?['입학 전 인정학점']:[])].join(' · ');
     const wCount=portalPdfCandidates.filter(x=>x.grade==='W').length;
     const suspiciousSingleTerm=portalPdfCandidates.length>=5 && academicTerms.length<=1;
-    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}`;
+    const admissionBoundaryError=portalPdfCandidates.some(r=>
+      canonicalCode(r.courseCode)!=='SPG6658' &&
+      r.term===PRE_ADMISSION_TERM &&
+      state.profile.admissionTerm==='2023-1'
+    );
+    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}${admissionBoundaryError?' · ⚠ 입학학기 경계 확인 필요':''}`;
     renderPortalPdfCandidates();
   }catch(err){
     console.error(err);
