@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="교육대학원 이수현황">
 <title>연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
 <style>
 :root{
   --blue:#003876;--blue2:#0b57a4;--ink:#172033;--muted:#667085;--line:#d8dee8;
@@ -15,7 +17,7 @@
   --chip:#eef4ff;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:"Wanted Sans Variable","Wanted Sans","Pretendard Variable",Pretendard,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
 button,input,select{font:inherit}
 button{cursor:pointer}
 .app{max-width:1280px;margin:0 auto;padding:20px}
@@ -32,11 +34,11 @@ button{cursor:pointer}
 .badge.manual{background:#f1f2f4;color:#596273}.badge.unknown{background:#fff1f0;color:#b42318}.badge.match{background:#eaf2ff;color:#1a56a5}
 .topnote{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .grid{display:grid;gap:16px}.grid.profile{grid-template-columns:repeat(4,1fr);margin-top:16px}.grid.kpi{grid-template-columns:repeat(6,1fr);margin-top:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(16,24,40,.035)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.04)}
 .card h2{font-size:19px;margin:0 0 14px}.card h3{font-size:16px;margin:0 0 10px}
 label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
 select,input[type=text],input[type=number]{width:100%;border:1px solid #cbd3df;border-radius:9px;padding:10px 11px;background:white;color:var(--ink)}
-select:focus,input:focus{outline:2px solid #b8d6ff;border-color:#5899e6}
+select:focus,input:focus{outline:none;border-color:#0b57a4;box-shadow:0 0 0 3px rgba(11,87,164,.15)}
 .kpi .value{font-size:24px;font-weight:800}.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 .section{margin-top:16px}
 .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -111,9 +113,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   margin-top:14px;padding:14px;border:1px solid #a8c7eb;border-left:5px solid var(--blue2);
   border-radius:14px;background:linear-gradient(180deg,#f4f9ff,#fbfdff)
 }
-.zone-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.zone-heading h2{font-size:18px;margin:0}.zone-heading p{margin:3px 0 0;color:#667085;font-size:12px;line-height:1.5}
-.zone-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:#eaf2ff;color:#175cd3;font-size:11px;font-weight:800;white-space:nowrap}
 .input-step-label{
   display:flex;align-items:center;gap:8px;margin:4px 0 8px;font-weight:900;color:#123b69
 }
@@ -127,10 +126,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   margin-top:12px;border-color:#cbdcf0;background:#fff;box-shadow:none
 }
 .input-zone #historySection>summary{color:#123b69}
-.start-hint{
-  margin:8px 0 2px;padding:9px 11px;border-radius:9px;background:#eaf4ff;
-  color:#184f88;font-size:12px;line-height:1.55;border:1px solid #c9def7
-}
 .input-status{
   display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:#667085
 }
@@ -149,11 +144,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   opacity:.62;background:#f8fafc
 }
 .history-details.profile-locked>summary{cursor:not-allowed}
-.history-details.profile-locked>summary span:first-child:after{
-  content:" · ① 기본정보 확인 후 사용";font-size:11px;font-weight:700;color:#a15c00
+.history-details.profile-locked>summary .step-title span:nth-child(2):after{
+  content:" · 1단계 확인 후 사용";font-size:11px;font-weight:700;color:#a15c00
 }
-.input-step-label.done .step-no{background:#e7f6ec;color:#137333}
-.input-step-label.done{color:#137333}
+.step-details.profile-locked{opacity:.62;background:#f8fafc}
+.step-details.profile-locked>summary{cursor:not-allowed}
+.step-details.profile-locked>summary .step-title span:nth-child(2):after{
+  content:" · 1단계 확인 후 사용";font-size:11px;font-weight:700;color:#a15c00
+}
 .analysis-zone{margin-top:16px}
 .analysis-heading{
   display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
@@ -179,8 +177,6 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   .workflow-arrow{display:none}
   .workflow-step{font-size:11px}
   .input-zone{padding:10px;border-left-width:4px}
-  .zone-heading{display:block}
-  .zone-badge{margin-top:7px}
   .analysis-heading{display:block}
   .result-status{margin-top:5px}
   .profile-confirm-bar{align-items:stretch;flex-direction:column}
@@ -197,11 +193,9 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .pdf-import-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
 .pdf-import-head h3{margin:0;font-size:16px;color:#123b69}
 .pdf-recommended{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#0b57a4;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
-.pdf-route{margin:8px 0;padding:9px 11px;border-radius:9px;background:#fff;border:1px solid #cfe0f5;font-size:12px;line-height:1.55;color:#475467}
-.pdf-route b{color:#172033}
 .pdf-import-actions{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:9px;align-items:end;margin-top:10px}
 .pdf-file-box{border:1px dashed #91a8c3;border-radius:10px;padding:11px;background:#fff}
-.pdf-file-box input[type=file]{width:100%;margin-top:6px}
+.pdf-file-box input[type=file]{width:100%;margin-top:0}
 .pdf-status{margin-top:8px;font-size:12px;color:#667085}
 .pdf-result{margin-top:12px}
 .pdf-result table th{position:static}
@@ -212,7 +206,6 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .pdf-import-actions .btn{width:100%}
 }
 .ocr-panel{margin-top:12px;border:1px solid #cbd7e6;background:#f8fbff;border-radius:12px;padding:14px}
-.ocr-grid{display:grid;grid-template-columns:170px minmax(240px,1fr) auto;gap:10px;align-items:end}
 .ocr-drop{border:1px dashed #91a8c3;border-radius:10px;padding:12px;background:#fff;outline:none;transition:.15s}.ocr-drop:focus,.ocr-drop.paste-ready{border-color:#0b57a4;box-shadow:0 0 0 3px rgba(11,87,164,.12);background:#f4f9ff}.paste-hint{font-size:13px;color:#53657a;margin-top:6px}.paste-badge{display:inline-block;background:#e9f2ff;color:#0b57a4;border:1px solid #bdd3ef;border-radius:999px;padding:2px 8px;font-weight:700}
 .ocr-progress{height:8px;background:#e8edf4;border-radius:999px;overflow:hidden;margin-top:8px}
 .ocr-progress>div{height:100%;width:0;background:#0b57a4;transition:width .2s}
@@ -227,7 +220,6 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .badge.conf-high{background:#e8f5e9;color:#176b2c}
 .badge.conf-review{background:#fff3d6;color:#8a5700}
 .badge.conf-low{background:#fdecec;color:#9f1d1d}
-@media(max-width:760px){.ocr-grid{grid-template-columns:1fr}.ocr-grid .btn{width:100%}}
 
 @media(min-width:761px){
   .weekly-schedule{overflow-x:hidden}
@@ -247,16 +239,12 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   grid-template-columns:.9fr 1fr 1.25fr 2.35fr 2.1fr 1fr
 }
 .history-course-grid .course-search{width:100%;min-width:280px}
-.timetable-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .timetable-table .period{white-space:nowrap;font-weight:700}
 .quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.scope-tag{font-size:11px;color:#607086}
 
 
-.gpa-note{margin-top:10px;padding:10px 12px;border:1px solid #d8e2ef;border-radius:10px;background:#f8fbff;font-size:13px;line-height:1.65}
 .grade-fail{color:#b42318;font-weight:800}
 .grade-pass{color:#067647;font-weight:800}
-.gpa-table .value-cell{font-weight:800;font-variant-numeric:tabular-nums}
 
 
 .creator-line{display:flex;gap:16px;flex-wrap:wrap;font-size:13px!important}
@@ -285,12 +273,9 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .portal-guide a{font-weight:800;color:#0b57a4}
 .semester-gpa-heading,.section-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .semester-gpa-heading h3,.section-title-row h2,.section-title-row h3{margin:0}
-.cumulative-gpa{font-weight:900;font-size:16px;color:#123b69}
 .semester-gpa-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .semester-gpa-card{border:1px solid #e1e7ef;border-radius:10px;padding:10px 12px;background:#fff;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center}
 .semester-gpa-card .term{font-weight:800}
-.semester-gpa-card .metric{text-align:right}
-.semester-gpa-card .metric b{display:block;font-size:16px}
 .icon-btn{border:0;background:#eef4fb;color:#0b57a4;border-radius:9px;padding:7px 10px;font-size:17px;cursor:pointer}
 .plan-settings{display:none;margin:10px 0 12px;padding:12px;border:1px solid #d8e2ef;border-radius:10px;background:#f8fbff}
 .plan-settings.open{display:block}
@@ -302,7 +287,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .period-setting-title{font-size:12px;font-weight:800;color:#475467;margin-bottom:7px}
 .period-setting select,.settings-range-grid select{width:100%;min-width:0}
 .period-time-pair{display:grid;grid-template-columns:1fr;gap:8px}
-.period-time-pair label{margin-bottom:4px}
+.period-time-pair label{margin-bottom:6px}
 .timeline-wrap{min-width:0;width:100%;border:1px solid #e0e5ec;border-radius:10px;overflow:hidden;background:#fff}
 .timeline-head{display:grid;background:#f8fafc;border-bottom:1px solid #e0e5ec;font-size:12px;font-weight:800;color:#475467}
 .timeline-head>div{padding:9px 6px;text-align:center;border-left:1px solid #edf0f4}
@@ -324,7 +309,6 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .weekly-schedule th,.weekly-schedule td{text-align:center;vertical-align:top}
 .schedule-course{border:1px solid #c9d8ea;background:#eef6ff;border-radius:8px;padding:7px;margin:3px 0;text-align:left;font-size:12px}
 .schedule-course b{display:block}
-.reference-drop{border:1px dashed #9cb2cb;border-radius:10px;padding:12px;text-align:center;color:#667085;background:#fff;cursor:pointer}
 .reference-viewer{min-height:220px;margin-top:10px;border:1px solid #e2e8f0;border-radius:10px;background:#fff;display:flex;align-items:flex-start;justify-content:stretch;overflow:hidden}
 .reference-viewer img{max-width:100%;max-height:430px;display:block}
 .reference-feed{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px}
@@ -332,11 +316,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .reference-thumb.active{border-color:#0b57a4}
 .reference-thumb img{width:100%;height:100%;object-fit:cover}
 .reference-thumb .thumb-del{position:absolute;right:2px;top:2px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;cursor:pointer}
-.timetable-title{justify-content:flex-start;margin-bottom:8px}
 .scroll-top{position:fixed;right:22px;bottom:22px;width:44px;height:44px;border-radius:12px;border:1px solid #c8d4e3;background:#fff;color:#0b57a4;font-size:24px;font-weight:900;box-shadow:0 8px 24px rgba(16,24,40,.16);cursor:pointer;z-index:50}
 .req-ok{color:#067647;font-weight:800}
 .req-bad{color:#b42318;font-weight:800}
-.result-summary{padding:12px 14px;border-radius:10px;margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0}
+.result-summary{padding:12px 14px;border-radius:10px;margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0;font-size:13px;line-height:1.55}
 .result-summary.ok{background:#ecfdf3;border-color:#abefc6;color:#067647}
 .result-summary.bad{background:#fff5f3;border-color:#fecdca;color:#b42318}
 @media(max-width:920px){.profile-v16{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-compare{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr}}
@@ -344,20 +327,18 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 
 
 /* v1.6.3 layout refinements */
-.history-finder-title{font-size:26px;margin:18px 0 10px}
 .history-course-grid{grid-template-columns:140px 150px 185px minmax(180px,.85fr) minmax(320px,1.55fr) 150px;gap:8px;align-items:end}
 .history-course-grid #historyCourse{min-width:300px}
 .history-course-grid #historyFilterCategory,.history-course-grid #historyGrade{max-width:170px}
 .semester-gpa-heading{margin-top:16px}
-.semester-gpa-card{grid-template-columns:1fr auto auto}
 .semester-gpa-card.cumulative-card{background:#f0f7ff;border-color:#bcd4ef}
 .semester-gpa-card.cumulative-card .term{color:#0b57a4}
 .schedule-compare{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
 .weekly-schedule table{width:100%;min-width:620px;table-layout:fixed}
 .weekly-schedule th:first-child,.weekly-schedule td:first-child{width:104px}
 .weekly-schedule th:not(:first-child),.weekly-schedule td:not(:first-child){width:auto}
-.plan-unplaced{margin-top:10px}
-.plan-unplaced h4{margin:0 0 7px;font-size:14px}
+.plan-unplaced,.snapshot-unknown{margin-top:10px;font-size:13px}
+.plan-unplaced h4,.snapshot-unknown h4{margin:0 0 7px;font-size:14px}
 .reference-snapshot{width:100%;min-width:0;border:1px solid #d8e2ef;border-radius:10px;padding:10px;background:white;overflow:auto}
 .reference-snapshot .snapshot-title{font-weight:800;margin-bottom:8px;color:#123b69}
 .reference-snapshot .weekly-schedule{width:100%;min-width:0}
@@ -442,7 +423,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .profile-v16>.card:nth-child(4){
     grid-column:1 / -1;
   }
-  .profile-v16 label{font-size:12px;margin-bottom:5px}
+  .profile-v16 label{font-size:12px;margin-bottom:6px}
   .profile-v16 select{
     min-height:46px;
     font-size:16px!important;
@@ -533,11 +514,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     font-size:12px;
   }
   .ocr-panel{padding:11px}
-  .ocr-grid{grid-template-columns:1fr!important}
-  .ocr-grid .btn{width:100%}
   .ocr-drop{padding:11px}
   .ocr-preview{max-height:220px}
-  .history-finder-title{font-size:21px;margin:14px 0 8px}
   .history-course-grid{
     grid-template-columns:1fr!important;
     gap:8px!important;
@@ -556,7 +534,6 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     margin-top:14px;
   }
   .semester-gpa-heading h3{font-size:17px}
-  .cumulative-gpa{font-size:14px}
   .semester-gpa-grid{
     grid-template-columns:1fr!important;
     gap:7px;
@@ -702,7 +679,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .header p{font-size:7px!important;line-height:1.25!important}
   .title-edit-row{margin-bottom:4px!important}
   .no-print,.quick-actions,.topnote,.sheet-card{display:none!important}
-  .workflow-strip,.zone-heading,.input-step-label,.start-hint,.analysis-heading,.analysis-empty{display:none!important}
+  .workflow-strip,.input-step-label,.analysis-heading,.analysis-empty{display:none!important}
   .input-zone,.analysis-zone{display:contents!important}
   .print-only{display:block!important}
 
@@ -886,11 +863,406 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .table-wrap{max-height:none!important;overflow:visible!important}
   button{print-color-adjust:exact!important}
 }
+
+/* ===== v1.9.8 collapsible step sections ===== */
+.step-details>summary{cursor:pointer;list-style:none}
+.step-details>summary::-webkit-details-marker{display:none}
+.step-details>summary:before{
+  content:"▾";display:inline-block;flex:none;margin-right:8px;
+  font-size:16px;color:#123b69;transition:.15s;align-self:center
+}
+.step-details:not([open])>summary:before{transform:rotate(-90deg)}
+.step-details:not([open])>summary{border-bottom:0;padding-bottom:0;margin-bottom:0}
+#planSection>summary.section-title-row{justify-content:flex-start}
+.step-details>summary.analysis-heading{align-items:center}
+.step-details>summary.analysis-heading>div:first-of-type{flex:1 1 auto;min-width:0}
+/* 화살표↔배지↔제목 간격 8px로 4개 단계 모두 통일 */
+.step-details>summary,.history-details>summary{gap:8px}
+.step-details>summary:before,.history-details>summary:before{margin-right:0;font-size:16px}
+
+/* ===== v1.9.7 missing gaps ===== */
+#cohortText{margin-top:8px}
+#semesterGpaGrid{margin-top:10px}
+
+/* ===== v1.9.6 type scale: 13 main desc / 12 helper·label / 14 controls ===== */
+/* 컨트롤: 드롭다운·입력·버튼 = 14px (모바일은 기존 16px 규칙이 !important로 우선) */
+select,input[type=text],input[type=number],input[type=file],
+.btn,.segmented button,.tab{font-size:14px}
+.plan-course-search,.plan-professor-search,.plan-course-select{font-size:14px}
+.btn.small{font-size:12px}
+/* 메인 설명: 13px — 정보 박스(v1.9.5)와 섹션 제목 아래 부연 설명 */
+.analysis-heading p{font-size:13px;font-weight:400;color:#667085}
+/* 보조 설명: 12px — muted·상태·미세 안내 전부 한 단계로 */
+.paste-hint,.pdf-privacy{font-size:12px}
+
+/* ===== v1.9.5 unified visual language: info boxes vs action panels ===== */
+/* 설명(정보) 박스 = callout 형태 하나로 통일: 좌측 4px 액센트 + 파란 틴트 */
+.portal-guide,.qualification-note{
+  border:1px solid #cfe0f5;border-left:4px solid var(--info);
+  background:#f4f8ff;border-radius:10px;padding:10px 12px;
+  font-size:13px;line-height:1.55;color:#334155
+}
+.plan-warning{border:1px solid #fdba74;border-left:4px solid #d97706;border-radius:10px;padding:10px 12px}
+.plan-warning.danger{border-color:#fca5a5;border-left-color:#d92d20}
+/* 실행(입력·조작) 패널 = 패널 스타일 하나로 통일 */
+.pdf-import-panel,.ocr-panel,.manual-panel,.plan-settings,.schedule-pane{
+  background:#f8fbff;border:1px solid #cbd7e6;border-radius:12px;padding:14px
+}
+
+/* ===== v1.9.4 spacing normalization ===== */
+.input-status{margin-top:14px;line-height:1.6}
+.topnote{margin-top:16px}
+.cert-kpi{margin-top:12px}
+.schedule-compare{gap:16px;margin-top:16px}
+.plan-filter-row,.plan-course-row,.plan-add-row,.pdf-import-actions{gap:8px}
+.teacher-manual-grid{gap:8px}
+.callout{border-radius:10px;padding:10px 12px}
+.result-summary{padding:10px 12px}
+.manual-panel,.plan-warning,.qualification-note{margin-top:12px}
+.selection-note{margin-top:10px}
+.req-grid{font-size:13px}
+.quick-guide-grid span{line-height:1.5}
+
+/* ===== v1.9.3 import tabs + unified step groups ===== */
+.import-tabs{margin:14px 0 0}
+.import-tabs .tab{font-weight:700}
+.import-pane{display:none;margin-top:12px}
+.import-pane.active{display:block}
+.import-pane .pdf-import-panel,.import-pane .ocr-panel{margin-top:0}
+.import-pane .portal-guide{margin-top:0}
+
+.input-zone,.analysis-zone,#historySection,#planSection{
+  background:#fff;border:1px solid #cbdcf0;border-left:5px solid var(--blue2);
+  border-radius:14px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.04)
+}
+.input-zone,.analysis-zone{padding:18px}
+.analysis-heading{border-bottom:2px solid #dbe5f0;padding:0 2px 10px;margin-bottom:14px}
+.analysis-heading p{margin:4px 0 0}
+.analysis-heading .input-step-label{margin:0}
+#planSection>.section-title-row{border-bottom:2px solid #dbe5f0;padding-bottom:10px;margin-bottom:14px}
+#historySection[open]>summary{border-bottom:2px solid #dbe5f0;padding-bottom:10px;margin:-2px 0 14px}
+.analysis-zone .analysis-empty{border:0;padding:16px}
+.input-zone #profileSection>.card{box-shadow:none}
+@media(max-width:760px){
+  .analysis-zone{padding:12px}
+  .input-zone{padding:12px;border-left-width:5px}
+}
+
+/* ===== v1.9.2 unified step numbering + spacing rhythm ===== */
+.step-no{
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  width:25px;height:25px;border-radius:999px;background:#0b57a4;color:#fff;
+  font-size:12px;font-weight:800;line-height:1
+}
+.step-title{display:flex;align-items:center;gap:8px;margin:0}
+.history-details>summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:19px}
+.history-details>summary:before{margin-right:0}
+.analysis-heading h2{font-size:19px}
+.card h2,.section-title-row h2{font-size:19px}
+.quick-guide{margin:16px 0 0}
+.workflow-strip,.input-zone,.analysis-zone,.kpi-wrap,.section{margin-top:16px}
+.input-step-label{margin:0 0 10px}
+.history-details{margin-top:16px}
+.profile-confirm-bar{margin-top:12px}
+@media print{.step-no{display:none!important}}
+
+/* ===== v1.9.1 shadcn-inspired depth (ui-styling pass) ===== */
+.btn{box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.btn:active{transform:translateY(1px);box-shadow:none}
+.btn.primary{box-shadow:0 1px 2px rgba(0,56,118,.25)}
+.tab.active,.segmented button.active{box-shadow:inset 0 1px 2px rgba(0,0,0,.08)}
+th{letter-spacing:.02em}
+.badge{letter-spacing:.01em}
+select,input[type=text],input[type=number]{box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.result-summary,.callout,.qualification-note,.plan-warning{box-shadow:none}
+
+/* ===== v1.9 UI polish (ui-ux-pro-max pass) ===== */
+.btn,.tab,.segmented button,.icon-btn,.title-edit-btn,.reference-card,.timeline-course{
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease
+}
+.btn:hover{background:#f2f6fc;border-color:#94a8c4}
+.btn.primary:hover{background:#0b4a8f;border-color:#0b4a8f}
+.btn.danger:hover{background:#fef3f2}
+.tab:hover:not(.active){background:#f2f6fc;border-color:#a9bcd6}
+.segmented button:hover:not(.active){background:#f2f6fc}
+.icon-btn:hover{background:#dfeaf7}
+button:focus-visible,select:focus-visible,input:focus-visible,
+[tabindex]:focus-visible,summary:focus-visible,a:focus-visible{
+  outline:2px solid #0b57a4;outline-offset:2px;border-radius:6px
+}
+.header button:focus-visible{outline-color:#fff}
+.kpi .value,.req-grid>div{font-variant-numeric:tabular-nums}
+.table-wrap tbody tr:hover{background:#f6f9fd}
+::selection{background:#cfe3fb}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* ===== v2.0 design refresh: Yonsei Heritage (frontend-design pass) ===== */
+:root{--gold:#c8a45c;--gold-deep:#a8823c;--navy:#002a56}
+
+/* 배경: 은은한 도트 그리드 + 상단 냉색 워시로 종이 질감의 깊이 */
+body{
+  background:
+    radial-gradient(rgba(0,56,118,.05) 1px,transparent 1.4px) 0 0/24px 24px,
+    linear-gradient(180deg,#ecf1f8 0,var(--bg) 420px)
+}
+
+/* 헤더: 딥 네이비 + 코너 글로우 + 미세 사선 텍스처 + 골드 헤어라인 */
+.header{
+  background:
+    radial-gradient(120% 190% at 100% 0,rgba(72,138,214,.38),transparent 55%),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.03) 0 1px,transparent 1px 8px),
+    linear-gradient(150deg,#001f44,#003876 55%,#0c4a8d);
+  border-bottom:3px solid var(--gold);
+  box-shadow:0 16px 36px rgba(0,32,70,.22)
+}
+.header-eyebrow{
+  font-size:11px;font-weight:700;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  display:flex;align-items:center;gap:12px;margin-bottom:10px
+}
+.header-eyebrow:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(200,164,92,.55),transparent)}
+
+/* 타이포그래피: Wanted Sans 단일 패밀리 — 제목은 굵은 웨이트로 위계 표현 */
+h1,h2,h3,h4,.history-details>summary{letter-spacing:-.015em}
+.header h1{font-weight:900;letter-spacing:-.02em}
+
+/* 액센트 디테일 */
+.step-no{background:linear-gradient(180deg,#0d5cab,#003876)}
+.btn.primary{background:linear-gradient(180deg,#0d4d94,#003876);border-color:#00305f}
+.btn.primary:hover{background:linear-gradient(180deg,#0b4487,#002d61);border-color:#00264d}
+.tab.active,.segmented button.active{background:linear-gradient(180deg,#0d4d94,#003876)}
+.pdf-recommended{background:var(--gold-deep)}
+.workflow-strip{border-top:2px solid var(--gold)}
+::selection{background:#ead9b4}
+
+@media(max-width:620px){
+  .header-eyebrow{font-size:9px;letter-spacing:.18em}
+}
+
+/* ===== v2.2 mobile pass for this session's new components ===== */
+@media(max-width:760px){
+  /* 가져오기 탭: 3버튼 균등 폭, 터치 높이 확보 */
+  .import-tabs{display:flex;gap:6px}
+  .import-tabs .tab{flex:1 1 auto;text-align:center;min-height:42px;display:inline-flex;align-items:center;justify-content:center}
+  /* 스텝 헤더: 화살표+배지+제목 한 줄 유지, 설명은 아래 줄 */
+  .step-details>summary.analysis-heading{display:flex;flex-wrap:wrap;align-items:center}
+  .step-details>summary.analysis-heading>div:first-of-type{flex:1 1 auto;min-width:0}
+  #analysisZone>summary .result-status{flex-basis:100%;margin-top:4px;white-space:normal}
+  /* KPI 카드: 2열에서 라벨·칩 줄바꿈 허용 */
+  .kpi-top{flex-wrap:wrap}
+  .kpi-label{white-space:normal}
+  .grid.kpi .card{padding:11px 12px}
+  .kpi .value{font-size:19px}
+  .req-cards-title{font-size:15px}
+  /* 실행 패널 여백 축소 */
+  .pdf-import-panel,#finderPane,.plan-builder,.lifelong-wrap{padding:12px}
+  /* 워크플로 스텝 터치 타깃 */
+  .workflow-step{min-height:34px;padding:5px 6px}
+}
+@media(max-width:390px){
+  .import-tabs .tab{font-size:12px;padding:7px 6px}
+  .sg-figures{gap:14px}
+}
+
+/* ===== v2.2c 태블릿(761~1024px) ===== */
+@media(min-width:761px) and (max-width:1024px){
+  .grid.kpi{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .app{padding:16px}
+  .grid.profile{gap:12px}
+  .two{gap:12px}
+}
+/* 터치 기기(태블릿 포함): 포인터 정밀도 기준 터치 타깃 확보 */
+@media(pointer:coarse){
+  .btn,.tab,.segmented button{min-height:42px}
+  .icon-btn{min-height:42px;min-width:42px}
+  select,input[type=text],input[type=number]{min-height:42px}
+  .workflow-step{min-height:40px}
+  .import-tabs .tab{min-height:42px}
+}
+
+/* ===== v2.2b 모바일: 조회용 표(개설 예정 시간표·학기별 개설정보) 카드 리스트화 ===== */
+@media(max-width:760px){
+  .catalog-section .table-wrap{max-height:440px;border:0;overflow-x:hidden}
+  .catalog-section .table-wrap table{min-width:0!important;width:100%;table-layout:auto}
+  .catalog-section thead{display:none}
+  .catalog-section tbody tr{
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px;
+    border:1px solid #dde4ee;border-radius:10px;margin:0 0 8px;padding:10px 12px;
+    background:#fff!important
+  }
+  .catalog-section tbody td{display:block;border:0;padding:0!important;font-size:12px}
+  /* 과목명 셀을 카드 첫 줄로 끌어올림 */
+  .timetable-table tbody td:nth-child(3){order:-1;flex:1 1 100%;font-size:13px;margin-bottom:2px}
+  #catalogBody td:nth-child(2){order:-1;flex:1 1 100%;font-size:13px;margin-bottom:2px}
+  /* 요일은 남색 강조, 부가정보는 축소 */
+  .timetable-table tbody td:first-child{font-weight:800;color:#0b57a4}
+  .catalog-section tbody td .muted{font-size:11px}
+  .catalog-section tbody td.empty{flex:1 1 100%;text-align:center;padding:16px 0!important}
+}
+
+/* ===== v2.1 dashboard clarity: progress bars, sticky nav, table polish ===== */
+.kpi-bar{height:5px;border-radius:999px;background:#e8edf4;margin:7px 0 6px;overflow:hidden}
+.kpi-bar>div{height:100%;border-radius:999px;background:linear-gradient(90deg,#0d5cab,#003876);transition:width .3s ease}
+.kpi-card-unmet .kpi-bar{background:#fbe4e2}
+.kpi-card-unmet .kpi-bar>div{background:#d92d20}
+/* 이수요건 판정 = 카드 섹션으로 통합 (표는 인쇄 전용으로만 유지) */
+.req-cards-title{font-size:16px;margin:0 0 10px}
+.kpi-flag.ok{background:#eaf2ff;color:#1a56a5}
+.kpi-flag.plan{background:#fff7e6;color:#9a5a00}
+.req-grid{background:#fff}
+.req-grid{grid-template-columns:1fr .55fr .75fr 1.25fr}
+.req-grid>div{padding:7px 12px}
+.req-grid>div:nth-child(4n+2),.req-grid>div:nth-child(4n+3){text-align:right}
+.req-bar{height:4px;border-radius:999px;background:#e8edf4;margin:5px 0 1px;overflow:hidden;max-width:170px}
+.req-bar>div{height:100%;border-radius:999px;background:#d92d20}
+.req-bar.ok>div{background:#137333}
+
+@media(min-width:761px){
+  .workflow-strip{position:sticky;top:10px;z-index:60;box-shadow:0 6px 18px rgba(16,24,40,.1)}
+}
+/* 완료 단계: 초록 대신 네이비 계열 ✓ — 전체 팔레트와 통일 */
+.workflow-step.done{color:#3f5f86}
+.workflow-step.done .num{background:#dce8f7;color:#0b57a4;font-size:0}
+.workflow-step.done .num:before{content:"✓";font-size:12px;font-weight:900}
+
+/* 단계 모션 시스템: 상태 전환·진행 중 펄스·완료 팝인·섹션 리빌을 한 언어로 */
+.workflow-step .num{transition:background-color .25s ease,color .25s ease}
+.workflow-step.active .num{animation:stepPulse 2.4s ease-out infinite}
+@keyframes stepPulse{
+  0%{box-shadow:0 0 0 0 rgba(11,87,164,.35)}
+  70%{box-shadow:0 0 0 7px rgba(11,87,164,0)}
+  100%{box-shadow:0 0 0 0 rgba(11,87,164,0)}
+}
+.workflow-step.done .num:before{display:inline-block;animation:checkPop .25s ease-out}
+@keyframes checkPop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.step-details[open]>*:not(summary),.history-details[open]>*:not(summary){animation:stepReveal .28s ease-out}
+@keyframes stepReveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.step-no{transition:transform .15s ease}
+.step-details>summary:hover .step-no,.history-details>summary:hover .step-no{transform:scale(1.08)}
+.workflow-step{cursor:pointer;border-radius:8px;padding:3px 5px}
+.workflow-step:hover{background:#f2f6fc}
+.input-zone,#historySection,.analysis-zone,#planSection{scroll-margin-top:68px}
+
+/* 표 가장자리 열: 좌우 동일한 14px 인셋 (요일·학정번호가 테두리에 붙는 문제) */
+.table-wrap th:first-child,.table-wrap td:first-child{padding-left:14px}
+.table-wrap th:last-child,.table-wrap td:last-child{padding-right:14px}
+.table-wrap tbody tr:nth-child(even):not(.pdf-row-review):not(.ocr-row-review):not(.ocr-row-low){background:#f9fbfd}
+.table-wrap tbody tr:hover:not(.pdf-row-review):not(.ocr-row-review):not(.ocr-row-low){background:#eef5fc}
+#historySection>.table-wrap th:nth-child(4),#historySection>.table-wrap td:nth-child(4),
+#historySection>.table-wrap th:nth-child(5),#historySection>.table-wrap td:nth-child(5),
+#planSection>.table-wrap th:nth-child(4),#planSection>.table-wrap td:nth-child(4){text-align:right}
+
+.empty-pictogram{width:44px;height:44px;display:block;margin:0 auto 10px;color:#9fb3cc}
+/* KPI 카드: 4열×2행 + 위계(큰 현재값/작은 목표값) + 판정 칩 */
+.grid.kpi{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.lifelong-wrap{margin-top:16px;padding:12px 14px;border:1px dashed #b9c9dd;border-radius:12px;background:#fbfdff}
+.lifelong-title{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.lifelong-wrap .cert-kpi{margin-top:0}
+.lifelong-wrap .qualification-note{margin-top:10px}
+.grid.kpi .card{padding:12px 13px}
+.kpi-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:3px}
+.kpi-label{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.kpi-flag{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;background:#fdecec;color:#b42318;font-size:10px;font-weight:800;white-space:nowrap}
+.kpi .value{font-size:20px}
+.kpi .value b{font-weight:800}
+.kpi-scale{font-size:12px;font-weight:600;color:var(--muted);margin-left:4px}
+.kpi-bar{margin:6px 0 5px}
+.grid.kpi .sub{font-size:11px;margin-top:2px}
+.kpi-card-unmet{background:#fff!important;border-color:#f0c6c2!important}
+.kpi-card-unmet .sub{color:var(--muted)!important}
+
+/* 학기별 평점 카드: 화면 폭에 맞춰 촘촘히 채우는 콤팩트 카드 */
+.semester-gpa-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.semester-gpa-card{display:block;padding:10px 12px}
+.sg-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.sg-head .term{font-weight:800;font-size:13px}
+.sg-figures{display:flex;gap:20px}
+.sg-fig{display:flex;flex-direction:column;gap:1px}
+.sg-fig .muted{font-size:11px}
+.sg-fig b{font-size:17px;line-height:1.2;font-variant-numeric:tabular-nums}
+.sg-scale{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* 보조 접이식(변경사항 보기·OCR 원문 보기): 12px 링크형으로 통일 */
+.catalog-section details>summary,.ocr-result details>summary{
+  cursor:pointer;font-size:12px;font-weight:700;color:#0b57a4
+}
+.catalog-section details>summary:hover,.ocr-result details>summary:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* 카탈로그 툴바: 한 줄 유지 → 좌우 카드의 표 시작 높이 일치 */
+.catalog-toolbar{flex-wrap:nowrap}
+.catalog-toolbar select,.catalog-toolbar input{min-width:0}
+#catalogTerm{flex:0 0 110px}
+#catalogMajor{flex:1 1 45%}
+#catalogSearch{flex:1 1 55%}
+@media(max-width:620px){.catalog-toolbar{flex-wrap:wrap}#catalogTerm,#catalogMajor,#catalogSearch{flex:1 1 100%}}
+
+/* 시간표 비교: 양쪽 패널이 같은 높이에서 표 시작 + 동일한 프레임 언어 */
+.schedule-pane .section-title-row{margin-bottom:8px;min-height:36px}
+.schedule-compare{margin-top:10px}
+@media screen{.reference-snapshot .snapshot-title{display:none}}
+.reference-viewer{margin-top:0;border:0;background:transparent;min-height:0;display:block;overflow:visible}
+.reference-viewer .empty{border:1px dashed #b9c9dd;border-radius:10px;background:#fff;padding:26px 14px}
+.reference-viewer img{border:1px solid #e0e5ec;border-radius:10px}
+.reference-snapshot{border:0;padding:0;background:transparent}
+.reference-snapshot .snapshot-title{font-size:12px;color:#667085;font-weight:700;margin:0 0 6px}
+.reference-snapshot .weekly-schedule{border:1px solid #e0e5ec;border-radius:10px;background:#fff}
+
+/* 저장한 계획 시간표 카드: 타이포 축소·정렬·절제된 삭제 버튼 */
+.reference-card{width:150px;min-height:0;padding:9px 26px 9px 11px;gap:2px;justify-content:flex-start}
+.reference-card .term{font-size:12px;font-weight:800}
+.reference-card>div:nth-child(2){font-size:12px;font-weight:600;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reference-card .count{font-size:11px}
+.reference-card.active{outline:none;border-color:#0b57a4;box-shadow:0 0 0 3px rgba(11,87,164,.14)}
+.reference-card .thumb-del{
+  right:5px;top:5px;width:18px;height:18px;border:0;border-radius:50%;
+  background:#eef2f7;color:#475467;font-size:12px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer
+}
+.reference-card .thumb-del:hover{background:#fdecec;color:#b42318}
+
+/* 수강계획 추가 폼: 실행 패널 언어로 통일 */
+.plan-builder{background:#f8fbff;border:1px solid #cbd7e6;border-radius:12px;padding:14px}
+.plan-builder .pdf-import-head{margin-bottom:2px}
+.plan-add-row .btn{height:auto;min-height:0}
+
+/* 강의 찾기 탭: PDF·OCR과 동일한 패널 배경으로 통일 */
+#finderPane{background:#f8fbff;border:1px solid #cbd7e6;border-radius:12px;padding:14px}
+#finderPane .history-course-grid{margin-top:10px}
+#finderPane .manual-panel{background:#fff}
+
+/* OCR 패널 재구성: 헤더 → 학기 → 드롭존 → 액션 순의 세로 흐름 */
+.ocr-alt-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#e8eef6;color:#3f5f86;font-size:11px;font-weight:800;white-space:nowrap}
+.ocr-form{display:grid;gap:10px;margin-top:10px}
+.ocr-term-row{max-width:260px}
+.ocr-drop{display:grid;gap:9px;justify-items:center;text-align:center;padding:18px 14px}
+.ocr-drop .paste-hint{margin:0}
+.ocr-drop input[type=file]{max-width:340px}
+.ocr-preview{margin:2px auto 0}
+.ocr-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ocr-actions .muted{flex:1;min-width:200px}
+.ocr-btns{display:flex;gap:8px;margin-left:auto}
+@media(max-width:760px){
+  .ocr-term-row{max-width:none}
+  .ocr-btns{width:100%}
+  .ocr-btns .btn{flex:1}
+}
+
+/* 강의 찾기 그리드: 칸 폭보다 큰 min-width 강제값 제거 → 셀 침범 방지 */
+.history-course-grid .course-search,.history-course-grid #historyCourse{min-width:0}
+.history-course-grid>div{min-width:0}
+@media(max-width:760px){
+  .mobile-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .mobile-nav svg{width:18px;height:18px}
+  .mobile-nav button{font-size:11px}
+}
 </style>
 </head>
 <body>
 <div class="app">
   <header class="header">
+    <div class="header-eyebrow no-print">Yonsei Univ. Graduate School of Education</div>
     <div class="title-edit-row">
       <h1 id="appTitle">연세대학교 교육대학원 졸업요건 이수현황 계산기</h1>
       <button class="title-edit-btn no-print" id="editTitleBtn" type="button" title="타이틀명 수정" aria-label="타이틀명 수정">✎</button>
@@ -926,12 +1298,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div class="workflow-step" data-step="plan"><span class="num">4</span><span>수강계획</span></div>
   </div>
 
-  <section class="input-zone no-print-ui" id="inputZone">
-    <div class="zone-heading no-print">
-      <div><h2>먼저 정보를 입력해주세요</h2><p>① 기본정보를 선택하고 ② 지금까지 수강한 과목을 등록하면 졸업요건 분석 결과가 자동으로 표시됩니다.</p></div>
-      <span class="zone-badge">INPUT · 사용자 입력</span>
-    </div>
-    <div class="input-step-label no-print" id="profileStepLabel"><span class="step-no">1</span><span>기본정보 입력</span></div>
+  <details class="input-zone no-print-ui step-details" id="inputZone" open>
+    <summary class="analysis-heading no-print">
+      <div><h2 class="step-title input-step-label" id="profileStepLabel"><span class="step-no">1</span><span>기본정보 입력</span></h2><p>전공·입학학기·과정/졸업유형을 선택하고 [기본정보 확인 완료]를 눌러주세요.</p></div>
+    </summary>
   <section class="grid profile profile-v16" id="profileSection">
     <div id="printProfileSummary" class="print-only print-profile-summary"></div>
     <div class="card"><label>전공</label><select id="majorSelect"></select></div>
@@ -962,31 +1332,35 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <button class="btn primary" id="confirmProfileBtn" type="button">기본정보 확인 완료</button>
     </div>
     <div id="inputStatus" class="input-status no-print"></div>
-  <details class="card section input-section history-details" id="historySection" open>
-    <summary><span>② 기존 수강이력 입력 / 가져오기</span><span id="historyCompactSummary" class="history-compact-summary"></span></summary>
-    <div class="start-hint"><b>여기까지 입력하면 분석이 시작됩니다.</b> 수강이력을 한 과목 이상 등록하면 아래의 이수현황 대시보드가 자동으로 활성화됩니다.</div>
+  </details>
+
+  <details class="card section input-section history-details step-details" id="historySection" open>
+    <summary class="analysis-heading">
+      <div><h2 class="step-title"><span class="step-no">2</span><span>기존 수강이력 입력 / 가져오기</span><span id="historyCompactSummary" class="history-compact-summary"></span></h2><p>수강이력을 한 과목 이상 등록하면 아래 이수현황 분석이 자동으로 시작됩니다.</p></div>
+    </summary>
     <div class="callout">
-      과거에 이수한 과목은 최신 개설표에서 사라졌더라도 삭제하지 않습니다. <b>과목명·종별·학점 스냅샷을 학생 데이터에 그대로 저장</b>하며 계산에 반영합니다.
-      최신 카탈로그에 없는 과목은 <b>과거·폐지·미등재</b>로 표시될 뿐, 이수기록 자체는 유지됩니다.<br>
-      본인 전공에 개설된 <b>전공교직 과목</b>은 교직 또는 전공선택으로 인정종별을 변경할 수 있으며, 해당 과목명 옆에 변경 가능 표시를 제공합니다.<br>
-      성적은 4.3 만점으로 계산하며 <b>C−(1.7) 이상이어야 해당 과목을 이수</b>한 것으로 계산하고, <b>누적평점 B0(3.00) 이상</b>을 별도 졸업요건으로 확인합니다.
+      과거에 이수한 과목은 최신 개설표에서 사라져도 <b>기록과 계산에 그대로 유지</b>됩니다.<br>
+      전공에 개설된 <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 인정종별을 바꿀 수 있습니다(과목명 옆 표시).<br>
+      성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, <b>누적평점 3.00 이상</b>이 별도 졸업요건입니다.
     </div>
+    <div class="tabs import-tabs no-print" id="importTabs">
+      <button class="tab active" type="button" data-pane="pdfImportPane">PDF 가져오기 (권장)</button>
+      <button class="tab" type="button" data-pane="ocrImportPane">캡처 OCR</button>
+      <button class="tab" type="button" data-pane="finderPane">강의 찾기 · 직접 입력</button>
+    </div>
+    <div class="import-pane active" id="pdfImportPane">
     <div class="portal-guide">
       <a href="https://portal.yonsei.ac.kr/" target="_blank" rel="noopener">연세포털서비스 열기 ↗</a>
-      <span>연세포털서비스 로그인 → 학사정보시스템 → <b>성적 → 학생 → 전체성적조회</b> → 우측 <b>[출력]</b> → 인쇄 화면에서 <b>PDF로 저장</b>해주세요.</span>
+      <span>로그인 → 학사정보시스템 → <b>성적 → 학생 → 전체성적조회</b> → 우측 <b>[출력]</b> → <b>PDF로 저장</b></span>
     </div>
 
     <div class="pdf-import-panel no-print">
       <div class="pdf-import-head">
         <div>
           <h3>전체 수강이력 PDF 가져오기</h3>
-          <div class="muted" style="margin-top:4px">학기별 캡처 없이, 포털에서 출력한 전체성적조회 PDF 한 파일로 수강이력을 읽습니다.</div>
+          <div class="muted" style="margin-top:4px">전체성적조회 PDF 한 파일로 전체 학기 수강이력을 가져옵니다.</div>
         </div>
         <span class="pdf-recommended">권장</span>
-      </div>
-      <div class="pdf-route">
-        <b>PDF 받는 위치</b><br>
-        연세포털 → 성적 → 학생 → 전체성적조회 → 우측 <b>출력</b> → 인쇄/PDF 저장
       </div>
       <div class="pdf-import-actions">
         <div class="pdf-file-box">
@@ -999,43 +1373,50 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div id="portalPdfStatus" class="pdf-status">PDF를 선택하면 전체 학기 수강내역을 한 번에 가져올 수 있습니다.</div>
       <div id="portalPdfResult" class="pdf-result"></div>
     </div>
+    </div>
 
+    <div class="import-pane" id="ocrImportPane">
     <div class="ocr-panel no-print">
-      <h3 style="margin:0 0 8px">학기별 캡처 OCR <span class="muted">· PDF가 없을 때</span></h3>
-      <div class="muted" style="margin-bottom:10px">
-        먼저 <b>수강했던 학기</b>를 선택하고 해당 학기의 성적 화면 캡처를 올리십시오.
-        OCR은 <b>학정번호를 우선 인식</b>하고 과목명·종별·학점은 카탈로그에서 자동 보완합니다. 성적이 불명확한 과목은 해당 영역을 한 번 더 인식합니다.<br><b class="warn">노란색 ‘확인 필요’ 항목은 성적 등을 확인한 뒤 등록하십시오.</b>
-      </div>
-      <div class="ocr-grid">
+      <div class="pdf-import-head">
         <div>
+          <h3>학기별 캡처 OCR</h3>
+          <div class="muted" style="margin-top:4px">수강한 학기를 선택하고 성적 화면 캡처를 올리면, 학정번호를 우선 인식해 과목 정보를 자동 보완합니다.</div>
+        </div>
+        <span class="ocr-alt-badge">PDF가 없을 때</span>
+      </div>
+      <div class="ocr-form">
+        <div class="ocr-term-row">
           <label>수강했던 학기</label>
           <select id="ocrTerm"></select>
         </div>
         <div class="ocr-drop" id="ocrPasteZone" tabindex="0" aria-label="성적 캡처 붙여넣기 영역">
-          <label>성적 캡처 이미지</label>
-          <div style="margin:6px 0 8px">
-            <span class="paste-badge">Ctrl+V 붙여넣기 지원</span>
-          </div>
-          <div class="paste-hint">
-            PC에서는 Windows 캡처(Win+Shift+S) 후 이 영역을 클릭하고 <b>Ctrl+V</b> 하십시오.<br>
-            iPhone/Android에서는 <b>파일 선택 → 사진 보관함</b>에서 성적 캡처를 선택하십시오.<br>
-            사진 촬영본보다 <b>연세포털 화면 스크린샷</b>을 권장하며, 학정번호와 성적이 잘리지 않게 캡처하면 정확도가 높아집니다.
-          </div>
-          <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp" style="margin-top:8px">
+          <span class="paste-badge">Ctrl+V 붙여넣기 지원</span>
+          <div class="paste-hint">PC: 캡처(Win+Shift+S) 후 이 영역 클릭 → <b>Ctrl+V</b> &nbsp;·&nbsp; 모바일: 파일 선택에서 캡처 선택</div>
+          <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp">
           <img id="ocrPreview" class="ocr-preview" alt="OCR 미리보기">
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn primary" id="runOcr">OCR로 읽어오기</button>
-          <button class="btn danger" id="clearOcrImage" type="button">이미지 지우기</button>
+        <div class="ocr-actions">
+          <div class="muted">학정번호·성적이 잘리지 않은 스크린샷일수록 정확합니다. ‘확인 필요’ 항목은 성적 확인 후 등록하세요.</div>
+          <div class="ocr-btns">
+            <button class="btn" id="clearOcrImage" type="button">이미지 지우기</button>
+            <button class="btn primary" id="runOcr">OCR로 읽어오기</button>
+          </div>
         </div>
       </div>
-      <div id="ocrStatus" class="muted" style="margin-top:10px">이미지를 선택하면 미리보기가 표시됩니다.</div>
-      <div class="muted" style="margin-top:4px">확인 후 일괄등록하면 <b>즉시 이수요건이 재계산</b>되고 이 브라우저에 자동 저장됩니다.</div>
+      <div id="ocrStatus" class="pdf-status">이미지를 선택하면 미리보기가 표시됩니다.</div>
       <div class="ocr-progress"><div id="ocrProgressBar"></div></div>
       <div id="ocrResult" class="ocr-result"></div>
     </div>
-    <h2 class="history-finder-title">강의 찾기</h2>
-    <div class="form-grid history-course-grid" style="margin-top:8px">
+    </div>
+
+    <div class="import-pane" id="finderPane">
+    <div class="pdf-import-head">
+      <div>
+        <h3>강의 찾기 · 직접 입력</h3>
+        <div class="muted" style="margin-top:4px">개설 카탈로그에서 과목을 검색해 추가하거나, 목록에 없는 과거 과목은 직접 입력하세요.</div>
+      </div>
+    </div>
+    <div class="form-grid history-course-grid">
       <div><label>이수학기</label><select id="historyTerm"></select></div>
       <div><label>종별 필터</label><select id="historyFilterCategory"></select></div>
       <div><label>검색 범위</label><select id="historyScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
@@ -1063,33 +1444,39 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       </div>
       <div class="muted" style="margin-top:8px">선택한 이수학기를 그대로 사용합니다. 2024-2까지 일반 과목은 기본 2학점, 2025-1부터 기본 3학점으로 제안합니다.</div>
     </div>
+    </div>
     <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>성적</th><th>상태</th><th></th></tr></thead><tbody id="historyBody"></tbody></table></div>
     <div id="historySwitchableNotice" class="selection-note"></div>
     <div class="semester-gpa-heading"><h3>학기별 평점</h3></div>
     <div id="printSemesterGpaSummary" class="print-only print-gpa-summary"></div>
     <div id="semesterGpaGrid" class="semester-gpa-grid"></div>
   </details>
-  </section>
 
-  <section class="analysis-zone" id="analysisZone">
-    <div class="analysis-heading no-print">
-      <div><h2>③ 이수현황 분석 결과</h2><p>등록한 수강이력을 기준으로 계산된 결과입니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
+  <details class="analysis-zone step-details" id="analysisZone" open>
+    <summary class="analysis-heading no-print">
+      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황 분석 결과</span></h2><p>등록한 수강이력을 기준으로 계산된 결과입니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
       <div id="resultStatus" class="result-status"></div>
-    </div>
+    </summary>
     <div class="analysis-empty no-print" id="dashboardEmptyState">
+      <svg class="empty-pictogram" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="10" y="7" width="28" height="36" rx="3"/><path d="M18 3h12v7H18z"/><path d="M17 34v-6M24 34V22M31 34v-9"/></svg>
       <b id="dashboardEmptyTitle">아직 분석할 수강이력이 없습니다.</b>
-      <span id="dashboardEmptyText">② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.</span>
+      <span id="dashboardEmptyText">2단계 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.</span>
       <br><button class="btn primary" id="goHistoryInput" type="button">수강이력 입력하러 가기 ↑</button>
     </div>
   <section class="kpi-wrap" id="kpiSection">
+    <h2 class="req-cards-title">이수요건 판정</h2>
     <div class="grid kpi" id="kpiGrid"></div>
-    <div class="grid kpi cert-kpi" id="certKpiGrid"></div>
+    <div id="evaluationNotes" style="margin-top:12px"></div>
+    <div id="lifelongSection" class="lifelong-wrap" style="display:none">
+      <h3 class="lifelong-title">평생교육사 <span class="badge manual">추가 과정</span></h3>
+      <div class="grid kpi cert-kpi" id="certKpiGrid"></div>
+      <div id="lifelongNote"></div>
+    </div>
     <div id="qualificationNotes"></div>
   </section>
-  <section class="card section" id="requirementsSection">
+  <section class="card section print-only" id="requirementsSection">
     <h2>이수요건 판정</h2>
     <div class="req-grid" id="requirementsGrid"></div>
-    <div id="evaluationNotes" style="margin-top:12px"></div>
   </section>
   <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none">
     <summary><span>교원자격 이수 체크리스트</span></summary>
@@ -1104,11 +1491,17 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     </div>
     <div class="muted" style="margin-top:10px">교원자격 관련 비수강 요건은 연세포털 교직 자가진단 및 교육대학원 최신 공지에서 최종 확인하십시오.</div>
   </details>
-  </section>
+  </details>
 
-  <section class="card section input-section" id="planSection">
-    <div class="section-title-row"><h2>④ 향후 수강계획</h2></div>
+  <details class="card section input-section step-details" id="planSection" open>
+    <summary class="section-title-row"><h2 class="step-title"><span class="step-no">4</span><span>향후 수강계획</span></h2></summary>
 <div class="plan-builder">
+      <div class="pdf-import-head">
+        <div>
+          <h3>계획 과목 추가</h3>
+          <div class="muted" style="margin-top:4px">학기·종별·검색으로 개설 과목을 찾아 수강계획에 추가하세요. 추가하면 이수현황과 시간표가 즉시 다시 계산됩니다.</div>
+        </div>
+      </div>
       <div class="plan-filter-row">
         <div><label>계획학기</label><select id="planTerm"></select></div>
         <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
@@ -1133,6 +1526,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div id="planWarnings"></div>
     <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>데이터 상태</th><th></th></tr></thead><tbody id="planBody"></tbody></table></div>
 
+    <div class="muted no-print" style="margin-top:14px">오른쪽 [현재 시간표 저장]을 누르면 현재 학기 시간표가 스냅샷으로 저장됩니다. 저장된 시간표를 선택하면 현재 계획과 나란히 비교할 수 있습니다.</div>
     <div class="schedule-compare">
       <div class="schedule-pane">
         <div class="section-title-row"><h3 id="planTimetableTitle">학기 시간표</h3><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정" aria-label="시간표 표시 설정">⚙</button></div>
@@ -1142,38 +1536,35 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       </div>
       <div class="schedule-pane reference-pane" id="scheduleReferencePane">
         <div class="section-title-row"><h3>저장한 계획 시간표</h3><button class="btn small no-print" id="savePlanTimetableBtn" type="button">현재 시간표 저장</button></div>
-        <div class="muted no-print" style="margin:7px 0 10px">왼쪽의 현재 학기 시간표를 스냅샷으로 저장합니다. 저장된 시간표를 선택하면 왼쪽의 현재 계획과 나란히 비교할 수 있습니다.</div>
         <div id="scheduleReferenceViewer" class="reference-viewer"><div class="empty">저장한 계획 시간표가 없습니다.</div></div>
         <div id="scheduleReferenceFeed" class="reference-feed no-print"></div>
       </div>
     </div>
-  </section>
+  </details>
 
   <section class="two section">
     <div class="card catalog-section">
-      <div class="section-title-row timetable-title">
+      <h2>개설 예정 강의 시간표</h2>
+      <div class="toolbar">
         <select id="timetableTerm" style="max-width:140px"></select>
-        <h2 style="margin:0">개설 예정 강의 시간표</h2>
-      </div>
-      <div class="timetable-controls">
         <select id="timetableScope" style="max-width:260px">
           <option value="major">내 전공 수업</option>
           <option value="teaching">교직·교과 수업</option>
           <option value="combined">내 전공 + 교직·교과</option>
         </select>
       </div>
-      <div class="muted" style="margin-bottom:8px">기본 시간은 <b>1·2교시 18:20–20:00</b> / <b>3·4교시 20:10–21:50</b>입니다. 평생교육사 등 별도 시간표가 있는 과목은 <b>원본 요일·시간</b>을 우선합니다.</div>
-      <div class="table-wrap" style="max-height:390px"><table class="timetable-table"><thead><tr><th>요일</th><th>교시/시간</th><th>과목</th><th>종별</th><th>교수 / 강의실</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table class="timetable-table"><thead><tr><th>요일</th><th>교시/시간</th><th>과목</th><th>종별</th><th>교수 / 강의실</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
+      <div class="muted" style="margin-top:8px">기본 시간은 <b>1·2교시 18:20–20:00</b> / <b>3·4교시 20:10–21:50</b>입니다. 평생교육사 등 별도 시간표가 있는 과목은 <b>원본 요일·시간</b>을 우선합니다.</div>
       <details style="margin-top:10px"><summary>5학기 개설예정표와 실제 시간표의 변경사항 보기</summary><div id="diffBox" style="margin-top:8px"></div></details>
     </div>
     <div class="card catalog-section">
       <h2>학기별 개설정보</h2>
-      <div class="toolbar">
-        <select id="catalogTerm" style="max-width:150px"></select>
-        <select id="catalogMajor" style="max-width:220px"></select>
-        <input id="catalogSearch" type="text" placeholder="과목명/학정번호/교수 검색" style="max-width:280px">
+      <div class="toolbar catalog-toolbar">
+        <select id="catalogTerm"></select>
+        <select id="catalogMajor"></select>
+        <input id="catalogSearch" type="text" placeholder="과목명/학정번호/교수 검색">
       </div>
-      <div class="table-wrap" style="margin-top:10px;max-height:390px"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
     </div>
   </section>
 
@@ -1181,7 +1572,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <h2>데이터 관리</h2>
     <div class="toolbar">
       <button class="btn" id="exportData">내보내기</button>
-      <label class="btn" style="display:inline-block;margin:0;font-size:16px">불러오기<input type="file" id="importData" accept=".json" style="display:none"></label>
+      <label class="btn" style="display:inline-block;margin:0;font-size:14px">불러오기<input type="file" id="importData" accept=".json" style="display:none"></label>
       <button class="btn" id="pdfSaveBottom" type="button">PDF저장하기</button>
       <button class="btn danger" id="resetData">초기화</button>
     </div>
@@ -1199,10 +1590,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </div>
 
 <nav id="mobileNav" class="mobile-nav no-print" aria-label="모바일 빠른 이동">
-  <button type="button" data-target="top">홈</button>
-  <button type="button" data-target="analysisZone">이수현황</button>
-  <button type="button" data-target="historySection">수강이력</button>
-  <button type="button" data-target="planSection">수강계획</button>
+  <button type="button" data-target="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>홈</button>
+  <button type="button" data-target="analysisZone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20v-8M11 20V5M17 20v-5"/><path d="M3 20h18"/></svg>이수현황</button>
+  <button type="button" data-target="historySection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>수강이력</button>
+  <button type="button" data-target="planSection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>수강계획</button>
 </nav>
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
@@ -1794,33 +2185,65 @@ function renderKpis(){
   const {current,projected}=evaluateBoth();
   const rule=getRule();
   const g=gpaRequirementStatus(state.history);
-  const commonMin=rule.commonMin??3;
-  const minOf=key=>rule.requirements[key]?.min??0;
-  const items=[
-    ['총 학점',`${fmtCredits(current.totalCredits)} / ${rule.totalCredits}`,`학기 수강 시 ${fmtCredits(projected.totalCredits)} / ${rule.totalCredits}`,false],
-    ['전체 평점',`${g.gpa==null?'-':fmtGpa(g.gpa)} / 4.3`,g.state==='pass'?'B0(3.00) 이상':g.state==='fail'?'B0(3.00) 미달':g.state==='incomplete'?'성적 일부 미입력':'평점자료 없음',g.state!=='pass'],
-    ['공통',`${current.totals.common} / ${commonMin}과목`,`학기 수강 시 ${projected.totals.common} / ${commonMin}`,current.totals.common<commonMin],
-    ['교직',`${fmtCredits(current.totals.teaching)} / ${fmtCredits(minOf('teaching'))}학점`,`학기 수강 시 ${fmtCredits(projected.totals.teaching)} / ${fmtCredits(minOf('teaching'))}`,current.totals.teaching<minOf('teaching')],
-    ['전공필수',`${fmtCredits(current.totals.major_required)} / ${fmtCredits(minOf('major_required'))}학점`,`학기 수강 시 ${fmtCredits(projected.totals.major_required)} / ${fmtCredits(minOf('major_required'))}`,current.totals.major_required<minOf('major_required')],
-    ['전공선택',`${fmtCredits(current.totals.major_elective)} / ${fmtCredits(minOf('major_elective'))}학점`,`학기 수강 시 ${fmtCredits(projected.totals.major_elective)} / ${fmtCredits(minOf('major_elective'))}`,current.totals.major_elective<minOf('major_elective')]
-  ];
-  document.getElementById('kpiGrid').innerHTML=items.map(x=>`<div class="card ${x[3]?'kpi-card-unmet':''}"><div class="muted">${x[0]}</div><div class="value">${x[1]}</div><div class="sub">${x[2]}</div></div>`).join('');
+  const kpiBar=(cur,max)=>{
+    if(cur==null||!(max>0))return '';
+    const pct=Math.min(100,Math.round(cur/max*100));
+    return `<div class="kpi-bar"><div style="width:${pct}%"></div></div>`;
+  };
+  const chipHtml=(st,text)=>st?`<span class="kpi-flag ${st==='bad'?'':st}">${text}</span>`:'';
+  const kpiCard=(label,valueText,sub,chip,cur,max,bad,extra)=>{
+    const parts=String(valueText).split(' / ');
+    const val=parts.length===2?`<b>${parts[0]}</b><span class="kpi-scale">/ ${parts[1]}</span>`:`<b>${valueText}</b>`;
+    return `<div class="card ${bad?'kpi-card-unmet':''}${extra?' kpi-extra':''}">
+      <div class="kpi-top"><span class="kpi-label">${label}</span>${chip}</div>
+      <div class="value">${val}</div>${kpiBar(cur,max)}<div class="sub">${sub}</div>
+    </div>`;
+  };
+  // 요건 판정과 KPI를 카드 하나로 통합: 현재값 기준 충족/계획 반영 시 충족/부족 3단계
+  const reqState=(cur,proj,min)=>cur>=min?'ok':proj>=min?'plan':'bad';
+  const reqChip=(st,shortText)=>chipHtml(st,st==='ok'?'✓ 충족':st==='plan'?'계획 시 충족':shortText);
+  const cards=[];
+  {
+    const cur=current.totalCredits,min=rule.totalCredits,proj=projected.totalCredits;
+    const st=reqState(cur,proj,min);
+    cards.push(kpiCard('총 학점',`${fmtCredits(cur)} / ${min}학점`,`학기 수강 시 ${fmtCredits(proj)} / ${min}`,
+      reqChip(st,`부족 ${fmtCredits(min-cur)}학점`),cur,min,st==='bad'));
+  }
+  {
+    const st=g.state==='pass'?'ok':g.state==='fail'?'bad':g.state==='incomplete'?'plan':null;
+    const chip=st?chipHtml(st,st==='ok'?'✓ 충족':st==='bad'?'B0 미달':'확인 필요'):'';
+    const sub=g.state==='pass'?'B0(3.00) 이상':g.state==='fail'?'B0(3.00) 미달':g.state==='incomplete'?'성적 일부 미입력':'평점자료 없음';
+    cards.push(kpiCard('전체 평점',`${g.gpa==null?'-':fmtGpa(g.gpa)} / 4.3`,sub,chip,g.gpa,4.3,st==='bad'));
+  }
+  for(const pr of projected.requirements){
+    const cur=(current.requirements.find(x=>x.key===pr.key)||{current:0}).current;
+    const st=reqState(cur,pr.current,pr.min);
+    cards.push(kpiCard(pr.label,`${fmtCredits(cur)} / ${fmtCredits(pr.min)}${pr.unit}`,
+      `학기 수강 시 ${fmtCredits(pr.current)} / ${fmtCredits(pr.min)}`,
+      reqChip(st,`부족 ${fmtCredits(pr.min-cur)}${pr.unit}`),cur,pr.min,st==='bad'));
+  }
+  document.getElementById('kpiGrid').innerHTML=cards.join('');
 
+  // 평생교육사: 번외 과정 — 메인 요건과 분리된 점선 박스에 카드+안내를 함께 표시
   const curQ=qualificationCounts(state.history), projQ=qualificationCounts(planCombinedRecords()), target=qualificationTargets();
   const lifelongActive=curQ.lifelong>0||projQ.lifelong>0;
-  const certItems=lifelongActive ? [
-    ['평생교육사',curQ.lifelong,projQ.lifelong,target.lifelong]
-  ] : [];
-  document.getElementById('certKpiGrid').innerHTML=certItems.map(x=>{
-    const unmet=x[1]<x[3];
-    return `<div class="card ${unmet?'kpi-card-unmet':''}"><div class="muted">${x[0]}</div><div class="value">${x[1]} / ${x[3]}과목</div><div class="sub">학기 수강 시 ${x[2]} / ${x[3]}</div></div>`;
-  }).join('');
+  const lifelongWrap=document.getElementById('lifelongSection');
+  if(lifelongWrap)lifelongWrap.style.display=lifelongActive?'':'none';
+  if(lifelongActive){
+    const st=reqState(curQ.lifelong,projQ.lifelong,target.lifelong);
+    document.getElementById('certKpiGrid').innerHTML=kpiCard('평생교육사',
+      `${curQ.lifelong} / ${target.lifelong}과목`,`학기 수강 시 ${projQ.lifelong} / ${target.lifelong}`,
+      reqChip(st,`부족 ${target.lifelong-curQ.lifelong}과목`),curQ.lifelong,target.lifelong,st==='bad');
+  }else{
+    document.getElementById('certKpiGrid').innerHTML='';
+  }
 }
 function renderQualificationNotes(){
   const curQ=qualificationCounts(state.history),projQ=qualificationCounts(planCombinedRecords());
   const lifelongActive=curQ.lifelong>0||projQ.lifelong>0;
+  const lifelongNote=document.getElementById('lifelongNote');
+  if(lifelongNote)lifelongNote.innerHTML=lifelongActive?`<div class="qualification-note"><b>평생교육사 안내</b> · 필수과목 이수 외에도 학습성적 평균 80점 이상과 법정 평생교육기관에서 4주 이상의 현장실습이 필요합니다. 평생교육실습은 실습과목을 제외한 필수과목 3과목 이수 후 신청할 수 있습니다.</div>`:'';
   const notes=[];
-  if(lifelongActive)notes.push(`<div class="qualification-note"><b>평생교육사 안내</b> · 필수과목 이수 외에도 학습성적 평균 80점 이상과 법정 평생교육기관에서 4주 이상의 현장실습이 필요합니다. 평생교육실습은 실습과목을 제외한 필수과목 3과목 이수 후 신청할 수 있습니다.</div>`);
   if(teacherTrackEnabled())notes.push(`<div class="qualification-note"><b>교원자격 안내</b> · SPT 교직이론·소양 과목은 2학점이며 자격증 취득 희망자는 선수 종별로 수강합니다. 아래 ‘교원자격 이수 체크리스트’에서 비수강 요건도 함께 관리할 수 있습니다.</div>`);
   document.getElementById('qualificationNotes').innerHTML=notes.join('');
 }
@@ -1852,18 +2275,23 @@ function renderRequirements(){
   const cohort=getCohort(), rule=getRule();
   const g=gpaRequirementStatus(state.history);
   document.getElementById('cohortText').textContent=`적용: ${cohort.label} · ${rule.label}`;
+  const reqBar=(cur,min,ok)=>{
+    if(!(min>0)||cur==null)return '';
+    const pct=Math.min(100,Math.round(cur/min*100));
+    return `<div class="req-bar${ok?' ok':''}"><div style="width:${pct}%"></div></div>`;
+  };
   const reqs=projected.requirements.map(pr=>{
     const cr=current.requirements.find(x=>x.key===pr.key)||{current:0};
     const isOk=pr.current>=pr.min;
     const target=`최소 ${fmtCredits(pr.min)}${pr.unit} 이상`;
-    const status=isOk?`<span class="req-ok">충족</span>`:`<span class="req-bad">부족 ${fmtCredits(pr.min-pr.current)}${pr.unit}</span>`;
-    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`${target}<br>${status}`];
+    const status=isOk?`<span class="req-ok">✓ 충족</span>`:`<span class="req-bad">부족 ${fmtCredits(pr.min-pr.current)}${pr.unit}</span>`;
+    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`${target} · ${status}${reqBar(pr.current,pr.min,isOk)}`];
   });
   let gStatus='<span class="req-bad">평점 확인 필요</span>';
-  if(g.state==='pass')gStatus='<span class="req-ok">충족</span>';
-  else if(g.state==='fail')gStatus=`<span class="req-bad">B0 미달</span>`;
+  if(g.state==='pass')gStatus='<span class="req-ok">✓ 충족</span>';
+  else if(g.state==='fail')gStatus=`<span class="req-bad">B0(3.00) 미달</span>`;
   else if(g.state==='incomplete')gStatus='<span class="req-bad">성적 일부 미입력</span>';
-  reqs.push(['전체 평균',g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,`B0(3.00) 이상<br>${gStatus}`]);
+  reqs.push(['전체 평균',g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,`B0(3.00) 이상 · ${gStatus}${reqBar(g.gpa,3,g.state==='pass')}`]);
   const rows=[['요건','이수','이번 학기 수강 후','기준/평가'],...reqs];
   document.getElementById('requirementsGrid').innerHTML=rows.flat().map((x,i)=>`<div>${x}</div>`).join('');
 
@@ -1953,19 +2381,39 @@ function renderSemesterGpa(){
   if(!grid)return;
   const stats=semesterGpaStats(state.history);
   const total=gpaStats(state.history);
+  const heading=document.querySelector('#historySection .semester-gpa-heading');
+  // 수강이력이 없으면 학기별 평점·누적 GPA 영역 자체를 숨긴다
+  if(!stats.length){
+    if(heading)heading.style.display='none';
+    grid.innerHTML='';
+    const emptyPrintBox=document.getElementById('printSemesterGpaSummary');
+    if(emptyPrintBox)emptyPrintBox.innerHTML='';
+    return;
+  }
+  if(heading)heading.style.display='';
   const cards=stats.map(s=>{
-    const status=s.gpa==null?'평점자료 없음':s.missingGradeCount>0?'성적 일부 미입력':s.gpa>=CUMULATIVE_GPA_MIN?'B0 이상':'B0 미만';
-    const cls=s.gpa!=null&&s.missingGradeCount===0?(s.gpa>=CUMULATIVE_GPA_MIN?'grade-pass':'grade-fail'):'';
+    const complete=s.gpa!=null&&s.missingGradeCount===0;
+    const ok=complete&&s.gpa>=CUMULATIVE_GPA_MIN;
+    const status=s.gpa==null?'평점자료 없음':s.missingGradeCount>0?'성적 일부 미입력':ok?'B0(3.00) 이상':'B0(3.00) 미만';
+    const badgeCls=s.gpa==null?'manual':s.missingGradeCount>0?'planned':ok?'match':'missing';
+    const cls=complete?(ok?'grade-pass':'grade-fail'):'';
     return `<div class="semester-gpa-card">
-      <div class="term">${esc(displayAcademicTerm(s.term))}</div>
-      <div class="metric"><span class="muted">이수학점</span><b>${fmtCredits(s.earnedCredits)}</b></div>
-      <div class="metric ${cls}"><span class="muted">성적</span><b>${fmtGpa(s.gpa)}</b><span class="muted">${status}</span></div>
+      <div class="sg-head"><span class="term">${esc(displayAcademicTerm(s.term))}</span><span class="badge ${badgeCls}">${status}</span></div>
+      <div class="sg-figures">
+        <div class="sg-fig"><span class="muted">평점</span><b class="${cls}">${fmtGpa(s.gpa)}</b></div>
+        <div class="sg-fig"><span class="muted">이수학점</span><b>${fmtCredits(s.earnedCredits)}</b></div>
+      </div>
     </div>`;
   });
+  const tComplete=total.gpa!=null&&total.missingGradeCount===0;
+  const tOk=tComplete&&total.gpa>=CUMULATIVE_GPA_MIN;
+  const tStatus=total.gpa==null?'평점자료 없음':total.missingGradeCount>0?'확인 필요':tOk?'B0(3.00) 이상':'B0(3.00) 미만';
+  const tBadge=total.gpa==null?'manual':total.missingGradeCount>0?'planned':tOk?'match':'missing';
   cards.push(`<div class="semester-gpa-card cumulative-card">
-    <div class="term">누적 GPA</div>
-    <div class="metric"><span class="muted">전체</span><b>${fmtGpa(total.gpa)} / 4.3</b></div>
-    <div class="metric"><span class="muted">평점요건</span><b class="${total.gpa!=null&&total.missingGradeCount===0?(total.gpa>=CUMULATIVE_GPA_MIN?'grade-pass':'grade-fail'):''}">${total.gpa==null?'-':(total.missingGradeCount>0?'확인 필요':(total.gpa>=CUMULATIVE_GPA_MIN?'B0 이상':'B0 미만'))}</b></div>
+    <div class="sg-head"><span class="term">누적 GPA</span><span class="badge ${tBadge}">${tStatus}</span></div>
+    <div class="sg-figures">
+      <div class="sg-fig"><span class="muted">전체 평점</span><b class="${tComplete?(tOk?'grade-pass':'grade-fail'):''}">${fmtGpa(total.gpa)} <span class="sg-scale">/ 4.3</span></b></div>
+    </div>
   </div>`);
   grid.innerHTML=cards.join('');
   const printBox=document.getElementById('printSemesterGpaSummary');
@@ -1974,7 +2422,7 @@ function renderSemesterGpa(){
       const g=s.gpa==null?'-':fmtGpa(s.gpa);
       return `<span class="print-gpa-item"><b>${esc(displayAcademicTerm(s.term))}</b> ${g} · ${fmtCredits(s.earnedCredits)}학점</span>`;
     }).join('');
-    const totalStatus=total.gpa==null?'평점자료 없음':total.missingGradeCount>0?'확인 필요':total.gpa>=CUMULATIVE_GPA_MIN?'B0 이상':'B0 미만';
+    const totalStatus=total.gpa==null?'평점자료 없음':total.missingGradeCount>0?'확인 필요':total.gpa>=CUMULATIVE_GPA_MIN?'B0(3.00) 이상':'B0(3.00) 미만';
     printBox.innerHTML=`<span class="print-gpa-title">학기별 평점</span>${items}<span class="print-gpa-total">누적 ${fmtGpa(total.gpa)} / 4.3 · ${totalStatus}</span>`;
   }
 }
@@ -2167,7 +2615,7 @@ function renderSnapshotSchedule(ref){
     return {r:e,o:e,day:e.day,si:{time:e.time},start,end};
   }).filter(Boolean);
   const unknown=(ref.entries||[]).filter(e=>!e.day||e.order>=9999);
-  return `<div class="reference-snapshot"><div class="snapshot-title">${esc(ref.term)}학기 저장 시간표</div><div class="weekly-schedule">${timelineHtmlFromItems(placed,settings)}</div>${unknown.length?`<div class="snapshot-unknown"><b>시간 미정:</b> ${unknown.map(e=>esc(e.courseName)).join(' · ')}</div>`:''}</div>`;
+  return `<div class="reference-snapshot"><div class="snapshot-title">${esc(ref.term)}학기 저장 시간표</div><div class="weekly-schedule">${timelineHtmlFromItems(placed,settings)}</div>${unknown.length?`<div class="snapshot-unknown"><h4>시간 미정 과목</h4>${unknown.map(e=>esc(e.courseName)).join(' · ')}</div>`:''}</div>`;
 }
 function renderScheduleReferences(){
   const refs=state.scheduleReferences||[];
@@ -2309,9 +2757,9 @@ function renderUxState(){
   const inputStatus=document.getElementById('inputStatus');
   if(inputStatus){
     if(!profileConfirmed){
-      inputStatus.innerHTML=`<span class="badge planned">확인 필요</span><strong>① 기본정보</strong><span>선택값이 기본으로 표시되어 있어도, 확인 완료를 눌러야 다음 단계로 진행됩니다.</span>`;
+      inputStatus.innerHTML=`<span class="badge planned">확인 필요</span><strong>1단계 기본정보</strong><span>선택값이 기본으로 표시되어 있어도, 확인 완료를 눌러야 다음 단계로 진행됩니다.</span>`;
     }else if(!historyCount){
-      inputStatus.innerHTML=`<span class="badge actual">① 완료</span><strong>기본정보 확인됨</strong><span>· ② 수강이력에서 최소 1과목을 등록해주세요.</span>`;
+      inputStatus.innerHTML=`<span class="badge actual">1단계 완료</span><strong>기본정보 확인됨</strong><span>· 2단계 수강이력에서 최소 1과목을 등록해주세요.</span>`;
     }else{
       inputStatus.innerHTML=`<span class="badge actual">입력 완료</span><strong>${historyCount}과목 등록됨</strong><span>· 아래 분석 결과가 활성화되었습니다.</span>`;
     }
@@ -2319,13 +2767,34 @@ function renderUxState(){
 
   const resultStatus=document.getElementById('resultStatus');
   if(resultStatus){
-    resultStatus.textContent=!profileConfirmed?'기본정보 확인 대기':historyCount?`${historyCount}과목 기준 자동 계산`:'수강이력 입력 대기';
+    resultStatus.textContent=!profileConfirmed?'':historyCount?`${historyCount}과목 기준 자동 계산`:'수강이력 입력 대기';
   }
 
   const compact=document.getElementById('historyCompactSummary');
   if(compact){
-    compact.textContent=!profileConfirmed?'· ① 기본정보 확인 필요':historyCount?`· ${historyCount}과목 등록됨`:'· 입력 필요';
+    compact.textContent=!profileConfirmed?'':historyCount?`· ${historyCount}과목 등록됨`:'· 입력 필요';
   }
+
+  const analysisDetails=document.getElementById('analysisZone');
+  if(analysisDetails)analysisDetails.classList.toggle('profile-locked',!profileConfirmed);
+  const planDetails=document.getElementById('planSection');
+  if(planDetails){
+    planDetails.classList.toggle('profile-locked',!profileConfirmed);
+    planDetails.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!profileConfirmed;});
+  }
+
+  // 기본정보 확인 전에는 2~4단계 접힘, 확인 완료로 전환되는 순간 자동 펼침
+  const justUnlocked=profileConfirmed&&window.__prevProfileConfirmed===false;
+  if(!profileConfirmed){
+    if(analysisDetails)analysisDetails.open=false;
+    if(planDetails)planDetails.open=false;
+  }else if(justUnlocked){
+    if(analysisDetails)analysisDetails.open=true;
+    if(planDetails)planDetails.open=true;
+    const h=document.getElementById('historySection');
+    if(h)h.open=true;
+  }
+  window.__prevProfileConfirmed=profileConfirmed;
 
   const historyDetails=document.getElementById('historySection');
   if(historyDetails){
@@ -2343,11 +2812,11 @@ function renderUxState(){
   const goBtn=document.getElementById('goHistoryInput');
   if(!profileConfirmed){
     if(emptyTitle)emptyTitle.textContent='먼저 기본정보 확인이 필요합니다.';
-    if(emptyText)emptyText.textContent='① 전공·입학학기·과정/졸업유형을 확인한 뒤 [기본정보 확인 완료]를 눌러주세요.';
+    if(emptyText)emptyText.textContent='1단계에서 전공·입학학기·과정/졸업유형을 확인한 뒤 [기본정보 확인 완료]를 눌러주세요.';
     if(goBtn)goBtn.textContent='기본정보 확인하러 가기 ↑';
   }else{
     if(emptyTitle)emptyTitle.textContent='아직 분석할 수강이력이 없습니다.';
-    if(emptyText)emptyText.textContent='② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.';
+    if(emptyText)emptyText.textContent='2단계 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.';
     if(goBtn)goBtn.textContent='수강이력 입력하러 가기 ↑';
   }
 
@@ -2922,7 +3391,8 @@ function importOcrCandidates(){
 let portalPdfCandidates=[];
 
 function pdfValueText(v){
-  return String(v==null?'':v).trim();
+  // PDF.js가 글자 단위로 텍스트를 추출하며 한글 사이에 공백이 끼는 현상 보정
+  return String(v==null?'':v).replace(/([가-힣])\s+(?=[가-힣])/g,'$1').trim();
 }
 function pdfNormalizeTerm(raw){
   const s=pdfValueText(raw)
@@ -3591,6 +4061,7 @@ function cleanPortalPdfOcrText(v){
     .replace(/\n+/g,' ')
     .replace(/[|¦]/g,' ')
     .replace(/\s+/g,' ')
+    .replace(/([가-힣])\s+(?=[가-힣])/g,'$1')
     .trim();
 }
 function plausiblePortalCourseName(v){
@@ -4246,8 +4717,17 @@ function applyPrintMode(enabled){
   renderPlanTimetable();
   renderScheduleReferences();
 }
-window.addEventListener('beforeprint',()=>applyPrintMode(true));
-window.addEventListener('afterprint',()=>applyPrintMode(false));
+let closedBeforePrint=[];
+window.addEventListener('beforeprint',()=>{
+  closedBeforePrint=[...document.querySelectorAll('details.step-details:not([open]),#historySection:not([open])')];
+  closedBeforePrint.forEach(d=>d.open=true);
+  applyPrintMode(true);
+});
+window.addEventListener('afterprint',()=>{
+  applyPrintMode(false);
+  closedBeforePrint.forEach(d=>d.open=false);
+  closedBeforePrint=[];
+});
 
 document.getElementById('quickPrint').onclick=()=>window.print();
 
@@ -4255,13 +4735,31 @@ document.querySelectorAll('#mobileNav [data-target]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const id=btn.dataset.target;
     const target=id==='top'?document.body:document.getElementById(id);
-    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+    if(!target)return;
+    if(target.tagName==='DETAILS')target.open=true;
+    target.scrollIntoView({behavior:'smooth',block:'start'});
   });
 });
 
 document.getElementById('pdfSaveBottom').onclick=()=>window.print();
 document.getElementById('scrollTopBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 document.getElementById('quickReset').onclick=()=>document.getElementById('resetData').click();
+
+const workflowTargets={profile:'inputZone',history:'historySection',result:'analysisZone',plan:'planSection'};
+document.querySelectorAll('#workflowStrip .workflow-step').forEach(s=>{
+  s.addEventListener('click',()=>{
+    const el=document.getElementById(workflowTargets[s.dataset.step]);
+    if(!el)return;
+    if(el.tagName==='DETAILS'&&!el.classList.contains('profile-locked'))el.open=true;
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+
+document.getElementById('importTabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.tab');if(!btn)return;
+  document.querySelectorAll('#importTabs .tab').forEach(t=>t.classList.toggle('active',t===btn));
+  document.querySelectorAll('#historySection .import-pane').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.pane));
+});
 
 fillStaticControls();refreshCourseSelectors();render();
 </script>
