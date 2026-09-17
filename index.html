@@ -142,10 +142,30 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .semester-gpa-card .metric{text-align:right}
 .semester-gpa-card .metric b{display:block;font-size:16px}
 .icon-btn{border:0;background:#eef4fb;color:#0b57a4;border-radius:9px;padding:7px 10px;font-size:17px;cursor:pointer}
-.plan-settings{display:none;margin:8px 0 12px;padding:12px;border:1px solid #d8e2ef;border-radius:10px;background:#f8fbff}
+.plan-settings{display:none;margin:10px 0 12px;padding:12px;border:1px solid #d8e2ef;border-radius:10px;background:#f8fbff}
 .plan-settings.open{display:block}
-.settings-grid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px}
+.settings-grid{display:grid;gap:12px}
+.settings-range-grid{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:8px;padding-bottom:10px;border-bottom:1px solid #dce4ee}
 .day-checks{display:flex;gap:8px;flex-wrap:wrap}
+.period-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.period-setting{border:1px solid #d8e2ef;background:#fff;border-radius:9px;padding:9px}
+.period-setting-title{font-size:12px;font-weight:800;color:#475467;margin-bottom:7px}
+.period-time-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.period-time-pair label{margin-bottom:4px}
+.timeline-wrap{min-width:620px;border:1px solid #e0e5ec;border-radius:10px;overflow:hidden;background:#fff}
+.timeline-head{display:grid;background:#f8fafc;border-bottom:1px solid #e0e5ec;font-size:12px;font-weight:800;color:#475467}
+.timeline-head>div{padding:9px 6px;text-align:center;border-left:1px solid #edf0f4}
+.timeline-head>div:first-child{border-left:0}
+.timeline-body{position:relative;background:#fff}
+.timeline-gridline{position:absolute;left:0;right:0;border-top:1px solid #e1e6ed;z-index:1;pointer-events:none}
+.timeline-gridline.major{border-top-color:#cfd7e2}
+.timeline-time-label{position:absolute;left:0;width:82px;padding-right:8px;text-align:right;font-size:11px;color:#667085;transform:translateY(-50%);z-index:3;background:rgba(255,255,255,.92)}
+.timeline-time-label.first{transform:none}
+.timeline-time-label.last{transform:translateY(-100%)}
+.timeline-day{position:absolute;top:0;bottom:0;border-left:1px solid #edf0f4;z-index:2}
+.timeline-course{position:absolute;left:6px;right:6px;border:1px solid #c9d8ea;background:#eef6ff;border-radius:8px;padding:6px 7px;text-align:left;font-size:11px;overflow:hidden;z-index:4;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.timeline-course b{display:block;font-size:12px;line-height:1.25;margin-bottom:2px}
+.timeline-course span{display:block;color:#53657a;line-height:1.25}
 .schedule-compare{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px;margin-top:18px}
 .schedule-pane{border:1px solid #dfe5ec;border-radius:12px;padding:12px;background:#fbfcfe}
 .weekly-schedule{overflow:auto}
@@ -168,8 +188,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .result-summary{padding:12px 14px;border-radius:10px;margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0}
 .result-summary.ok{background:#ecfdf3;border-color:#abefc6;color:#067647}
 .result-summary.bad{background:#fff5f3;border-color:#fecdca;color:#b42318}
-@media(max-width:920px){.profile-v16{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-compare{grid-template-columns:1fr}.settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:620px){.profile-v16,.cert-kpi,.semester-gpa-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.creator-line{display:block}.creator-line span{display:block;margin:2px 0}}
+@media(max-width:920px){.profile-v16{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-compare{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.profile-v16,.cert-kpi,.semester-gpa-grid{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:1fr 1fr}.settings-range-grid>div:last-child{grid-column:1/-1}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr 1fr}.creator-line{display:block}.creator-line span{display:block;margin:2px 0}}
 
 
 /* v1.6.3 layout refinements */
@@ -821,8 +841,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 
   <section class="card section input-section" id="planSection">
     <div class="section-title-row"><h2>2. 향후 수강계획</h2></div>
-<div id="planSettingsPanel" class="plan-settings no-print"></div>
-    <div class="form-grid plan">
+<div class="form-grid plan">
       <div><label>계획학기</label><select id="planTerm"></select></div>
       <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
       <div><label>검색 범위</label><select id="planScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
@@ -843,6 +862,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div class="schedule-compare">
       <div class="schedule-pane">
         <div class="section-title-row"><h3 id="planTimetableTitle">학기 시간표</h3><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정" aria-label="시간표 표시 설정">⚙</button></div>
+        <div id="planSettingsPanel" class="plan-settings no-print"></div>
         <div id="planTimetableGrid" class="weekly-schedule"></div>
         <div id="planTimetableUnplaced" class="plan-unplaced"></div>
       </div>
@@ -895,7 +915,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.8:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.9:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1226,6 +1246,7 @@ function defaultState(){
     activeScenarioId:'sc_default',
     scheduleSettings:{
       days:['월','화','수','목','금'],
+      timetableStart:'17:00',timetableEnd:'23:00',gridMinutes:60,
       slot1Start:'18:20',slot1End:'20:00',
       slot2Start:'20:10',slot2End:'21:50',
       lifelongStart:'18:20',lifelongEnd:'21:00'
@@ -1245,7 +1266,7 @@ function load(){
       if(typeof x.profile.wantsTeacherCertificate!=='boolean')x.profile.wantsTeacherCertificate=false;
       if(!['report','thesis','research'].includes(x.profile.track))x.profile.track='report';
       if(x.scenarios.length===1&&x.scenarios[0].name==='현재안')x.scenarios[0].name='시트 1';
-      x.scheduleSettings=x.scheduleSettings||defaultState().scheduleSettings;
+      x.scheduleSettings={...defaultState().scheduleSettings,...(x.scheduleSettings||{})};
       x.scheduleReferences=Array.isArray(x.scheduleReferences)?x.scheduleReferences:[];
       x.activeReferenceId=x.activeReferenceId||null;
       x.history=Array.isArray(x.history)?x.history:[];
@@ -1628,21 +1649,58 @@ function renderSemesterGpa(){
   grid.innerHTML=cards.join('');
 }
 function renderPlanSettings(){
-  const s=state.scheduleSettings||defaultState().scheduleSettings;
+  const defaults=defaultState().scheduleSettings;
+  const s={...defaults,...(state.scheduleSettings||{})};
   const panel=document.getElementById('planSettingsPanel');
   if(!panel)return;
+  const gridOptions=[30,60,120].map(v=>`<option value="${v}" ${Number(s.gridMinutes)===v?'selected':''}>${v===60?'1시간':v===120?'2시간':'30분'}</option>`).join('');
   panel.innerHTML=`<div class="settings-grid">
-    <div style="grid-column:1/-1"><label>시간표 표시 요일</label><div class="day-checks">${['월','화','수','목','금'].map(d=>`<label><input type="checkbox" class="schedule-day" value="${d}" ${s.days.includes(d)?'checked':''}> ${d}</label>`).join('')}</div></div>
-    <div><label>1·2교시 시작</label><input id="slot1Start" type="time" value="${s.slot1Start}"></div>
-    <div><label>1·2교시 종료</label><input id="slot1End" type="time" value="${s.slot1End}"></div>
-    <div><label>3·4교시 시작</label><input id="slot2Start" type="time" value="${s.slot2Start}"></div>
-    <div><label>3·4교시 종료</label><input id="slot2End" type="time" value="${s.slot2End}"></div>
-    <div><label>평생교육사 시작</label><input id="lifelongStart" type="time" value="${s.lifelongStart}"></div>
-    <div><label>평생교육사 종료</label><input id="lifelongEnd" type="time" value="${s.lifelongEnd}"></div>
+    <div>
+      <label>시간표 범례</label>
+      <div class="settings-range-grid">
+        <div><label>시작</label><input id="timetableStart" type="time" value="${s.timetableStart}"></div>
+        <div><label>종료</label><input id="timetableEnd" type="time" value="${s.timetableEnd}"></div>
+        <div><label>구분선 단위</label><select id="gridMinutes">${gridOptions}</select></div>
+      </div>
+    </div>
+    <div><label>시간표 표시 요일</label><div class="day-checks">${['월','화','수','목','금'].map(d=>`<label><input type="checkbox" class="schedule-day" value="${d}" ${s.days.includes(d)?'checked':''}> ${d}</label>`).join('')}</div></div>
+    <div class="period-settings-grid">
+      <div class="period-setting">
+        <div class="period-setting-title">1·2교시</div>
+        <div class="period-time-pair">
+          <div><label>시작</label><input id="slot1Start" type="time" value="${s.slot1Start}"></div>
+          <div><label>종료</label><input id="slot1End" type="time" value="${s.slot1End}"></div>
+        </div>
+      </div>
+      <div class="period-setting">
+        <div class="period-setting-title">3·4교시</div>
+        <div class="period-time-pair">
+          <div><label>시작</label><input id="slot2Start" type="time" value="${s.slot2Start}"></div>
+          <div><label>종료</label><input id="slot2End" type="time" value="${s.slot2End}"></div>
+        </div>
+      </div>
+      <div class="period-setting">
+        <div class="period-setting-title">평생교육사</div>
+        <div class="period-time-pair">
+          <div><label>시작</label><input id="lifelongStart" type="time" value="${s.lifelongStart}"></div>
+          <div><label>종료</label><input id="lifelongEnd" type="time" value="${s.lifelongEnd}"></div>
+        </div>
+      </div>
+    </div>
   </div>`;
-  panel.querySelectorAll('input').forEach(el=>el.onchange=()=>{
+  panel.querySelectorAll('input,select').forEach(el=>el.onchange=()=>{
     const days=[...panel.querySelectorAll('.schedule-day:checked')].map(x=>x.value);
-    state.scheduleSettings={days,
+    let timetableStart=document.getElementById('timetableStart').value||'17:00';
+    let timetableEnd=document.getElementById('timetableEnd').value||'23:00';
+    if(hhmmToMinutes(timetableEnd)<=hhmmToMinutes(timetableStart)){
+      alert('시간표 종료시간은 시작시간보다 뒤여야 합니다.');
+      timetableStart=s.timetableStart||'17:00';
+      timetableEnd=s.timetableEnd||'23:00';
+    }
+    state.scheduleSettings={
+      days:days.length?days:['월','화','수','목','금'],
+      timetableStart,timetableEnd,
+      gridMinutes:Number(document.getElementById('gridMinutes').value||60),
       slot1Start:document.getElementById('slot1Start').value||'18:20',
       slot1End:document.getElementById('slot1End').value||'20:00',
       slot2Start:document.getElementById('slot2Start').value||'20:10',
@@ -1650,33 +1708,29 @@ function renderPlanSettings(){
       lifelongStart:document.getElementById('lifelongStart').value||'18:20',
       lifelongEnd:document.getElementById('lifelongEnd').value||'21:00'
     };
-    save();renderPlanTimetable();renderTimetable();renderCatalog();
+    save();
+    renderPlanSettings();
+    renderPlanTimetable();
+    renderTimetable();
+    renderCatalog();
   });
 }
 function buildPlanScheduleModel(records,settings){
   const days=settings.days||['월','화','수','목','금'];
-  const placed=[],unplaced=[];
+  const placed=[],unplaced=[],outOfRange=[];
+  const rangeStart=hhmmToMinutes(settings.timetableStart||'17:00');
+  const rangeEnd=hhmmToMinutes(settings.timetableEnd||'23:00');
   for(const r of records){
     const o=offeringForPlanRecord(r)||r;
     const day=o.day||r.day||'', si=scheduleInfoWithSettings(o,settings);
-    if(day&&days.includes(day)&&si.order<9999)placed.push({r,o,day,si}); else unplaced.push({r,o});
+    const tm=String(si.time||'').match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
+    if(!day||!days.includes(day)||!tm){unplaced.push({r,o});continue;}
+    const start=Number(tm[1])*60+Number(tm[2]),end=Number(tm[3])*60+Number(tm[4]);
+    const item={r,o,day,si,start,end};
+    if(end<=rangeStart||start>=rangeEnd)outOfRange.push(item);
+    else placed.push(item);
   }
-  const slotMap=new Map();
-  const putSlot=(slot,priority=0)=>{
-    if(slot.start>=9999)return;
-    const existing=slotMap.get(slot.start);
-    if(!existing || priority>=existing.priority)slotMap.set(slot.start,{...slot,priority});
-  };
-  putSlot({label:`${settings.slot1Start}–${settings.slot1End}`,start:hhmmToMinutes(settings.slot1Start)},0);
-  putSlot({label:`${settings.slot2Start}–${settings.slot2End}`,start:hhmmToMinutes(settings.slot2Start)},0);
-
-  // 평생교육사/원본 시간처럼 실제 배치 과목이 가진 시간값을 같은 시작시간의 기본 시간축보다 우선한다.
-  for(const x of placed){
-    if(x.si.order>=9999)continue;
-    putSlot({label:x.si.time,start:x.si.order},2);
-  }
-  const uniqueSlots=[...slotMap.values()].sort((a,b)=>a.start-b.start);
-  return {days,placed,unplaced,slots:uniqueSlots};
+  return {days,placed,unplaced,outOfRange,rangeStart,rangeEnd};
 }
 function scheduleInfoWithSettings(o,settings){
   const raw=[o?.timeRaw||'',o?.sectionTitle||''].filter(Boolean).join('\n');
@@ -1687,16 +1741,52 @@ function scheduleInfoWithSettings(o,settings){
   if(/(?:^|[-\s])3\s*[,·]\s*4(?:교시)?/.test(raw)||(/8:10/.test(raw)&&/9:50/.test(raw))){const time=`${settings.slot2Start}–${settings.slot2End}`;return {order:hhmmToMinutes(settings.slot2Start),label:'3·4교시',time};}
   return {order:9999,label:'시간 미정',time:'시간 미정'};
 }
+function timelineHtmlFromItems(items,settings){
+  const days=settings.days||['월','화','수','목','금'];
+  const rangeStart=hhmmToMinutes(settings.timetableStart||'17:00');
+  const rangeEnd=hhmmToMinutes(settings.timetableEnd||'23:00');
+  const unit=Math.max(15,Number(settings.gridMinutes||60));
+  const total=Math.max(60,rangeEnd-rangeStart);
+  const pxPerMinute=64/60;
+  const bodyHeight=Math.max(240,Math.round(total*pxPerMinute));
+  const timeCol=82;
+  const colWidth=`calc((100% - ${timeCol}px) / ${Math.max(1,days.length)})`;
+
+  const ticks=[];
+  for(let t=rangeStart;t<=rangeEnd;t+=unit)ticks.push(t);
+  if(ticks[ticks.length-1]!==rangeEnd)ticks.push(rangeEnd);
+
+  const gridLines=ticks.map((t,i)=>{
+    const y=((t-rangeStart)/total)*bodyHeight;
+    const cls=i===0||i===ticks.length-1?' major':'';
+    const labelClass=i===0?' first':i===ticks.length-1?' last':'';
+    return `<div class="timeline-gridline${cls}" style="top:${y}px"></div><div class="timeline-time-label${labelClass}" style="top:${y}px">${minutesToHHMM(t)}</div>`;
+  }).join('');
+
+  const dayCols=days.map((day,di)=>{
+    const left=`calc(${timeCol}px + ${di} * ${colWidth})`;
+    const courses=items.filter(x=>x.day===day).map(x=>{
+      const start=Math.max(x.start,rangeStart),end=Math.min(x.end,rangeEnd);
+      const top=((start-rangeStart)/total)*bodyHeight;
+      const height=Math.max(28,((end-start)/total)*bodyHeight);
+      const professor=x.o?.professor||x.professor||'';
+      const room=x.o?.room||x.room||'';
+      const time=x.si?.time||x.time||`${minutesToHHMM(x.start)}–${minutesToHHMM(x.end)}`;
+      return `<div class="timeline-course" style="top:${top}px;height:${height}px"><b>${esc(x.r?.courseName||x.courseName||'')}</b><span>${esc(time)}</span><span>${esc([professor,room].filter(Boolean).join(' '))}</span></div>`;
+    }).join('');
+    return `<div class="timeline-day" style="left:${left};width:${colWidth}">${courses}</div>`;
+  }).join('');
+
+  return `<div class="timeline-wrap">
+    <div class="timeline-head" style="grid-template-columns:${timeCol}px repeat(${days.length},minmax(92px,1fr))">
+      <div>시간</div>${days.map(d=>`<div>${d}</div>`).join('')}
+    </div>
+    <div class="timeline-body" style="height:${bodyHeight}px">${gridLines}${dayCols}</div>
+  </div>`;
+}
 function buildWeeklyScheduleHtml(records,settings){
   const m=buildPlanScheduleModel(records,settings);
-  const rows=m.slots.map(slot=>{
-    const cells=m.days.map(day=>{
-      const list=m.placed.filter(x=>x.day===day&&Math.abs(x.si.order-slot.start)<15);
-      return `<td>${list.map(x=>`<div class="schedule-course"><b>${esc(x.r.courseName)}</b><span>${esc(x.o.professor||'')} ${esc(x.o.room||'')}</span></div>`).join('')}</td>`;
-    }).join('');
-    return `<tr><th>${slot.label}</th>${cells}</tr>`;
-  }).join('');
-  return {model:m,html:`<table><thead><tr><th>시간</th>${m.days.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`};
+  return {model:m,html:timelineHtmlFromItems(m.placed,settings)};
 }
 function renderPlanTimetable(){
   const term=document.getElementById('planTerm').value;
@@ -1707,11 +1797,15 @@ function renderPlanTimetable(){
   const built=buildWeeklyScheduleHtml(records,settings);
   document.getElementById('planTimetableGrid').innerHTML=built.html;
   const unplaced=built.model.unplaced;
-  document.getElementById('planTimetableUnplaced').innerHTML=unplaced.length?`<h4>시간 미정 과목</h4><div class="table-wrap"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody>${unplaced.map(({r,o})=>{
+  const outOfRange=built.model.outOfRange||[];
+  let extra='';
+  if(unplaced.length)extra+=`<h4>시간 미정 과목</h4><div class="table-wrap"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody>${unplaced.map(({r,o})=>{
     const badge=(r.availability||o.availability)==='actual'?'<span class="badge actual">실제개설</span>':(r.availability||o.availability)==='planned'?'<span class="badge planned">개설예정</span>':'<span class="badge manual">시간 미정</span>';
     const sub=[o.professor||'',o.day||'',o.room||''].filter(Boolean).join(' ');
     return `<tr><td class="mono">${esc(r.courseCode||'')}</td><td><div class="course-name">${esc(r.courseName)}</div><div class="muted">${esc(sub||'요일·시간 정보 없음')}</div></td><td>${esc(courseOriginLabel(o||r))}</td><td>${esc(CATEGORY_LABELS[r.category||o.category||'unknown'])}</td><td>${badge}</td></tr>`;
-  }).join('')}</tbody></table></div>`:'';
+  }).join('')}</tbody></table></div>`;
+  if(outOfRange.length)extra+=`<div class="callout warnbox" style="margin-top:10px"><b>표시 범위 밖 과목:</b> ${outOfRange.map(x=>`${esc(x.r.courseName)} (${esc(x.si.time)})`).join(' · ')}<br>⚙ 설정에서 시간표 시작/종료 범위를 넓히면 표시됩니다.</div>`;
+  document.getElementById('planTimetableUnplaced').innerHTML=extra;
 }
 function saveCurrentPlanTimetableSnapshot(){
   const term=document.getElementById('planTerm').value;
@@ -1730,31 +1824,19 @@ function saveCurrentPlanTimetableSnapshot(){
   save();renderScheduleReferences();
 }
 function renderSnapshotSchedule(ref){
-  const settings=ref.settings||defaultState().scheduleSettings;
+  const settings={...defaultState().scheduleSettings,...(ref.settings||{})};
   const days=settings.days||['월','화','수','목','금'];
-  const slots=[...new Map((ref.entries||[]).filter(e=>e.order<9999).map(e=>[e.time,{label:e.time,start:e.order}])).values()].sort((a,b)=>a.start-b.start);
-  const rows=slots.map(slot=>`<tr><th>${esc(slot.label)}</th>${days.map(day=>`<td>${(ref.entries||[]).filter(e=>e.day===day&&Math.abs(e.order-slot.start)<15).map(e=>`<div class="schedule-course"><b>${esc(e.courseName)}</b><span>${esc(e.professor||'')} ${esc(e.room||'')}</span></div>`).join('')}</td>`).join('')}</tr>`).join('');
+  const rangeStart=hhmmToMinutes(settings.timetableStart||'17:00');
+  const rangeEnd=hhmmToMinutes(settings.timetableEnd||'23:00');
+  const placed=(ref.entries||[]).filter(e=>e.day&&e.order<9999).map(e=>{
+    const m=String(e.time||'').match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
+    if(!m)return null;
+    const start=Number(m[1])*60+Number(m[2]),end=Number(m[3])*60+Number(m[4]);
+    if(end<=rangeStart||start>=rangeEnd)return null;
+    return {r:e,o:e,day:e.day,si:{time:e.time},start,end};
+  }).filter(Boolean);
   const unknown=(ref.entries||[]).filter(e=>!e.day||e.order>=9999);
-  return `<div class="reference-snapshot"><div class="snapshot-title">${esc(ref.term)}학기 저장 시간표</div><div class="weekly-schedule"><table><thead><tr><th>시간</th>${days.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>${unknown.length?`<div class="muted" style="margin-top:7px">시간 미정: ${unknown.map(e=>esc(e.courseName)).join(', ')}</div>`:''}</div>`;
-}
-async function imageFileToCompressedDataUrl(file){
-  const bmp=await createImageBitmap(file);
-  const max=1100,scale=Math.min(1,max/Math.max(bmp.width,bmp.height));
-  const c=document.createElement('canvas');c.width=Math.round(bmp.width*scale);c.height=Math.round(bmp.height*scale);
-  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);if(bmp.close)bmp.close();
-  return c.toDataURL('image/jpeg',0.75);
-}
-async function addScheduleReferenceFile(file){
-  if(!file||!String(file.type||'').startsWith('image/'))return;
-  try{
-    const dataUrl=await imageFileToCompressedDataUrl(file);
-    const item={id:uid('ref'),name:file.name||'붙여넣은 시간표',dataUrl,createdAt:Date.now()};
-    state.scheduleReferences=state.scheduleReferences||[];
-    state.scheduleReferences.unshift(item);
-    if(state.scheduleReferences.length>8)state.scheduleReferences=state.scheduleReferences.slice(0,8);
-    state.activeReferenceId=item.id;
-    save();renderScheduleReferences();
-  }catch(e){alert('시간표 이미지를 저장하지 못했습니다: '+e.message);}
+  return `<div class="reference-snapshot"><div class="snapshot-title">${esc(ref.term)}학기 저장 시간표</div><div class="weekly-schedule">${timelineHtmlFromItems(placed,settings)}</div>${unknown.length?`<div class="snapshot-unknown"><b>시간 미정:</b> ${unknown.map(e=>esc(e.courseName)).join(' · ')}</div>`:''}</div>`;
 }
 function renderScheduleReferences(){
   const refs=state.scheduleReferences||[];
