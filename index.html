@@ -150,7 +150,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .period-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .period-setting{border:1px solid #d8e2ef;background:#fff;border-radius:9px;padding:9px}
 .period-setting-title{font-size:12px;font-weight:800;color:#475467;margin-bottom:7px}
-.period-time-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.period-setting select,.settings-range-grid select{width:100%;min-width:0}
+.period-time-pair{display:grid;grid-template-columns:1fr;gap:8px}
 .period-time-pair label{margin-bottom:4px}
 .timeline-wrap{min-width:620px;border:1px solid #e0e5ec;border-radius:10px;overflow:hidden;background:#fff}
 .timeline-head{display:grid;background:#f8fafc;border-bottom:1px solid #e0e5ec;font-size:12px;font-weight:800;color:#475467}
@@ -188,8 +189,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 .result-summary{padding:12px 14px;border-radius:10px;margin-top:12px;background:#f8fafc;border:1px solid #e2e8f0}
 .result-summary.ok{background:#ecfdf3;border-color:#abefc6;color:#067647}
 .result-summary.bad{background:#fff5f3;border-color:#fecdca;color:#b42318}
-@media(max-width:920px){.profile-v16{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-compare{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr 1fr}}
-@media(max-width:620px){.profile-v16,.cert-kpi,.semester-gpa-grid{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:1fr 1fr}.settings-range-grid>div:last-child{grid-column:1/-1}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr 1fr}.creator-line{display:block}.creator-line span{display:block;margin:2px 0}}
+@media(max-width:920px){.profile-v16{grid-template-columns:repeat(2,minmax(0,1fr))}.schedule-compare{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr}}
+@media(max-width:620px){.profile-v16,.cert-kpi,.semester-gpa-grid{grid-template-columns:1fr}.settings-range-grid{grid-template-columns:1fr 1fr}.settings-range-grid>div:last-child{grid-column:1/-1}.period-settings-grid{grid-template-columns:1fr}.period-time-pair{grid-template-columns:1fr}.creator-line{display:block}.creator-line span{display:block;margin:2px 0}}
 
 
 /* v1.6.3 layout refinements */
@@ -915,7 +916,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.9:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.10:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1363,6 +1364,27 @@ function hhmmToMinutes(s){
 function minutesToHHMM(n){
   const h=Math.floor(n/60),m=n%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
+function timeSelectOptions(selected,step=10){
+  const options=[];
+  for(let m=0;m<24*60;m+=step){
+    const h24=Math.floor(m/60),min=m%60;
+    const period=h24<12?'오전':'오후';
+    const h12=h24%12===0?12:h24%12;
+    const value=`${String(h24).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+    options.push(`<option value="${value}" ${value===selected?'selected':''}>${period} ${String(h12).padStart(2,'0')}:${String(min).padStart(2,'0')}</option>`);
+  }
+  const selectedExists=options.some(x=>x.includes(`value="${selected}"`));
+  if(selected && !selectedExists){
+    const mm=hhmmToMinutes(selected);
+    if(mm!==9999){
+      const h24=Math.floor(mm/60),min=mm%60;
+      const period=h24<12?'오전':'오후';
+      const h12=h24%12===0?12:h24%12;
+      options.push(`<option value="${selected}" selected>${period} ${String(h12).padStart(2,'0')}:${String(min).padStart(2,'0')}</option>`);
+    }
+  }
+  return options.join('');
+}
 function isLifelongCourse(o){return /^SPL/i.test(canonicalCode(o?.courseCode))||matchesNameList(o?.courseName,LIFELONG_REQUIRED_NAMES);}
 function explicitRawTime(o){
   const raw=String(o?.timeRaw||'');
@@ -1658,8 +1680,8 @@ function renderPlanSettings(){
     <div>
       <label>시간표 범례</label>
       <div class="settings-range-grid">
-        <div><label>시작</label><input id="timetableStart" type="time" value="${s.timetableStart}"></div>
-        <div><label>종료</label><input id="timetableEnd" type="time" value="${s.timetableEnd}"></div>
+        <div><label>시작</label><select id="timetableStart">${timeSelectOptions(s.timetableStart)}</select></div>
+        <div><label>종료</label><select id="timetableEnd">${timeSelectOptions(s.timetableEnd)}</select></div>
         <div><label>구분선 단위</label><select id="gridMinutes">${gridOptions}</select></div>
       </div>
     </div>
@@ -1668,22 +1690,22 @@ function renderPlanSettings(){
       <div class="period-setting">
         <div class="period-setting-title">1·2교시</div>
         <div class="period-time-pair">
-          <div><label>시작</label><input id="slot1Start" type="time" value="${s.slot1Start}"></div>
-          <div><label>종료</label><input id="slot1End" type="time" value="${s.slot1End}"></div>
+          <div><label>시작</label><select id="slot1Start">${timeSelectOptions(s.slot1Start)}</select></div>
+          <div><label>종료</label><select id="slot1End">${timeSelectOptions(s.slot1End)}</select></div>
         </div>
       </div>
       <div class="period-setting">
         <div class="period-setting-title">3·4교시</div>
         <div class="period-time-pair">
-          <div><label>시작</label><input id="slot2Start" type="time" value="${s.slot2Start}"></div>
-          <div><label>종료</label><input id="slot2End" type="time" value="${s.slot2End}"></div>
+          <div><label>시작</label><select id="slot2Start">${timeSelectOptions(s.slot2Start)}</select></div>
+          <div><label>종료</label><select id="slot2End">${timeSelectOptions(s.slot2End)}</select></div>
         </div>
       </div>
       <div class="period-setting">
         <div class="period-setting-title">평생교육사</div>
         <div class="period-time-pair">
-          <div><label>시작</label><input id="lifelongStart" type="time" value="${s.lifelongStart}"></div>
-          <div><label>종료</label><input id="lifelongEnd" type="time" value="${s.lifelongEnd}"></div>
+          <div><label>시작</label><select id="lifelongStart">${timeSelectOptions(s.lifelongStart)}</select></div>
+          <div><label>종료</label><select id="lifelongEnd">${timeSelectOptions(s.lifelongEnd)}</select></div>
         </div>
       </div>
     </div>
