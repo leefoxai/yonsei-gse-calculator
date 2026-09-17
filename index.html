@@ -1160,7 +1160,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.8:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.9:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -2387,7 +2387,8 @@ function mapPortalCategory(raw, matched){
   }
   if(s.includes('전공')){
     if(matched?.category && matched.category!=='unknown')return matched.category;
-    return 'unknown';
+    // 연세포털 전체성적조회에서 '전공'은 계산기 종별의 전공필수에 대응한다.
+    return 'major_required';
   }
   if(matched?.category && matched.category!=='unknown')return matched.category;
   return 'unknown';
@@ -2552,7 +2553,7 @@ function buildCandidateFromCode(detected,block,term,lineConf=null){
     courseName:matched?.courseName||ocrName||`미확인 과목 ${code}`,
     ocrCourseName:ocrName,portalCategory,category,credits:Number(credits||0),grade,passed,
     matched:!!matched,matchMajor:matched?.major||'',confidence:matched?'code':'ocr',
-    majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+    majorTeachingSwitchable:!!(matched && matched.major===state.profile.major && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
     codeMethod:detected.method||'exact',lineConfidence:lineConf,gradeSource:grade?'initial':''
   };
 }
@@ -2990,7 +2991,7 @@ function pdfFindCreditIndex(items,gradeIndex,codeIndex){
   }
   return -1;
 }
-function parsePortalPdfYonseiFixed(rows,pageWidth){
+function parsePortalPdfYonseiFixed(rows,pageWidth,pageNo=1){
   // 연세포털 전체성적조회 [출력] PDF의 표 열 경계.
   // 절대 px가 아니라 A4 페이지 폭 대비 비율로 계산한다.
   const ratios=[
@@ -3086,11 +3087,13 @@ function parsePortalPdfYonseiFixed(rows,pageWidth){
       note,
       matched:!!matched,
       matchMajor:matched?.major||'',
-      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) &&
+      majorTeachingSwitchable:!!(matched && matched.major===state.profile.major && Array.isArray(matched.categoryOptions) &&
         matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
       confidenceLevel:'high',
       confidenceReason:matched?'연세포털 PDF 표 직접 추출 · 카탈로그 확인':'연세포털 PDF 표 직접 추출',
-      source:'portal_pdf'
+      source:'portal_pdf',
+      _pdfPage:pageNo,
+      _pdfY:Number(row.y||0)
     });
   }
 
@@ -3191,7 +3194,7 @@ function parsePortalPdfGeometry(rows){
       note,
       matched:!!matched,
       matchMajor:matched?.major||'',
-      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      majorTeachingSwitchable:!!(matched && matched.major===state.profile.major && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
       confidenceLevel:'high',
       confidenceReason:matched?'PDF 표 직접 추출 · 카탈로그 확인':'PDF 표 직접 추출',
       source:'portal_pdf'
@@ -3280,7 +3283,7 @@ function parsePortalPdfRows(rows){
       note,
       matched:!!matched,
       matchMajor:matched?.major||'',
-      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      majorTeachingSwitchable:!!(matched && matched.major===state.profile.major && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
       confidenceLevel:'high',
       confidenceReason:matched?'PDF 직접 추출 · 카탈로그 확인':'PDF 직접 추출',
       source:'portal_pdf'
@@ -3440,7 +3443,7 @@ function parsePortalPdfSequential(items){
       note,
       matched:!!matched,
       matchMajor:matched?.major||'',
-      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      majorTeachingSwitchable:!!(matched && matched.major===state.profile.major && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
       confidenceLevel:'high',
       confidenceReason:matched?'PDF 직접 추출 · 카탈로그 확인':'PDF 직접 추출',
       source:'portal_pdf'
@@ -3502,6 +3505,157 @@ function applyPdfOccurrenceTerms(parsedRows,items){
   }
   return parsedRows;
 }
+function portalPdfCropCanvas(pageCanvas,viewport,rowY,x1Ratio,x2Ratio,extraY=0){
+  const scale=Number(viewport.scale||1);
+  const point=viewport.convertToViewportPoint(0,Number(rowY||0));
+  const baselineY=Number(point[1]||0);
+  const top=Math.max(0,Math.floor(baselineY-(10+extraY)*scale));
+  const bottom=Math.min(pageCanvas.height,Math.ceil(baselineY+(5+extraY)*scale));
+  const left=Math.max(0,Math.floor(pageCanvas.width*x1Ratio));
+  const right=Math.min(pageCanvas.width,Math.ceil(pageCanvas.width*x2Ratio));
+  const sw=Math.max(2,right-left),sh=Math.max(2,bottom-top);
+
+  const out=document.createElement('canvas');
+  const upscale=2;
+  out.width=Math.max(20,Math.round(sw*upscale));
+  out.height=Math.max(20,Math.round(sh*upscale));
+  const ctx=out.getContext('2d',{willReadFrequently:true});
+  ctx.fillStyle='#fff';
+  ctx.fillRect(0,0,out.width,out.height);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(pageCanvas,left,top,sw,sh,0,0,out.width,out.height);
+  return out;
+}
+function cleanPortalPdfOcrText(v){
+  return String(v||'')
+    .replace(/\r/g,' ')
+    .replace(/\n+/g,' ')
+    .replace(/[|¦]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function plausiblePortalCourseName(v){
+  const s=cleanPortalPdfOcrText(v);
+  if(s.length<2)return '';
+  if(/^[A-Z]{2,5}\d{4}(?:-\d{2})?$/i.test(s.replace(/\s+/g,'')))return '';
+  return s;
+}
+async function portalPdfOcrCell(worker,canvas,kind){
+  let whitelist='';
+  if(kind==='credit')whitelist='0123456789.';
+  if(kind==='grade')whitelist='ABCDEFGHIJKLMNOPQRSTUVWXYZ+-0';
+  await worker.setParameters({
+    tessedit_pageseg_mode:'7',
+    preserve_interword_spaces:'1',
+    user_defined_dpi:'300',
+    tessedit_char_whitelist:whitelist
+  });
+  const result=await worker.recognize(canvas,{}, {text:true});
+  return cleanPortalPdfOcrText(result?.data?.text||'');
+}
+async function refinePortalPdfUnmatchedByOcr(file,candidates,statusEl){
+  const targets=candidates.filter(r=>!r.matched && r._pdfPage && Number.isFinite(r._pdfY));
+  if(!targets.length)return candidates;
+
+  const data=await file.arrayBuffer();
+  const pdf=await loadPdfDocument(data);
+  const worker=await ensureOcrWorker();
+  const pageCache=new Map();
+
+  async function getPageRender(pageNo){
+    if(pageCache.has(pageNo))return pageCache.get(pageNo);
+    const page=await pdf.getPage(pageNo);
+    const viewport=page.getViewport({scale:2.6});
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.ceil(viewport.width);
+    canvas.height=Math.ceil(viewport.height);
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({canvasContext:ctx,viewport}).promise;
+    const obj={page,viewport,canvas};
+    pageCache.set(pageNo,obj);
+    return obj;
+  }
+
+  for(let i=0;i<targets.length;i++){
+    const r=targets[i];
+    if(statusEl)statusEl.textContent=`카탈로그 미등록 과목 OCR 보완 중 · ${i+1}/${targets.length} · ${r.courseCode}`;
+    try{
+      const {viewport,canvas}=await getPageRender(r._pdfPage);
+
+      // 연세포털 표 열 비율:
+      // 종별 .343-.392 / 과목명 .509-.697 / 학점 .763-.807 / 평가 .807-.857
+      const categoryCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.338,.397,2);
+      const nameCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.503,.704,8);
+      const creditCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.755,.812,2);
+      const gradeCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.805,.865,2);
+
+      const ocrCategoryText=await portalPdfOcrCell(worker,categoryCanvas,'text');
+      const ocrNameText=await portalPdfOcrCell(worker,nameCanvas,'text');
+      const ocrCreditText=await portalPdfOcrCell(worker,creditCanvas,'credit');
+      const ocrGradeText=await portalPdfOcrCell(worker,gradeCanvas,'grade');
+
+      const ocrPortalCategory=pdfKnownCategory(ocrCategoryText);
+      if(ocrPortalCategory){
+        r.portalCategory=ocrPortalCategory;
+        r.category=mapPortalCategory(ocrPortalCategory,null);
+      }
+
+      const ocrName=plausiblePortalCourseName(ocrNameText);
+      const directName=plausiblePortalCourseName(r.pdfCourseName||r.courseName);
+      // PDF 텍스트가 정상적이면 더 정확하므로 유지하고,
+      // 비어 있거나 코드만 잡힌 경우 OCR 결과로 보완한다.
+      if(!directName && ocrName)r.courseName=ocrName;
+      else if(directName)r.courseName=directName;
+      r.ocrCourseName=ocrName||'';
+
+      const creditMatch=ocrCreditText.match(/\d+(?:\.\d+)?/);
+      if(creditMatch){
+        const n=Number(creditMatch[0]);
+        if(Number.isFinite(n)&&n>=0&&n<=9)r.credits=['common','audit'].includes(r.category)?0:n;
+      }
+
+      const ocrGrade=pdfGradeValue(ocrGradeText)||parseGradeLoose(ocrGradeText);
+      if(ocrGrade){
+        r.grade=ocrGrade;
+        r.rawGrade=ocrGradeText;
+        const p=gradePasses(ocrGrade);
+        if(p!=null)r.passed=p;
+      }
+
+      // PDF 텍스트 직접 판독값 + 개별 셀 OCR 검증 결과를 함께 사용
+      r.ocrFallbackUsed=true;
+      const unresolved=
+        r.category==='unknown' ||
+        !plausiblePortalCourseName(r.courseName) ||
+        (!['common','audit'].includes(r.category) && !r.grade);
+      r.needsReview=unresolved;
+      r.selected=!unresolved;
+      r.confidenceReason=unresolved
+        ? '카탈로그 미등록 · PDF/OCR 확인 필요'
+        : '카탈로그 미등록 · PDF 직접 추출 + 셀 OCR 검증';
+    }catch(e){
+      console.warn('portal PDF row OCR fallback failed',r.courseCode,e);
+      r.ocrFallbackUsed=false;
+      r.needsReview=r.category==='unknown'||(!['common','audit'].includes(r.category)&&!r.grade);
+      r.selected=!r.needsReview;
+      r.confidenceReason=r.needsReview?'카탈로그 미등록 · 직접 확인 필요':'카탈로그 미등록 · PDF 직접 추출';
+    }
+  }
+
+  // 일반 이미지 OCR 기능에 영향을 주지 않도록 기본 파라미터 복구
+  try{
+    await worker.setParameters({
+      tessedit_pageseg_mode:'11',
+      preserve_interword_spaces:'1',
+      user_defined_dpi:'300',
+      tessedit_char_whitelist:''
+    });
+  }catch(e){}
+
+  return candidates;
+}
 async function extractPortalPdfCandidates(file){
   const data=await file.arrayBuffer();
   const pdf=await loadPdfDocument(data);
@@ -3518,7 +3672,7 @@ async function extractPortalPdfCandidates(file){
 
     // 1순위: 연세포털 전체성적조회 출력물의 고정 표 열 위치를 사용.
     // 제공된 실제 PDF에서 학기/종별/학정번호/과목/교수/학점/평가를 가장 안정적으로 분리한다.
-    let parsed=parsePortalPdfYonseiFixed(rows,viewport.width);
+    let parsed=parsePortalPdfYonseiFixed(rows,viewport.width,p);
 
     // 고정표 파서가 충분한 과목을 읽지 못한 경우 헤더 좌표 기반으로 재시도
     if(parsed.rows.length<3)parsed=parsePortalPdfGeometry(rows);
@@ -3566,8 +3720,16 @@ function renderPortalPdfCandidates(){
       <thead><tr><th>등록</th><th>학기</th><th>과목</th><th>포털 종별</th><th>인정 종별</th><th>학점</th><th>성적</th><th>상태</th></tr></thead>
       <tbody>${portalPdfCandidates.map((r,i)=>{
         const duplicate=historyAlreadyExists(r.term,r.courseCode,r.courseName);
-        const status=r.majorTeachingSwitchable?'전공교직 · 종별 변경 가능':r.matched?'카탈로그 확인':'PDF 직접 추출';
-        return `<tr class="${duplicate?'pdf-row-review':''}">
+        const status=r.majorTeachingSwitchable
+          ? '전공교직 · 종별 변경 가능'
+          : r.matched
+            ? '카탈로그 확인'
+            : r.needsReview
+              ? '카탈로그 미등록 · 확인 필요'
+              : r.ocrFallbackUsed
+                ? '카탈로그 미등록 · OCR 보완'
+                : '카탈로그 미등록 · PDF 직접 추출';
+        return `<tr class="${duplicate||r.needsReview?'pdf-row-review':''}">
           <td><input class="ocr-check pdf-select" data-i="${i}" type="checkbox" ${r.selected&&!duplicate?'checked':''} ${duplicate?'disabled':''}></td>
           <td><select class="inline-select pdf-term" data-i="${i}" style="min-width:105px">${academicTermOptionsHtml(r.term)}</select></td>
           <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''}</div></td>
@@ -3624,17 +3786,28 @@ async function readPortalPdf(){
     if(!portalPdfCandidates.length){
       throw new Error('수강 과목 행을 찾지 못했습니다. 연세포털 전체성적조회에서 [출력]으로 생성한 PDF인지 확인하십시오.');
     }
+
+    // 학정번호가 카탈로그에 없으면 해당 PDF 행의 종별/과목명/학점/성적 셀을
+    // 하나씩 OCR로 재확인해 자동 입력값을 보완한다.
+    const unmatchedCount=portalPdfCandidates.filter(x=>!x.matched).length;
+    if(unmatchedCount){
+      status.textContent=`PDF 표 분석 완료 · 카탈로그 미등록 ${unmatchedCount}과목을 OCR로 보완하는 중입니다.`;
+      await refinePortalPdfUnmatchedByOcr(file,portalPdfCandidates,status);
+    }
+
     const terms=[...new Set(portalPdfCandidates.map(x=>x.term))];
     const academicTerms=terms.filter(t=>t!==PRE_ADMISSION_TERM).sort((a,b)=>termIndex(a)-termIndex(b));
     const termLabel=[...academicTerms.map(displayAcademicTerm),...(terms.includes(PRE_ADMISSION_TERM)?['입학 전 인정학점']:[])].join(' · ');
     const wCount=portalPdfCandidates.filter(x=>x.grade==='W').length;
+    const ocrFallbackCount=portalPdfCandidates.filter(x=>x.ocrFallbackUsed).length;
+    const reviewCount=portalPdfCandidates.filter(x=>x.needsReview).length;
     const suspiciousSingleTerm=portalPdfCandidates.length>=5 && academicTerms.length<=1;
     const admissionBoundaryError=portalPdfCandidates.some(r=>
       canonicalCode(r.courseCode)!=='SPG6658' &&
       r.term===PRE_ADMISSION_TERM &&
       state.profile.admissionTerm==='2023-1'
     );
-    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}${admissionBoundaryError?' · ⚠ 입학학기 경계 확인 필요':''}`;
+    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${ocrFallbackCount?` · 카탈로그 미등록 OCR 보완 ${ocrFallbackCount}과목`:''}${reviewCount?` · 확인 필요 ${reviewCount}과목`:''}${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}${admissionBoundaryError?' · ⚠ 입학학기 경계 확인 필요':''}`;
     renderPortalPdfCandidates();
   }catch(err){
     console.error(err);
