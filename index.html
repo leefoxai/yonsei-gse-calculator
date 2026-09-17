@@ -1160,7 +1160,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.9:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.10:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -2911,7 +2911,7 @@ function pdfGradeValue(raw){
   if(/^Z\d+$/i.test(s))return '';
   return normalizeGrade(s);
 }
-function groupPdfItemsIntoLines(items,tolerance=3.2){
+function groupPdfItemsIntoLines(items,tolerance=4.5){
   const rows=[];
   const sorted=[...items]
     .filter(it=>pdfValueText(it.str))
@@ -2930,6 +2930,33 @@ function groupPdfItemsIntoLines(items,tolerance=3.2){
   rows.sort((a,b)=>b.y-a.y);
   rows.forEach(r=>r.items.sort((a,b)=>a.x-b.x));
   return rows;
+}
+function pdfJoinCellItems(items,{multiline=false}={}){
+  const arr=[...(items||[])].sort((a,b)=>{
+    const dy=Number(b.y||0)-Number(a.y||0);
+    if(Math.abs(dy)>1.2)return dy; // 위 줄 → 아래 줄
+    return Number(a.x||0)-Number(b.x||0);
+  });
+  if(!arr.length)return '';
+
+  let out='';
+  let prev=null;
+  for(const it of arr){
+    const s=pdfValueText(it.str);
+    if(!s)continue;
+
+    if(!out){out=s;prev=it;continue;}
+
+    const sameColumn=prev && Math.abs(Number(it.x||0)-Number(prev.x||0))<3.5;
+    const differentLine=prev && Math.abs(Number(it.y||0)-Number(prev.y||0))>1.2;
+
+    // 교과목명이 셀 안에서 자동 줄바꿈된 경우는 원래 한 문자열이므로 공백 없이 연결.
+    if(multiline && sameColumn && differentLine)out+=s;
+    else out+=' '+s;
+
+    prev=it;
+  }
+  return out.replace(/\s+/g,' ').trim();
 }
 function pdfTermFromRowItems(items){
   // 연세포털 출력물에서 학기 열은 표의 가장 왼쪽 열이다.
@@ -3027,11 +3054,7 @@ function parsePortalPdfYonseiFixed(rows,pageWidth,pageNo=1){
 
     const val={};
     for(const label of labels){
-      val[label]=cells[label]
-        .sort((a,b)=>Number(a.x||0)-Number(b.x||0))
-        .map(x=>pdfValueText(x.str))
-        .join(' ')
-        .trim();
+      val[label]=pdfJoinCellItems(cells[label],{multiline:label==='교과목명'});
     }
 
     const detectedTerm=pdfNormalizeTerm(val['학기']);
@@ -3128,7 +3151,7 @@ function pdfCellsByGeometry(items,geometry){
   }
   const values={};
   for(const [label,arr] of Object.entries(cells)){
-    values[label]=arr.sort((a,b)=>a.x-b.x).map(x=>pdfValueText(x.str)).join(' ').trim();
+    values[label]=pdfJoinCellItems(arr,{multiline:label==='교과목명'});
   }
   return values;
 }
@@ -3586,13 +3609,18 @@ async function refinePortalPdfUnmatchedByOcr(file,candidates,statusEl){
 
       // 연세포털 표 열 비율:
       // 종별 .343-.392 / 과목명 .509-.697 / 학점 .763-.807 / 평가 .807-.857
-      const categoryCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.338,.397,2);
-      const nameCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.503,.704,8);
-      const creditCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.755,.812,2);
-      const gradeCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.805,.865,2);
+      const directNameBeforeOcr=plausiblePortalCourseName(r.pdfCourseName||r.courseName);
+      const categoryCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.338,.397,3);
+      const creditCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.755,.812,3);
+      const gradeCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.805,.865,3);
 
       const ocrCategoryText=await portalPdfOcrCell(worker,categoryCanvas,'text');
-      const ocrNameText=await portalPdfOcrCell(worker,nameCanvas,'text');
+      let ocrNameText='';
+      // 텍스트 레이어에서 정상 과목명을 확보하지 못한 경우에만 과목명 셀 OCR 수행.
+      if(!directNameBeforeOcr){
+        const nameCanvas=portalPdfCropCanvas(canvas,viewport,r._pdfY,.503,.704,13);
+        ocrNameText=await portalPdfOcrCell(worker,nameCanvas,'text');
+      }
       const ocrCreditText=await portalPdfOcrCell(worker,creditCanvas,'credit');
       const ocrGradeText=await portalPdfOcrCell(worker,gradeCanvas,'grade');
 
@@ -3603,11 +3631,11 @@ async function refinePortalPdfUnmatchedByOcr(file,candidates,statusEl){
       }
 
       const ocrName=plausiblePortalCourseName(ocrNameText);
-      const directName=plausiblePortalCourseName(r.pdfCourseName||r.courseName);
-      // PDF 텍스트가 정상적이면 더 정확하므로 유지하고,
-      // 비어 있거나 코드만 잡힌 경우 OCR 결과로 보완한다.
-      if(!directName && ocrName)r.courseName=ocrName;
-      else if(directName)r.courseName=directName;
+      const directName=directNameBeforeOcr||plausiblePortalCourseName(r.pdfCourseName||r.courseName);
+      // PDF 텍스트 레이어를 항상 우선한다.
+      // OCR은 텍스트 레이어가 비었을 때만 대체값으로 사용한다.
+      if(directName)r.courseName=directName;
+      else if(ocrName)r.courseName=ocrName;
       r.ocrCourseName=ocrName||'';
 
       const creditMatch=ocrCreditText.match(/\d+(?:\.\d+)?/);
@@ -3732,7 +3760,7 @@ function renderPortalPdfCandidates(){
         return `<tr class="${duplicate||r.needsReview?'pdf-row-review':''}">
           <td><input class="ocr-check pdf-select" data-i="${i}" type="checkbox" ${r.selected&&!duplicate?'checked':''} ${duplicate?'disabled':''}></td>
           <td><select class="inline-select pdf-term" data-i="${i}" style="min-width:105px">${academicTermOptionsHtml(r.term)}</select></td>
-          <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''}</div></td>
+          <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''}</div>${r.professor?`<div class="muted">담당교수 ${esc(r.professor)}</div>`:''}</td>
           <td>${esc(r.portalCategory||'')}</td>
           <td><select class="inline-select pdf-cat" data-i="${i}">${categoryOptionsHtml(r.category)}</select></td>
           <td><select class="inline-select pdf-credit" data-i="${i}">${creditOptionsHtml(r.credits)}</select></td>
@@ -3807,7 +3835,7 @@ async function readPortalPdf(){
       r.term===PRE_ADMISSION_TERM &&
       state.profile.admissionTerm==='2023-1'
     );
-    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 구간${ocrFallbackCount?` · 카탈로그 미등록 OCR 보완 ${ocrFallbackCount}과목`:''}${reviewCount?` · 확인 필요 ${reviewCount}과목`:''}${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}${admissionBoundaryError?' · ⚠ 입학학기 경계 확인 필요':''}`;
+    status.textContent=`PDF 표 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.length}개 구간${ocrFallbackCount?` · 카탈로그 미등록 OCR 보완 ${ocrFallbackCount}과목`:''}${reviewCount?` · 확인 필요 ${reviewCount}과목`:''}${wCount?` · W(미취득) ${wCount}과목 포함`:''}${termLabel?` · ${termLabel}`:''}${suspiciousSingleTerm?' · ⚠ 학기 구분 확인 필요':''}${admissionBoundaryError?' · ⚠ 입학학기 경계 확인 필요':''}`;
     renderPortalPdfCandidates();
   }catch(err){
     console.error(err);
