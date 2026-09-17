@@ -1710,56 +1710,15 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
     <div class="muted" style="margin-top:10px">모든 학생 데이터는 이 브라우저의 localStorage에만 저장됩니다. 불러오기·초기화 직전에는 자동 안전백업을 남기며, 기기 변경 전에는 JSON 내보내기를 권장합니다.</div>
   </section>
 
-  <details class="card section no-print admin-update-section" id="dataUpdateSection">
-    <summary><span>관리자 · 학기 데이터 / 졸업·교원자격 규정 업데이트</span></summary>
-    <div class="callout" style="margin-top:10px">
-      <b>배포 구조:</b> <code>index.html</code>과 같은 폴더의 <code>data-pack.json</code>, <code>rules-pack.json</code>, <code>certificate-rules.json</code>을 읽습니다.
-      패키지가 없거나 검증에 실패하면 HTML에 내장된 마지막 정상 데이터로 자동 복구합니다.
-    </div>
-    <div class="update-status-grid">
-      <div><span>강의 데이터</span><b id="runtimeDataStatus">내장 데이터</b></div>
-      <div><span>졸업 규정</span><b id="runtimeRulesStatus">내장 규정</b></div>
-      <div><span>교원자격 규정</span><b id="runtimeCertStatus">내장 규정</b></div>
-      <div><span>현재 스냅샷</span><b id="runtimeSnapshotStatus">-</b></div>
-      <div><span>검증 결과</span><b id="runtimeValidationStatus">검증 대기</b></div>
-    </div>
-
-    <h3 style="margin-top:18px">수강편람 Excel 업데이트</h3>
-    <div class="admin-update-grid">
-      <div><label>대상 학기</label><input id="updateTargetTerm" type="text" placeholder="예: 2027-1"></div>
-      <div><label>업데이트 방식</label><select id="updateMode"><option value="merge">기존 데이터에 병합</option><option value="replace_term">해당 학기 데이터 교체</option></select></div>
-      <div><label>Excel / CSV</label><input id="updateWorkbookFile" type="file" accept=".xlsx,.xls,.csv"></div>
-      <div class="admin-button-cell"><button class="btn primary" id="analyzeUpdateWorkbook" type="button">파일 분석</button></div>
-    </div>
-    <div class="muted">인식 열: 전공/개설전공, 학기, 학정번호, 교과목명, 학점, 종별, 담당교수, 요일, 시간, 강의실, 분반. 열명이 다르면 적용하지 않고 오류로 표시합니다.</div>
-    <div id="updatePreview" class="update-preview"></div>
-    <div class="toolbar" style="margin-top:10px">
-      <button class="btn primary" id="applyUpdatePack" type="button" disabled>이 브라우저에 적용</button>
-      <button class="btn" id="exportUpdatePack" type="button" disabled>data-pack.json 저장</button>
-      <button class="btn" id="clearLocalDataPack" type="button">로컬 데이터 업데이트 해제</button>
-    </div>
-
-    <h3 style="margin-top:20px">규정 패키지 업데이트</h3>
-    <div class="toolbar">
-      <label class="btn" style="display:inline-block;margin:0">rules-pack.json 선택<input id="rulesPackFile" type="file" accept=".json" style="display:none"></label>
-      <button class="btn" id="clearLocalRulesPack" type="button">로컬 규정 업데이트 해제</button>
-    </div>
-    <div id="rulesPackStatus" class="muted" style="margin-top:8px"></div>
-    <div class="toolbar" style="margin-top:10px">
-      <label class="btn" style="display:inline-block;margin:0">certificate-rules.json 선택<input id="certificateRulesFile" type="file" accept=".json" style="display:none"></label>
-      <button class="btn" id="clearLocalCertificateRules" type="button">로컬 교원자격 규정 해제</button>
-    </div>
-    <div id="certificateRulesStatus" class="muted" style="margin-top:8px"></div>
-    <div class="muted" style="margin-top:10px"><b>전체 사용자 배포:</b> 검증된 <code>data-pack.json</code> / <code>rules-pack.json</code> / <code>certificate-rules.json</code>을 GitHub 저장소 루트에 올리면 다음 접속부터 자동 반영됩니다.</div>
-  </details>
+  
 
   <footer class="footer">
-    <b>v1.0.0:</b> 테스트 기간 입니다.<br>
+    <b>v2.4.3:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/license/t_lifelong_2009.do" target="_blank" rel="noopener">평생교육사 안내</a><br>
-    <b>참고용 도구:</b> 실제 졸업요건 및 자격증 인정 여부는 개인별 학적·입학년도·자격증 신청 상태에 따라 달라질 수 있으므로 교육대학원 공식 안내 및 행정실 확인을 우선하십시오.
+    <b>참고용 도구:</b> 실제 졸업요건 및 자격증 인정 여부는 개인별 학적·입학년도·자격증 신청 상태에 따라 달라질 수 있으므로 교육대학원 공식 안내 및 행정실 확인을 우선하십시오.<br><b>데이터 운영:</b> 공개 화면에는 관리자 업데이트 기능을 제공하지 않으며, 배포 데이터는 제작자가 별도 관리합니다.
   </footer>
 </div>
 
@@ -5558,6 +5517,7 @@ document.getElementById('resetData').onclick=()=>{
 document.getElementById('runIntegrityCheck').onclick=()=>runIntegrityChecks(true);
 document.getElementById('restoreAutoBackup').onclick=restoreLatestAutoBackup;
 
+if(document.getElementById('dataUpdateSection')){
 document.getElementById('analyzeUpdateWorkbook').onclick=async()=>{
   const file=document.getElementById('updateWorkbookFile').files?.[0];
   const target=document.getElementById('updateTargetTerm').value.trim();
@@ -5605,6 +5565,8 @@ document.getElementById('certificateRulesFile').onchange=async e=>{
 };
 document.getElementById('clearLocalCertificateRules').onclick=()=>{if(!confirm('이 브라우저의 로컬 교원자격 규정 업데이트를 제거하시겠습니까?'))return;localStorage.removeItem(CERT_RULES_PACK_LOCAL_KEY);location.reload();};
 
+
+}
 document.getElementById('editTitleBtn').onclick=editCustomTitle;
 const portalPdfBtn=document.getElementById('readPortalPdf');
 if(portalPdfBtn)portalPdfBtn.onclick=readPortalPdf;
