@@ -895,7 +895,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.3:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.4:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1118,15 +1118,10 @@ function historyCatalogCourse(r){
 }
 function isSwitchableMajorTeachingHistory(r){
   const c=historyCatalogCourse(r);
-  const code=canonicalCode(r?.courseCode);
-  const portalTeaching=String(r?.portalCategory||'').replace(/\s+/g,'').includes('교직');
-  if(c){
-    const opts=Array.isArray(c.categoryOptions)?c.categoryOptions:[];
-    if((opts.includes('teaching') && opts.includes('major_elective')) ||
-       (c.major===state.profile.major && c.category==='teaching')) return true;
-  }
-  // 과거/미등재 전공교직은 카탈로그에 없어도 포털의 '교직' 종별을 근거로 변경 가능 표기를 유지한다.
-  return portalTeaching && !/^SPT/.test(code);
+  if(!c)return false;
+  const opts=Array.isArray(c.categoryOptions)?c.categoryOptions:[];
+  return (opts.includes('teaching') && opts.includes('major_elective')) ||
+         (c.major===state.profile.major && c.category==='teaching' && opts.includes('major_elective'));
 }
 function switchableMajorTeachingBadge(r){
   return isSwitchableMajorTeachingHistory(r)
@@ -1140,7 +1135,8 @@ function courseStatusForHistory(r){
     (code && canonicalCode(c.courseCode)===code) || (!code && normName(c.courseName)===name) || (c.aliases||[]).some(a=>normName(a)===name)
   );
   if(matches)return 'match';
-  if(isSwitchableMajorTeachingHistory(r))return 'teaching_portal';
+  const portalTeaching=String(r?.portalCategory||'').replace(/\s+/g,'').includes('교직');
+  if(portalTeaching)return 'teaching_portal';
   return 'historical';
 }
 function getCatalogMasters(scopeMode='mine'){
@@ -1578,7 +1574,7 @@ function renderHistory(){
   if(switchNote){
     const hasSwitchable=state.history.some(isSwitchableMajorTeachingHistory);
     switchNote.innerHTML=hasSwitchable
-      ? `<div class="callout warnbox" style="margin-top:10px"><b>전공교직 종별 변경 안내:</b> 등록된 전공교직 과목은 위 <b>종별</b> 드롭다운에서 <b>교직 ↔ 전공선택</b>으로 변경할 수 있습니다. 실제 인정 종별은 본인의 신청·학점인정 결과에 맞춰 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`
+      ? `<div class="callout warnbox" style="margin-top:10px"><b>전공교직 종별 변경 안내:</b> <b>전공교직으로 확인된 과목에 한해</b> 위 <b>종별</b> 드롭다운에서 <b>교직 ↔ 전공선택</b>으로 변경할 수 있습니다. 일반 교직과목은 전공선택으로 변경할 수 없습니다. 실제 인정 종별은 본인의 신청·학점인정 결과에 맞춰 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`
       : '';
   }
   document.querySelectorAll('.hist-term').forEach(x=>x.onchange=()=>{
@@ -2473,7 +2469,7 @@ function selectedPlanCourse(){
 function renderHistorySelectionNote(c){
   const box=document.getElementById('historySelectionNote');
   if(!c){box.innerHTML='';return;}
-  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 이 과목은 기본적으로 교직으로 표시됩니다. 전공선택으로 변경·인정되는 경우가 있을 수 있으나 자동 전환하지 않습니다. 실제 수강신청/학점인정 결과에 맞춰 <b>인정 종별</b>을 교직 또는 전공선택으로 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
+  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 이 과목은 전공교직 과목으로, 기본적으로 교직으로 표시됩니다. 전공선택으로 변경·인정되는 경우가 있을 수 있으나 자동 전환하지 않습니다. 실제 수강신청/학점인정 결과에 맞춰 <b>인정 종별</b>을 교직 또는 전공선택으로 선택하십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
   else if(isOtherMajorCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>타 전공 개설 과목:</b> 소속 전공은 ${esc(c.major)}입니다. 공통·전공선택 등 실제 인정 종별을 확인한 뒤 직접 선택하십시오.</div>`;
   else if(c.scope==='certificate') box.innerHTML=`<div class="callout warnbox"><b>교원자격 관련 교과:</b> 개인별 자격증 이수요건과 학점 인정 여부를 별도로 확인하십시오.</div>`;
   else box.innerHTML='';
@@ -2481,7 +2477,7 @@ function renderHistorySelectionNote(c){
 function renderPlanSelectionNote(c){
   const box=document.getElementById('planSelectionNote');
   if(!c){box.innerHTML='';return;}
-  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 교직으로 수강할지 전공선택으로 인정받을지는 개인의 신청/인정 결과에 따라 달라질 수 있습니다. 계획 단계에서는 원하는 인정 종별을 선택하되 최종 확인은 행정 안내를 따르십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
+  if(isMajorTeachingCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>전공교직 주의:</b> 이 과목은 전공교직 과목입니다. 교직으로 수강할지 전공선택으로 인정받을지는 개인의 신청/인정 결과에 따라 달라질 수 있습니다. 계획 단계에서는 원하는 인정 종별을 선택하되 최종 확인은 행정 안내를 따르십시오. <a href="https://gse.yonsei.ac.kr/gse/board/notice.do?mode=view&articleNo=467321&article.offset=0&articleLimit=10&srSearchVal=%EC%A2%85%EB%B3%84+%EB%B3%80%EA%B2%BD" target="_blank" rel="noopener noreferrer"><b>종별 변경 공지 바로가기 ↗</b></a></div>`;
   else if(isOtherMajorCourse(c)) box.innerHTML=`<div class="callout warnbox"><b>타 전공 과목:</b> ${esc(c.major)} 개설 과목입니다. 본인 전공에서의 인정 종별을 확인하십시오.</div>`;
   else if(c.scope==='certificate') box.innerHTML=`<div class="callout warnbox"><b>교원자격 관련 교과:</b> 자격증 취득 트랙 여부에 따라 필요성이 달라질 수 있습니다.</div>`;
   else box.innerHTML='';
