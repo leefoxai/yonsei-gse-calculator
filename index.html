@@ -895,7 +895,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.4:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.6:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1107,9 +1107,25 @@ function academicTermOptionsHtml(selected){
 }
 function recordKey(r){return canonicalCode(r.courseCode)||normName(r.courseName);}
 
+// 현재 5개 학기 카탈로그에는 없지만 전공교직으로 확인된 과목.
+// OCR 및 기존 수강이력 판정에만 사용하며, 일반 강의찾기 목록에는 자동 노출하지 않는다.
+const LEGACY_MAJOR_TEACHING_COURSES=[
+  {
+    courseCode:'SPG6859',
+    courseName:'인공지능시대의과학기술과교육',
+    aliases:['인공지능시대의 과학기술과 교육','인공지능시대의과학기술과교육'],
+    credits:2,
+    category:'teaching',
+    categoryRaw:'교직',
+    categoryOptions:['teaching','major_elective'],
+    legacyMajorTeaching:true,
+    availability:'historical'
+  }
+];
+
 function historyCatalogCourse(r){
   const code=canonicalCode(r?.courseCode), name=normName(r?.courseName);
-  const all=[...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses];
+  const all=[...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses,...LEGACY_MAJOR_TEACHING_COURSES];
   return all.find(c=>
     (code && canonicalCode(c.courseCode)===code) ||
     (!code && normName(c.courseName)===name) ||
@@ -1130,11 +1146,9 @@ function switchableMajorTeachingBadge(r){
 }
 
 function courseStatusForHistory(r){
-  const code=canonicalCode(r.courseCode), name=normName(r.courseName);
-  const matches=[...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses].some(c =>
-    (code && canonicalCode(c.courseCode)===code) || (!code && normName(c.courseName)===name) || (c.aliases||[]).some(a=>normName(a)===name)
-  );
-  if(matches)return 'match';
+  const matched=historyCatalogCourse(r);
+  if(matched?.legacyMajorTeaching)return 'major_teaching';
+  if(matched)return 'match';
   const portalTeaching=String(r?.portalCategory||'').replace(/\s+/g,'').includes('교직');
   if(portalTeaching)return 'teaching_portal';
   return 'historical';
@@ -1375,8 +1389,8 @@ function fillStaticControls(){
     const el=document.getElementById(id); el.innerHTML=terms.map(t=>`<option value="${t}">${t}</option>`).join('');
   }
   document.getElementById('admissionSelect').value=state.profile.admissionTerm;
-  document.getElementById('historyTerm').value='2026-1';
-  document.getElementById('ocrTerm').value='2026-1';
+  document.getElementById('historyTerm').value=state.profile.admissionTerm;
+  document.getElementById('ocrTerm').value=state.profile.admissionTerm;
 
   const planTerms=[...new Set(DATA.offerings.filter(o=>o.major===state.profile.major).map(o=>o.term))].sort((a,b)=>termIndex(a)-termIndex(b));
   const allCatalogTerms=[...new Set([...DATA.offerings.map(o=>o.term),...DATA.globalOfferings.map(o=>o.term)])].filter(t=>/^\d{4}-[12]$/.test(t)).sort((a,b)=>termIndex(a)-termIndex(b));
@@ -1551,7 +1565,7 @@ function renderHistory(){
   }
   body.innerHTML=state.history.map((r,i)=>{
     const st=courseStatusForHistory(r);
-    const badge=st==='match'?`<span class="badge match">카탈로그 매칭</span>`:st==='teaching_portal'?`<span class="badge match">교직 종별 인식</span>`:`<span class="badge manual">과거·폐지·미등재</span>`;
+    const badge=st==='match'?`<span class="badge match">카탈로그 매칭</span>`:st==='major_teaching'?`<span class="badge match">전공교직 인식</span>`:st==='teaching_portal'?`<span class="badge match">교직 종별 인식</span>`:`<span class="badge manual">과거·폐지·미등재</span>`;
     const g=normalizeGrade(r.grade);
     const gp=gradePasses(g);
     const pass=r.passed===false?`<span class="badge missing">${g?`${esc(g)} · 미이수`:'NP/미이수'}</span>`:(g?`<span class="badge match">${esc(g)} · 이수</span>`:'');
@@ -1862,7 +1876,7 @@ let ocrWorker=null;
 let ocrCandidates=[];
 
 function allCatalogEntries(){
-  return [...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses];
+  return [...DATA.offerings,...DATA.globalOfferings,...DATA.specialCourses,...LEGACY_MAJOR_TEACHING_COURSES];
 }
 function preferredCatalogMatchByCode(code){
   const cc=canonicalCode(code);
@@ -1904,6 +1918,7 @@ function mapPortalCategory(raw, matched){
   if(s.includes('선수'))return 'prerequisite';
   if(s.includes('교직'))return 'teaching';
   if(s.includes('선택')){
+    if(Array.isArray(matched?.categoryOptions) && matched.categoryOptions.includes('major_elective'))return 'major_elective';
     if(matched?.category && matched.category!=='unknown')return matched.category;
     return 'major_elective';
   }
@@ -2074,6 +2089,7 @@ function buildCandidateFromCode(detected,block,term,lineConf=null){
     courseName:matched?.courseName||ocrName||`미확인 과목 ${code}`,
     ocrCourseName:ocrName,portalCategory,category,credits:Number(credits||0),grade,passed,
     matched:!!matched,matchMajor:matched?.major||'',confidence:matched?'code':'ocr',
+    majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
     codeMethod:detected.method||'exact',lineConfidence:lineConf,gradeSource:grade?'initial':''
   };
 }
@@ -2210,7 +2226,7 @@ function renderOcrCandidates(){
           const badgeClass=r.confidenceLevel==='high'?'conf-high':r.confidenceLevel==='review'?'conf-review':'conf-low';
           const badgeLabel=r.confidenceLevel==='high'?'높음':r.confidenceLevel==='review'?'확인 필요':'낮음';
           const portalTeaching=r.category==='teaching' && String(r.portalCategory||'').replace(/\s+/g,'').includes('교직');
-          const matchLabel=(!r.matched&&portalTeaching)?'교직 종별 인식':r.codeMethod==='fuzzy'?'학정번호 보정':r.codeMethod==='name'?'과목명 감지':r.matched?'학정번호 매칭':'미매칭';
+          const matchLabel=r.majorTeachingSwitchable?'전공교직 인식':(!r.matched&&portalTeaching)?'교직 종별 인식':r.codeMethod==='fuzzy'?'학정번호 보정':r.codeMethod==='name'?'과목명 감지':r.matched?'학정번호 매칭':'미매칭';
           return `<tr class="${cls}">
           <td><input class="ocr-check ocr-select" data-i="${i}" type="checkbox" ${r.selected?'checked':''}></td>
           <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''} · ${esc(r.term)}</div><div class="muted">${esc(matchLabel)}</div></td>
@@ -2575,7 +2591,18 @@ document.getElementById('majorSelect').onchange=e=>{
   if(!isTeacherCertMajor()){state.profile.hasTeacherLicense=false;state.profile.wantsTeacherCertificate=false;}
   save();loadCustomTitle();fillStaticControls();refreshCourseSelectors();render();
 };
-document.getElementById('admissionSelect').onchange=e=>{state.profile.admissionTerm=e.target.value;save();render();};
+document.getElementById('admissionSelect').onchange=e=>{
+  state.profile.admissionTerm=e.target.value;
+  document.getElementById('historyTerm').value=state.profile.admissionTerm;
+  document.getElementById('ocrTerm').value=state.profile.admissionTerm;
+  save();
+  updateHistoryCreditNote();
+  applyHistorySelection();
+  document.getElementById('ocrStatus').textContent=`수강학기 ${state.profile.admissionTerm} 선택됨. 캡처 후 Ctrl+V로 붙여넣거나 이미지 파일을 선택하십시오.`;
+  ocrCandidates=[];
+  document.getElementById('ocrResult').innerHTML='';
+  render();
+};
 document.getElementById('historyTerm').onchange=()=>{updateHistoryCreditNote();applyHistorySelection();};
 document.getElementById('historyFilterCategory').onchange=refreshHistoryCourse;
 document.getElementById('historyScope').onchange=refreshHistoryCourse;
