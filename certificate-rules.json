@@ -1,9 +1,9 @@
 {
   "packType": "yonsei-gse-certificate-rules",
   "schemaVersion": 1,
-  "appVersion": "2.4.0",
+  "appVersion": "2.5.0",
   "snapshot": "2026-2",
-  "updatedAt": "2026-09-18T00:00:00+09:00",
+  "updatedAt": "2026-09-18T02:49:00+09:00",
   "source": {
     "title": "연세대학교 교육대학원 전공별 기본이수과목 및 교과교육과목",
     "file": "[붙임2]기본이수과목_교육대학원개설_260617_.pdf",
@@ -2569,5 +2569,18 @@
       "maxCoursesPerTerm": 1,
       "maxCoursesTotal": 4
     }
-  }
+  },
+  "packVersion": "2026-06-17.1",
+  "sources": [
+    {
+      "file": "[붙임2]기본이수과목_교육대학원개설_260617_.pdf",
+      "date": "2026-06-17",
+      "role": "전공별 기본이수·교과교육 공식 매핑"
+    },
+    {
+      "file": "2026-2_신입생_오리엔테이션_260820_업로드.pdf",
+      "date": "2026-08-20",
+      "role": "교원자격 공통 필수사항·수강한도·시험 규칙 검증"
+    }
+  ]
 }

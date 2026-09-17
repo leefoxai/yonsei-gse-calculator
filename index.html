@@ -1707,13 +1707,14 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
       <button class="btn danger" id="resetData">초기화</button>
     </div>
     <div id="integritySummary" class="integrity-summary"></div>
+    <div id="packMetaSummary" class="muted" style="margin-top:8px"></div>
     <div class="muted" style="margin-top:10px">모든 학생 데이터는 이 브라우저의 localStorage에만 저장됩니다. 불러오기·초기화 직전에는 자동 안전백업을 남기며, 기기 변경 전에는 JSON 내보내기를 권장합니다.</div>
   </section>
 
   
 
   <footer class="footer">
-    <b>v2.4.3:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v2.5:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지 및 자동 회귀검증을 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1766,7 +1767,8 @@ let CERT_RULES = {"packType":"yonsei-gse-certificate-rules","schemaVersion":1,"a
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.5.0';
+const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
 const CERT_RULES_PACK_SCHEMA_VERSION = 1;
@@ -1774,7 +1776,7 @@ const DATA_PACK_LOCAL_KEY = 'yonsei-gse-data-pack-v1';
 const RULES_PACK_LOCAL_KEY = 'yonsei-gse-rules-pack-v1';
 const CERT_RULES_PACK_LOCAL_KEY = 'yonsei-gse-certificate-rules-pack-v1';
 const AUTO_BACKUP_KEY = 'yonsei-gse-auto-backups-v1';
-let runtimePackMeta = {dataSource:'embedded',rulesSource:'embedded',certSource:'embedded',dataValidation:null,rulesValidation:null,certValidation:null,selfTests:null};
+let runtimePackMeta = {dataSource:'embedded fallback',rulesSource:'embedded fallback',certSource:'embedded fallback',dataEnvelope:null,rulesEnvelope:null,certEnvelope:null,dataValidation:null,rulesValidation:null,certValidation:null,selfTests:null};
 const CATEGORY_LABELS = {
   common:'공통', teaching:'교직', prerequisite:'선수', major_required:'전공필수', major_elective:'전공선택',
   thesis:'논문', research_guidance:'연구지도', report:'졸업연구보고서', audit:'청강/비산입', unknown:'종별 확인 필요'
@@ -2187,18 +2189,63 @@ function validateStateObject(x){
 function runDeterministicSelfTests(){
   const tests=[];
   const t=(name,ok,detail='')=>tests.push({name,ok:!!ok,detail});
+  const old=RULES.cohorts?.find(c=>c.id==='OLD'), newer=RULES.cohorts?.find(c=>c.id==='NEW');
+  const counselor=CERT_RULES.majors?.['상담교육']?.variants?.find(v=>v.id==='counselor2');
+  const counselor26=counselor?.rulesByAdmission?.find(x=>x.from==='2026-1')?.basicRule;
+  const science=CERT_RULES.majors?.['통합과학교육']?.variants?.[0]?.basicRule;
+  const limits=CERT_RULES.planLimits||{};
+
   t('학기 정렬 경계',termIndex('2024-2')<termIndex('2025-1'));
-  t('A- 성적 정규화',normalizeGrade('A-')==='A-');
+  t('A- 성적 정규화',normalizeGrade('A−')==='A-');
+  t('P 이수 인정',gradePasses('P')===true);
+  t('NP 미이수',gradePasses('NP')===false);
+  t('W 미이수',gradePasses('W')===false);
+  t('F 미이수',gradePasses('F')===false);
   t('C- 이수 인정',gradePasses('C-')===true);
   t('D+ 이수 불인정',gradePasses('D+')===false);
-  t('GPA 만점',GRADE_POINTS['A+']===4.3);
-  t('코호트 OLD 존재',!!RULES.cohorts?.find(c=>c.id==='OLD'));
-  t('코호트 NEW 존재',!!RULES.cohorts?.find(c=>c.id==='NEW'));
+  t('GPA 만점 4.3',GRADE_POINTS['A+']===4.3);
+
+  t('OLD 코호트 존재',!!old);
+  t('NEW 코호트 존재',!!newer);
+  t('NEW 논문 총 30학점',Number(newer?.tracks?.thesis?.totalCredits)===30);
+  t('NEW 졸업연구보고서 총 30학점',Number(newer?.tracks?.report?.totalCredits)===30);
+  t('NEW 연구과정 총 12학점',Number(newer?.tracks?.research?.totalCredits)===12);
+  t('NEW 논문 교직 6학점',Number(newer?.tracks?.thesis?.requirements?.teaching?.min)===6);
+  t('NEW 보고서 전선 15학점',Number(newer?.tracks?.report?.requirements?.major_elective?.min)===15);
   t('공통과목 3과목 기준',Number(RULES.commonRequirement?.min)===3);
-  t('교원자격 전공 subset',[...teacherCertMajors()].every(m=>DATA.majors.includes(m)),[...teacherCertMajors()].filter(m=>!DATA.majors.includes(m)).join(','));
-  t('교육행정은 2026-06-17 교원자격 기본이수표 대상 아님',!teacherCertMajors().has('교육행정'));
-  t('영어교육 교과교육 코드',!!CERT_RULES.majors?.['영어교육']?.variants?.[0]?.pedagogyCourses?.some(x=>canonicalCode(x.code)==='SEE6591'));
-  t('상담교육 2026학번 규칙',!!CERT_RULES.majors?.['상담교육']?.variants?.find(v=>v.id==='counselor2')?.rulesByAdmission);
+
+  t('교원자격 전공은 강의 전공목록의 부분집합',[...teacherCertMajors()].every(m=>DATA.majors.includes(m)),[...teacherCertMajors()].filter(m=>!DATA.majors.includes(m)).join(','));
+  t('교육행정은 2026-06-17 기본이수표 대상 아님',!teacherCertMajors().has('교육행정'));
+  t('영어교육 교과교육 SEE6591',!!CERT_RULES.majors?.['영어교육']?.variants?.[0]?.pedagogyCourses?.some(x=>canonicalCode(x.code)==='SEE6591'));
+  t('영어교육 기본이수 SEE6505',!!CERT_RULES.majors?.['영어교육']?.variants?.[0]?.groups?.some(g=>(g.courses||[]).some(x=>canonicalCode(x.code)==='SEE6505')));
+  t('상담교육 2026학번 7과목',Number(counselor26?.minGroups)===7);
+  t('상담교육 2026학번 관리번호 13 필수',(counselor26?.requiredGroups||[]).map(Number).includes(13));
+  t('통합과학 기본이수 9영역',Number(science?.minGroups)===9);
+  t('통합과학 물리영역 2과목',(science?.choiceGroups||[]).some(x=>JSON.stringify((x.groups||[]).map(Number))===JSON.stringify([2,3,4])&&Number(x.min)===2));
+
+  t('정규학기 한도 2과목/6학점',Number(limits.regular?.maxCourses)===2&&Number(limits.regular?.maxCredits)===6);
+  t('논문·보고서학기 한도 3과목/9학점',Number(limits.capstoneSemester?.maxCourses)===3&&Number(limits.capstoneSemester?.maxCredits)===9);
+  t('선수 학기당 2과목',Number(limits.prerequisite?.maxCoursesPerTerm)===2);
+  t('공통 학기당 1과목/누적 4과목',Number(limits.common?.maxCoursesPerTerm)===1&&Number(limits.common?.maxCoursesTotal)===4);
+
+  const dupCode=duplicateCourseWarnings([
+    {term:'2025-1',courseCode:'TEST1001',courseName:'서로다른과목A',grade:'A0',passed:true},
+    {term:'2025-2',courseCode:'TEST1001',courseName:'서로다른과목B',grade:'A0',passed:true}
+  ]);
+  const dupName=duplicateCourseWarnings([
+    {term:'2025-1',courseCode:'TEST2001',courseName:'동일 과목',grade:'A0',passed:true},
+    {term:'2025-2',courseCode:'TEST2002',courseName:'동일과목',grade:'A0',passed:true}
+  ]);
+  const wIgnored=duplicateCourseWarnings([
+    {term:'2025-1',courseCode:'TEST3001',courseName:'철회과목',grade:'W',passed:true},
+    {term:'2025-2',courseCode:'TEST3001',courseName:'철회과목',grade:'A0',passed:true}
+  ]);
+  t('동일 학정번호 중복 감지',dupCode.some(x=>x.includes('동일 학정번호 TEST1001')));
+  t('동일 교과목명 중복 감지',dupName.some(x=>x.includes('동일 교과목명')));
+  t('W 과목은 중복 판정 제외',wIgnored.length===0);
+  t('강의 데이터 650건 이상',(DATA.offerings?.length||0)+(DATA.globalOfferings?.length||0)+(DATA.specialCourses?.length||0)>=650);
+  t('교원자격 규정 13개 전공',Object.keys(CERT_RULES.majors||{}).length===13);
+
   return {tests,passed:tests.filter(x=>x.ok).length,failed:tests.filter(x=>!x.ok).length};
 }
 function runIntegrityChecks(showAlert=false){
@@ -2232,6 +2279,13 @@ function updateRuntimeMetaUi(){
   if(cs)cs.textContent=`${runtimePackMeta.certSource} · ${CERT_RULES.snapshot}`;
   if(ss)ss.textContent=(DATA.snapshot===RULES.snapshot&&DATA.snapshot===CERT_RULES.snapshot)?DATA.snapshot:`강의 ${DATA.snapshot} / 졸업 ${RULES.snapshot} / 교원 ${CERT_RULES.snapshot}`;
   const head=document.getElementById('dataSnapshotText');if(head)head.textContent=DATA.snapshot||'-';
+  const meta=document.getElementById('packMetaSummary');
+  if(meta){
+    const e=runtimePackMeta.dataEnvelope;
+    const ver=e?.packVersion||e?.dataVersion||e?.version||DATA.snapshot||'-';
+    const updated=e?.updatedAt?String(e.updatedAt).slice(0,10):'내장 데이터';
+    meta.textContent=`데이터 기준 ${DATA.snapshot} · 데이터팩 ${ver} · 업데이트 ${updated} · ${runtimePackMeta.dataSource}`;
+  }
 }
 async function fetchJsonNoCache(url){
   const r=await fetch(`${url}${url.includes('?')?'&':'?'}v=${Date.now()}`,{cache:'no-store'});
@@ -2243,32 +2297,36 @@ async function loadRuntimePacks(){
   try{localData=JSON.parse(localStorage.getItem(DATA_PACK_LOCAL_KEY)||'null');}catch(e){}
   try{localRules=JSON.parse(localStorage.getItem(RULES_PACK_LOCAL_KEY)||'null');}catch(e){}
   try{localCert=JSON.parse(localStorage.getItem(CERT_RULES_PACK_LOCAL_KEY)||'null');}catch(e){}
+  if(!ALLOW_LOCAL_PACK_OVERRIDES){
+    localData=null;localRules=null;localCert=null;
+    [DATA_PACK_LOCAL_KEY,RULES_PACK_LOCAL_KEY,CERT_RULES_PACK_LOCAL_KEY].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+  }
 
-  if(localData){
+  if(ALLOW_LOCAL_PACK_OVERRIDES&&localData){
     const u=unwrapDataPack(localData),v=validateDataCore(u.data);
-    if(u.data&&!v.critical.length){DATA=deepClone(u.data);runtimePackMeta.dataSource='로컬 업데이트';}
+    if(u.data&&!v.critical.length){DATA=deepClone(u.data);runtimePackMeta.dataSource='로컬 업데이트';runtimePackMeta.dataEnvelope=u.envelope||null;}
   }else{
     try{
       const raw=await fetchJsonNoCache('./data-pack.json'),u=unwrapDataPack(raw),v=validateDataCore(u.data);
-      if(u.data&&!v.critical.length){DATA=deepClone(u.data);runtimePackMeta.dataSource='GitHub data-pack';}
+      if(u.data&&!v.critical.length){DATA=deepClone(u.data);runtimePackMeta.dataSource='GitHub data-pack';runtimePackMeta.dataEnvelope=u.envelope||null;}
     }catch(e){console.info('data-pack fallback:',e.message);}
   }
-  if(localRules){
+  if(ALLOW_LOCAL_PACK_OVERRIDES&&localRules){
     const u=unwrapRulesPack(localRules),v=validateRulesCore(u.rules);
-    if(u.rules&&!v.critical.length){RULES=deepClone(u.rules);runtimePackMeta.rulesSource='로컬 업데이트';}
+    if(u.rules&&!v.critical.length){RULES=deepClone(u.rules);runtimePackMeta.rulesSource='로컬 업데이트';runtimePackMeta.rulesEnvelope=u.envelope||null;}
   }else{
     try{
       const raw=await fetchJsonNoCache('./rules-pack.json'),u=unwrapRulesPack(raw),v=validateRulesCore(u.rules);
-      if(u.rules&&!v.critical.length){RULES=deepClone(u.rules);runtimePackMeta.rulesSource='GitHub rules-pack';}
+      if(u.rules&&!v.critical.length){RULES=deepClone(u.rules);runtimePackMeta.rulesSource='GitHub rules-pack';runtimePackMeta.rulesEnvelope=u.envelope||null;}
     }catch(e){console.info('rules-pack fallback:',e.message);}
   }
-  if(localCert){
+  if(ALLOW_LOCAL_PACK_OVERRIDES&&localCert){
     const u=unwrapCertificateRules(localCert),v=validateCertificateRules(u.rules);
-    if(u.rules&&!v.critical.length){CERT_RULES=deepClone(u.rules);runtimePackMeta.certSource='로컬 업데이트';}
+    if(u.rules&&!v.critical.length){CERT_RULES=deepClone(u.rules);runtimePackMeta.certSource='로컬 업데이트';runtimePackMeta.certEnvelope=u.envelope||null;}
   }else{
     try{
       const raw=await fetchJsonNoCache('./certificate-rules.json'),u=unwrapCertificateRules(raw),v=validateCertificateRules(u.rules);
-      if(u.rules&&!v.critical.length){CERT_RULES=deepClone(u.rules);runtimePackMeta.certSource='GitHub certificate-rules';}
+      if(u.rules&&!v.critical.length){CERT_RULES=deepClone(u.rules);runtimePackMeta.certSource='GitHub certificate-rules';runtimePackMeta.certEnvelope=u.envelope||null;}
     }catch(e){console.info('certificate-rules fallback:',e.message);}
   }
   updateRuntimeMetaUi();
