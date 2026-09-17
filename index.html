@@ -49,6 +49,27 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
 .req-grid>div{padding:9px 10px;border-bottom:1px solid var(--line)}.req-grid>div:nth-child(-n+4){background:#f8fafc;font-weight:700}.req-grid>div:nth-last-child(-n+4){border-bottom:0}
 .form-grid{display:grid;grid-template-columns:1fr 2fr 1.1fr .7fr .8fr auto;gap:8px;align-items:end}
 .form-grid.plan{grid-template-columns:1fr 2fr 1.1fr .7fr auto}
+.plan-builder{display:grid;gap:10px}
+.plan-filter-row{
+  display:grid;
+  grid-template-columns:minmax(120px,.8fr) minmax(150px,1fr) minmax(190px,1.2fr) minmax(240px,1.6fr);
+  gap:9px;align-items:end
+}
+.plan-course-row{
+  display:grid;
+  grid-template-columns:minmax(320px,1.15fr) minmax(440px,1.85fr);
+  gap:9px;align-items:end
+}
+.plan-add-row{
+  display:flex;align-items:end;justify-content:flex-end;gap:9px;flex-wrap:wrap
+}
+.plan-add-row>div:nth-child(1){width:min(260px,100%)}
+.plan-add-row>div:nth-child(2){width:130px}
+.plan-add-row .btn{min-width:150px;height:44px}
+.plan-builder input,.plan-builder select{width:100%;min-width:0}
+.plan-course-search{font-size:15px}
+.plan-professor-search{font-size:14px}
+.plan-course-select{font-size:14px}
 .callout{border-left:4px solid var(--info);background:#f4f8ff;border-radius:8px;padding:12px 14px;line-height:1.55;font-size:13px}
 .callout.warnbox{border-left-color:#d97706;background:#fff8eb}.callout.badbox{border-left-color:#d92d20;background:#fff5f4}
 .course-name{font-weight:700}
@@ -166,8 +187,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   .profile-confirm-bar .btn{width:100%}
 }
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
-@media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan,.history-course-grid{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}.history-course-grid .course-search{min-width:0}}
-@media(max-width:620px){.app{padding:10px}.header{border-radius:12px;padding:18px}.header h1{font-size:22px}.grid.profile{grid-template-columns:1fr}.grid.kpi{grid-template-columns:1fr 1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr}.form-grid button{grid-column:auto}th{position:static}.card{padding:14px}}
+@media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan,.history-course-grid{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}.history-course-grid .course-search{min-width:0}.plan-filter-row{grid-template-columns:1fr 1fr}.plan-course-row{grid-template-columns:1fr}.plan-add-row{justify-content:stretch}.plan-add-row>div:nth-child(1),.plan-add-row>div:nth-child(2){width:auto;flex:1 1 180px}.plan-add-row .btn{flex:1 1 160px}}
+@media(max-width:620px){.app{padding:10px}.header{border-radius:12px;padding:18px}.header h1{font-size:22px}.grid.profile{grid-template-columns:1fr}.grid.kpi{grid-template-columns:1fr 1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr}.form-grid button{grid-column:auto}th{position:static}.card{padding:14px}.plan-filter-row,.plan-course-row{grid-template-columns:1fr}.plan-add-row{display:grid;grid-template-columns:1fr}.plan-add-row>div:nth-child(1),.plan-add-row>div:nth-child(2),.plan-add-row .btn{width:100%;min-width:0}}
 
 
 .pdf-import-panel{
@@ -806,6 +827,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   /* PDF 계획 페이지는 시간표만 출력 */
   #planSection > .section-title-row,
   #planSection > .form-grid.plan,
+  #planSection > .plan-builder,
   #planSection > #planSelectionNote,
   #planSection > .callout,
   #planSection > #planWarnings,
@@ -1086,15 +1108,22 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 
   <section class="card section input-section" id="planSection">
     <div class="section-title-row"><h2>④ 향후 수강계획</h2></div>
-<div class="form-grid plan">
-      <div><label>계획학기</label><select id="planTerm"></select></div>
-      <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
-      <div><label>검색 범위</label><select id="planScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
-      <div><label>과목명/학정번호 검색</label><input id="planCourseSearch" class="course-search" type="text" placeholder="예: 교육심리 / SPG"></div>
-      <div><label>개설 과목</label><select id="planCourse"></select></div>
-      <div><label>인정 종별</label><select id="planCategory"></select></div>
-      <div><label>학점</label><input id="planCredits" type="number" min="0" step="1"></div>
-      <button class="btn primary" id="addPlan">계획에 추가</button>
+<div class="plan-builder">
+      <div class="plan-filter-row">
+        <div><label>계획학기</label><select id="planTerm"></select></div>
+        <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
+        <div><label>검색 범위</label><select id="planScope"><option value="mine">내 전공 + 교직/공통</option><option value="all">교육대학원 전체</option></select></div>
+        <div><label>교수명 검색</label><input id="planProfessorSearch" class="plan-professor-search" type="text" placeholder="예: 임웅 / 박헌우"></div>
+      </div>
+      <div class="plan-course-row">
+        <div><label>과목명 / 학정번호 검색</label><input id="planCourseSearch" class="course-search plan-course-search" type="text" placeholder="과목명 또는 학정번호 입력 · 예: 교육심리 / SPG6862"></div>
+        <div><label>개설 과목 선택</label><select id="planCourse" class="plan-course-select"></select></div>
+      </div>
+      <div class="plan-add-row">
+        <div><label>인정 종별</label><select id="planCategory"></select></div>
+        <div><label>학점</label><input id="planCredits" type="number" min="0" step="1"></div>
+        <button class="btn primary" id="addPlan">계획에 추가</button>
+      </div>
     </div>
     <div id="planSelectionNote" class="selection-note"></div>
     <div class="callout warnbox" style="margin-top:10px">
@@ -1160,7 +1189,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.10:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.11:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1718,7 +1747,13 @@ function filteredPlanOfferings(){
   const scope=document.getElementById('planScope').value||'mine';
   const cat=document.getElementById('planFilterCategory').value||'all';
   const q=document.getElementById('planCourseSearch').value||'';
-  return offeringsForTerm(term,cat==='lifelong'?'all':scope).filter(c=>matchesCourseFilter(c,cat,q));
+  const professorQ=document.getElementById('planProfessorSearch')?.value||'';
+  const np=normName(professorQ);
+  return offeringsForTerm(term,cat==='lifelong'?'all':scope).filter(c=>{
+    if(!matchesCourseFilter(c,cat,q))return false;
+    if(np && !normName(c.professor||'').includes(np))return false;
+    return true;
+  });
 }
 function refreshPlanCourse(){
   const list=filteredPlanOfferings();
@@ -1728,7 +1763,8 @@ function refreshPlanCourse(){
     let tag=c.availability==='actual'?'실제개설':c.availability==='planned'?'개설예정':c.availability==='planned_missing_actual'?'예정→실제미확인':'특수과목';
     if(c.scope==='certificate') tag += '·교원자격';
     const displayCode=(c.sectionCodes||[])[0]||c.courseCode||'';
-    return `<option value="${i}" ${disabled}>[${esc(CATEGORY_LABELS[c.category||'unknown'])}] ${esc(c.courseName)}${displayCode?` (${esc(displayCode)})`:''} · ${esc(courseOriginLabel(c))} · ${tag}</option>`;
+    const professor=c.professor?` · ${esc(c.professor)}`:'';
+    return `<option value="${i}" ${disabled}>[${esc(CATEGORY_LABELS[c.category||'unknown'])}] ${esc(c.courseName)}${displayCode?` (${esc(displayCode)})`:''}${professor} · ${esc(courseOriginLabel(c))} · ${tag}</option>`;
   }).join('');
   pc.dataset.list=JSON.stringify(list);
   renderPlanSelectionNote(null);
@@ -4084,6 +4120,7 @@ document.getElementById('planTerm').onchange=()=>{refreshPlanCourse();applyPlanS
 document.getElementById('planFilterCategory').onchange=refreshPlanCourse;
 document.getElementById('planScope').onchange=refreshPlanCourse;
 document.getElementById('planCourseSearch').oninput=refreshPlanCourse;
+document.getElementById('planProfessorSearch').oninput=refreshPlanCourse;
 document.getElementById('planCourse').onchange=applyPlanSelection;
 document.getElementById('ocrImage').onchange=previewOcrImage;
 document.getElementById('ocrPasteZone').addEventListener('paste',handleOcrPaste);
