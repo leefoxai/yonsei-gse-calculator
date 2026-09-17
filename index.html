@@ -114,6 +114,25 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:#667085
 }
 .input-status strong{color:#172033}
+.profile-confirm-bar{
+  margin-top:9px;padding:10px 11px;border:1px solid #bfd5ed;border-radius:10px;
+  background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+.profile-confirm-copy{min-width:0}
+.profile-confirm-title{font-size:12px;font-weight:900;color:#172033}
+.profile-confirm-summary{margin-top:3px;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-confirm-bar.confirmed{border-color:#b7dfc3;background:#f3fbf5}
+.profile-confirm-bar.confirmed .profile-confirm-title{color:#137333}
+.profile-confirm-bar .btn{white-space:nowrap}
+.history-details.profile-locked{
+  opacity:.62;background:#f8fafc
+}
+.history-details.profile-locked>summary{cursor:not-allowed}
+.history-details.profile-locked>summary span:first-child:after{
+  content:" · ① 기본정보 확인 후 사용";font-size:11px;font-weight:700;color:#a15c00
+}
+.input-step-label.done .step-no{background:#e7f6ec;color:#137333}
+.input-step-label.done{color:#137333}
 .analysis-zone{margin-top:16px}
 .analysis-heading{
   display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
@@ -143,6 +162,8 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
   .zone-badge{margin-top:7px}
   .analysis-heading{display:block}
   .result-status{margin-top:5px}
+  .profile-confirm-bar{align-items:stretch;flex-direction:column}
+  .profile-confirm-bar .btn{width:100%}
 }
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 @media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}}
@@ -884,7 +905,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div><h2>먼저 정보를 입력해주세요</h2><p>① 기본정보를 선택하고 ② 지금까지 수강한 과목을 등록하면 졸업요건 분석 결과가 자동으로 표시됩니다.</p></div>
       <span class="zone-badge">INPUT · 사용자 입력</span>
     </div>
-    <div class="input-step-label no-print"><span class="step-no">1</span><span>기본정보 입력</span></div>
+    <div class="input-step-label no-print" id="profileStepLabel"><span class="step-no">1</span><span>기본정보 입력</span></div>
   <section class="grid profile profile-v16" id="profileSection">
     <div id="printProfileSummary" class="print-only print-profile-summary"></div>
     <div class="card"><label>전공</label><select id="majorSelect"></select></div>
@@ -907,6 +928,13 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
     </div>
   </section>
+    <div class="profile-confirm-bar no-print" id="profileConfirmBar">
+      <div class="profile-confirm-copy">
+        <div class="profile-confirm-title" id="profileConfirmTitle">기본정보를 확인해주세요.</div>
+        <div class="profile-confirm-summary" id="profileConfirmSummary"></div>
+      </div>
+      <button class="btn primary" id="confirmProfileBtn" type="button">기본정보 확인 완료</button>
+    </div>
     <div id="inputStatus" class="input-status no-print"></div>
   <details class="card section input-section history-details" id="historySection" open>
     <summary><span>② 기존 수강이력 입력 / 가져오기</span><span id="historyCompactSummary" class="history-compact-summary"></span></summary>
@@ -1023,8 +1051,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div id="resultStatus" class="result-status"></div>
     </div>
     <div class="analysis-empty no-print" id="dashboardEmptyState">
-      <b>아직 분석할 수강이력이 없습니다.</b>
-      ② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.
+      <b id="dashboardEmptyTitle">아직 분석할 수강이력이 없습니다.</b>
+      <span id="dashboardEmptyText">② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.</span>
       <br><button class="btn primary" id="goHistoryInput" type="button">수강이력 입력하러 가기 ↑</button>
     </div>
   <section class="kpi-wrap" id="kpiSection">
@@ -1128,7 +1156,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.10.2:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.10.4:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1456,6 +1484,7 @@ function defaultState(){
       major:DATA.majors.includes('AI융합교육')?'AI융합교육':DATA.majors[0],
       admissionTerm:'2025-1',track:'report',hasTeacherLicense:false,wantsTeacherCertificate:false
     },
+    profileConfirmed:false,
     history:[],
     scenarios:[{id:'sc_default',name:'시트 1',planned:[]}],
     activeScenarioId:'sc_default',
@@ -1480,6 +1509,7 @@ function load(){
       if(typeof x.profile.hasTeacherLicense!=='boolean')x.profile.hasTeacherLicense=false;
       if(typeof x.profile.wantsTeacherCertificate!=='boolean')x.profile.wantsTeacherCertificate=false;
       if(!['report','thesis','research'].includes(x.profile.track))x.profile.track='report';
+      if(typeof x.profileConfirmed!=='boolean')x.profileConfirmed=Array.isArray(x.history)&&x.history.length>0;
       if(x.scenarios.length===1&&x.scenarios[0].name==='현재안')x.scenarios[0].name='시트 1';
       x.scheduleSettings={...defaultState().scheduleSettings,...(x.scheduleSettings||{})};
       x.scheduleReferences=Array.isArray(x.scheduleReferences)?x.scheduleReferences:[];
@@ -2199,34 +2229,91 @@ function renderCatalog(){
     return `<tr><td class="mono">${esc(displayCode)}</td><td><div class="course-name">${esc(o.courseName)}</div><div class="muted">${esc(sub)}</div></td><td>${esc(courseOriginLabel(o))}</td><td>${CATEGORY_LABELS[o.category||'unknown']}</td><td>${badge}</td></tr>`;
   }).join(''):`<tr><td colspan="5" class="empty">해당 조건의 과목이 없습니다.</td></tr>`;
 }
+function profileSummaryText(){
+  return `${state.profile.major} · ${state.profile.admissionTerm} · ${graduationTrackLabel(state.profile.track)}`;
+}
+function markProfileUnconfirmed(){
+  if(state.profileConfirmed){
+    state.profileConfirmed=false;
+    save();
+  }
+}
 function renderUxState(){
   const historyCount=state.history.length;
+  const profileConfirmed=!!state.profileConfirmed;
+  const readyForAnalysis=profileConfirmed&&historyCount>0;
+
   const analysis=document.getElementById('analysisZone');
-  if(analysis)analysis.classList.toggle('is-empty',historyCount===0);
+  if(analysis)analysis.classList.toggle('is-empty',!readyForAnalysis);
+
+  const confirmBar=document.getElementById('profileConfirmBar');
+  const confirmTitle=document.getElementById('profileConfirmTitle');
+  const confirmSummary=document.getElementById('profileConfirmSummary');
+  const confirmBtn=document.getElementById('confirmProfileBtn');
+  if(confirmBar){
+    confirmBar.classList.toggle('confirmed',profileConfirmed);
+    if(confirmTitle)confirmTitle.textContent=profileConfirmed?'기본정보 확인 완료':'기본정보를 확인해주세요.';
+    if(confirmSummary)confirmSummary.textContent=profileSummaryText();
+    if(confirmBtn){
+      confirmBtn.textContent=profileConfirmed?'기본정보 다시 확인':'기본정보 확인 완료';
+      confirmBtn.classList.toggle('primary',!profileConfirmed);
+    }
+  }
+
+  const profileStep=document.getElementById('profileStepLabel');
+  if(profileStep)profileStep.classList.toggle('done',profileConfirmed);
 
   const inputStatus=document.getElementById('inputStatus');
   if(inputStatus){
-    inputStatus.innerHTML=historyCount
-      ? `<span class="badge actual">입력 완료</span><strong>${historyCount}과목 등록됨</strong><span>· 아래 분석 결과가 활성화되었습니다.</span>`
-      : `<span class="badge planned">입력 필요</span><span>② 수강이력에서 최소 1과목을 등록해주세요.</span>`;
+    if(!profileConfirmed){
+      inputStatus.innerHTML=`<span class="badge planned">확인 필요</span><strong>① 기본정보</strong><span>선택값이 기본으로 표시되어 있어도, 확인 완료를 눌러야 다음 단계로 진행됩니다.</span>`;
+    }else if(!historyCount){
+      inputStatus.innerHTML=`<span class="badge actual">① 완료</span><strong>기본정보 확인됨</strong><span>· ② 수강이력에서 최소 1과목을 등록해주세요.</span>`;
+    }else{
+      inputStatus.innerHTML=`<span class="badge actual">입력 완료</span><strong>${historyCount}과목 등록됨</strong><span>· 아래 분석 결과가 활성화되었습니다.</span>`;
+    }
   }
 
   const resultStatus=document.getElementById('resultStatus');
-  if(resultStatus)resultStatus.textContent=historyCount?`${historyCount}과목 기준 자동 계산`:'수강이력 입력 대기';
+  if(resultStatus){
+    resultStatus.textContent=!profileConfirmed?'기본정보 확인 대기':historyCount?`${historyCount}과목 기준 자동 계산`:'수강이력 입력 대기';
+  }
 
   const compact=document.getElementById('historyCompactSummary');
-  if(compact)compact.textContent=historyCount?`· ${historyCount}과목 등록됨`:'· 입력 필요';
+  if(compact){
+    compact.textContent=!profileConfirmed?'· ① 기본정보 확인 필요':historyCount?`· ${historyCount}과목 등록됨`:'· 입력 필요';
+  }
 
   const historyDetails=document.getElementById('historySection');
-  if(historyDetails && !historyDetails.dataset.uxInitialized){
-    historyDetails.open=historyCount===0;
-    historyDetails.dataset.uxInitialized='1';
+  if(historyDetails){
+    historyDetails.classList.toggle('profile-locked',!profileConfirmed);
+    historyDetails.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!profileConfirmed;});
+    if(!historyDetails.dataset.uxInitialized){
+      historyDetails.open=profileConfirmed&&historyCount===0;
+      historyDetails.dataset.uxInitialized='1';
+    }
+    if(!profileConfirmed)historyDetails.open=false;
+  }
+
+  const emptyTitle=document.getElementById('dashboardEmptyTitle');
+  const emptyText=document.getElementById('dashboardEmptyText');
+  const goBtn=document.getElementById('goHistoryInput');
+  if(!profileConfirmed){
+    if(emptyTitle)emptyTitle.textContent='먼저 기본정보 확인이 필요합니다.';
+    if(emptyText)emptyText.textContent='① 전공·입학학기·과정/졸업유형을 확인한 뒤 [기본정보 확인 완료]를 눌러주세요.';
+    if(goBtn)goBtn.textContent='기본정보 확인하러 가기 ↑';
+  }else{
+    if(emptyTitle)emptyTitle.textContent='아직 분석할 수강이력이 없습니다.';
+    if(emptyText)emptyText.textContent='② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.';
+    if(goBtn)goBtn.textContent='수강이력 입력하러 가기 ↑';
   }
 
   const steps=[...document.querySelectorAll('#workflowStrip .workflow-step')];
   if(steps.length){
     steps.forEach(x=>x.classList.remove('active','done'));
-    if(historyCount===0){
+    if(!profileConfirmed){
+      steps[0]?.classList.add('active');
+    }else if(historyCount===0){
       steps[0]?.classList.add('done');
       steps[1]?.classList.add('active');
     }else{
@@ -2962,6 +3049,147 @@ async function loadPdfDocument(data){
     }
   }
 }
+function pdfTokenCompact(v){
+  return pdfValueText(v).normalize('NFKC').toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+function pdfFindSequentialCodes(items){
+  const found=[];
+  let i=0;
+  while(i<items.length){
+    let hit=null;
+    for(let len=1;len<=8 && i+len<=items.length;len++){
+      const raw=items.slice(i,i+len).map(x=>pdfTokenCompact(x.str)).join('');
+      const m=raw.match(/^([A-Z]{2,5}\d{4})$/);
+      if(m){hit={start:i,end:i+len,code:canonicalCode(m[1])};break;}
+      if(raw.length>10)break;
+    }
+    if(hit){found.push(hit);i=hit.end;}
+    else i++;
+  }
+  return found;
+}
+function pdfSequentialTermAt(items,index,currentTerm){
+  for(let back=0;back<=12;back++){
+    const start=Math.max(0,index-back);
+    for(let len=1;len<=5 && start+len<=index+1;len++){
+      const raw=items.slice(start,start+len).map(x=>pdfValueText(x.str)).join('').replace(/\s+/g,'');
+      const t=pdfNormalizeTerm(raw);
+      if(t)return t;
+    }
+  }
+  return currentTerm;
+}
+function pdfCategoryBefore(items,start){
+  for(let i=start-1;i>=Math.max(0,start-10);i--){
+    const c=pdfKnownCategory(items[i].str);
+    if(c)return c;
+  }
+  return '';
+}
+function pdfSequentialGrade(chunk){
+  for(let i=chunk.length-1;i>=0;i--){
+    const raw=pdfValueText(chunk[i].str).normalize('NFKC').toUpperCase()
+      .replace(/[−–—‐]/g,'-').replace(/[ＯO○]/g,'0')
+      .replace(/[^\x20-\x7Eㄱ-ㅎ가-힣]/g,'');
+    if(/^W$/.test(raw))return {index:i,grade:'W',raw};
+    if(/^NP$/.test(raw))return {index:i,grade:'NP',raw};
+    if(/^P$/.test(raw))return {index:i,grade:'P',raw};
+    if(/^F$/.test(raw))return {index:i,grade:'F',raw};
+    if(/^[A-D](?:\+|0|-)$/.test(raw))return {index:i,grade:normalizeGrade(raw),raw};
+  }
+  return null;
+}
+function parsePortalPdfSequential(items){
+  const codes=pdfFindSequentialCodes(items);
+  const rows=[];
+  let currentTerm='';
+
+  for(let ci=0;ci<codes.length;ci++){
+    const hit=codes[ci];
+    currentTerm=pdfSequentialTermAt(items,hit.start,currentTerm);
+
+    // '인정학점'은 포털에서 정규학기와 별도 블록으로 출력
+    for(let j=Math.max(0,hit.start-12);j<hit.start;j++){
+      if(pdfNormalizeTerm(items[j].str)===PRE_ADMISSION_TERM){currentTerm=PRE_ADMISSION_TERM;break;}
+    }
+
+    const nextStart=ci+1<codes.length?codes[ci+1].start:Math.min(items.length,hit.end+16);
+    const chunk=items.slice(hit.end,Math.min(nextStart,hit.end+18));
+    const code=hit.code;
+    const matched=preferredCatalogMatchByCode(code);
+    const portalCategory=pdfCategoryBefore(items,hit.start);
+
+    let pos=0;
+    let section='';
+    if(chunk[pos] && /^\d{1,2}$/.test(pdfValueText(chunk[pos].str))){
+      section=pdfValueText(chunk[pos].str).padStart(2,'0');
+      pos++;
+    }
+
+    const gradeInfo=pdfSequentialGrade(chunk);
+    const gradeIdx=gradeInfo?.index ?? chunk.length;
+
+    // 학점은 평가 앞쪽에서 0~9 범위의 마지막 숫자
+    let creditIdx=-1;
+    for(let i=gradeIdx-1;i>=pos;i--){
+      const s=pdfValueText(chunk[i].str).replace(/,/g,'');
+      if(/^\d+(?:\.\d+)?$/.test(s)){
+        const n=Number(s);
+        if(n>=0&&n<=9){creditIdx=i;break;}
+      }
+    }
+
+    const creditRaw=creditIdx>=0?pdfValueText(chunk[creditIdx].str):'';
+    const creditsMatch=creditRaw.match(/\d+(?:\.\d+)?/);
+
+    let professor='',parsedName='';
+    if(creditIdx>pos){
+      professor=pdfValueText(chunk[creditIdx-1].str);
+      parsedName=chunk.slice(pos,Math.max(pos,creditIdx-1)).map(x=>pdfValueText(x.str)).join(' ').trim();
+    }else{
+      parsedName=chunk.slice(pos,gradeIdx).map(x=>pdfValueText(x.str)).join(' ').trim();
+    }
+
+    // 학정번호 뒤에 다음 과목의 종별/학기 정보가 붙지 않도록 기본 정리
+    parsedName=parsedName.replace(/\s+(전공|선택|공통|교직|청강)\s*$/,'').trim();
+
+    const rawGrade=gradeInfo?.raw||'';
+    const grade=gradeInfo?.grade||pdfGradeValue(rawGrade);
+    const category=mapPortalCategory(portalCategory,matched);
+    const credits=creditsMatch
+      ? Number(creditsMatch[0])
+      : (matched?.credits??defaultCredit(currentTerm||state.profile.admissionTerm,category,code));
+    const passed=grade==='W'?false:(grade?gradePasses(grade)!==false:true);
+    const courseName=matched?.courseName||parsedName||code;
+
+    const noteStart=(gradeInfo?.index??chunk.length)+1;
+    const note=chunk.slice(noteStart).map(x=>pdfValueText(x.str)).join(' ').trim();
+
+    rows.push({
+      selected:true,
+      term:currentTerm||state.profile.admissionTerm,
+      courseCode:code,
+      section,
+      courseName,
+      pdfCourseName:parsedName,
+      professor,
+      portalCategory,
+      category,
+      credits:['common','audit'].includes(category)?0:credits,
+      grade,
+      rawGrade,
+      passed,
+      note,
+      matched:!!matched,
+      matchMajor:matched?.major||'',
+      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      confidenceLevel:'high',
+      confidenceReason:matched?'PDF 직접 추출 · 카탈로그 확인':'PDF 직접 추출',
+      source:'portal_pdf'
+    });
+  }
+  return {rows,detectedCodeCount:codes.length};
+}
 async function extractPortalPdfCandidates(file){
   const data=await file.arrayBuffer();
   const pdf=await loadPdfDocument(data);
@@ -2974,7 +3202,16 @@ async function extractPortalPdfCandidates(file){
     const items=content.items||[];
     totalTextItems+=items.length;
     const rows=groupPdfItemsIntoLines(items);
-    const parsed=parsePortalPdfRows(rows);
+    let parsed=parsePortalPdfRows(rows);
+
+    // 포털 PDF는 브라우저/PDF.js 조합에 따라 같은 행의 글자가 여러 text item으로
+    // 흩어지는 경우가 있다. 행 파서가 학정번호를 못 찾으면 문서 순서 기반으로 재시도한다.
+    if(!parsed.rows.length){
+      const sequential=parsePortalPdfSequential(items);
+      if(sequential.rows.length)parsed=sequential;
+      else parsed.detectedCodeCount=Math.max(parsed.detectedCodeCount||0,sequential.detectedCodeCount||0);
+    }
+
     totalDetectedCodes+=parsed.detectedCodeCount;
     if(parsed.rows.length)pagesWithRows++;
     all.push(...parsed.rows);
@@ -2984,7 +3221,7 @@ async function extractPortalPdfCandidates(file){
     throw new Error('이 PDF에는 읽을 수 있는 텍스트 레이어가 없습니다. 전체성적조회 [출력]에서 생성한 PDF를 사용하십시오.');
   }
   if(!all.length){
-    throw new Error(`PDF 텍스트는 읽었지만 교과목 행을 찾지 못했습니다. 감지된 학정번호 ${totalDetectedCodes}개 / ${pdf.numPages}페이지`);
+    throw new Error(`PDF 텍스트는 읽었지만 교과목 행을 찾지 못했습니다. 학정번호 감지 ${totalDetectedCodes}개 / 텍스트 조각 ${totalTextItems}개 / ${pdf.numPages}페이지`);
   }
 
   // PDF 내 동일 학기·동일 과목이 중복 추출될 경우 한 번만 유지
@@ -3273,11 +3510,13 @@ document.getElementById('majorSelect').onchange=e=>{
     if(!confirm('전공을 변경해도 기존 수강이력/계획은 삭제되지 않습니다. 계속하시겠습니까?')){e.target.value=state.profile.major;return;}
   }
   state.profile.major=e.target.value;
+  state.profileConfirmed=false;
   if(!isTeacherCertMajor()){state.profile.hasTeacherLicense=false;state.profile.wantsTeacherCertificate=false;}
   save();loadCustomTitle();fillStaticControls();refreshCourseSelectors();render();
 };
 document.getElementById('admissionSelect').onchange=e=>{
   state.profile.admissionTerm=e.target.value;
+  state.profileConfirmed=false;
   document.getElementById('historyTerm').value=state.profile.admissionTerm;
   document.getElementById('ocrTerm').value=state.profile.admissionTerm;
   save();
@@ -3288,6 +3527,13 @@ document.getElementById('admissionSelect').onchange=e=>{
   document.getElementById('ocrResult').innerHTML='';
   render();
 };
+const historySummary=document.querySelector('#historySection > summary');
+if(historySummary)historySummary.addEventListener('click',e=>{
+  if(!state.profileConfirmed){
+    e.preventDefault();
+    document.getElementById('profileSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+});
 document.getElementById('historyTerm').onchange=()=>{updateHistoryCreditNote();applyHistorySelection();};
 document.getElementById('historyFilterCategory').onchange=refreshHistoryCourse;
 document.getElementById('historyScope').onchange=refreshHistoryCourse;
@@ -3320,6 +3566,7 @@ document.getElementById('clearOcrImage').onclick=clearOcrImage;
 
 document.querySelectorAll('#trackButtons [data-track]').forEach(b=>b.onclick=()=>{
   state.profile.track=b.dataset.track;
+  state.profileConfirmed=false;
   save();renderTrackButtons();render();
 });
 document.getElementById('wantsTeacherCertificate').onchange=e=>{state.profile.wantsTeacherCertificate=e.target.checked;save();render();};
@@ -3392,8 +3639,28 @@ if(portalPdfInput)portalPdfInput.onchange=()=>{
   portalPdfCandidates=[];
   document.getElementById('portalPdfResult').innerHTML='';
 };
+const confirmProfileBtn=document.getElementById('confirmProfileBtn');
+if(confirmProfileBtn)confirmProfileBtn.onclick=()=>{
+  if(state.profileConfirmed){
+    state.profileConfirmed=false;
+    save();
+    render();
+    document.getElementById('profileSection')?.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  state.profileConfirmed=true;
+  save();
+  render();
+  const h=document.getElementById('historySection');
+  if(h){h.open=true;h.scrollIntoView({behavior:'smooth',block:'start'});}
+};
+
 const goHistoryInputBtn=document.getElementById('goHistoryInput');
 if(goHistoryInputBtn)goHistoryInputBtn.onclick=()=>{
+  if(!state.profileConfirmed){
+    document.getElementById('profileSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    return;
+  }
   const h=document.getElementById('historySection');
   if(h){h.open=true;h.scrollIntoView({behavior:'smooth',block:'start'});}
 };
