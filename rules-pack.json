@@ -1,0 +1,156 @@
+{
+  "packType": "yonsei-gse-rules",
+  "schemaVersion": 1,
+  "appVersion": "2.3.0",
+  "snapshot": "2026-2",
+  "updatedAt": "2026-09-18T00:42:00+09:00",
+  "source": "v2.2.1 embedded baseline",
+  "rules": {
+    "snapshot": "2026-2",
+    "sourcePolicy": "학칙/과정소개 기반 개발문서 v3.1 규칙 스냅샷",
+    "commonRequirement": {
+      "metric": "course_count",
+      "min": 3,
+      "credits": 0
+    },
+    "cohorts": [
+      {
+        "id": "OLD",
+        "label": "2024-2학기까지 입학",
+        "admissionBefore": "2025-1",
+        "tracks": {
+          "thesis": {
+            "label": "학위논문",
+            "requirements": {
+              "teaching": {
+                "min": 4,
+                "max": 6
+              },
+              "major_required": {
+                "min": 5,
+                "max": 7
+              },
+              "major_elective": {
+                "min": 10,
+                "max": 15
+              },
+              "thesis": {
+                "min": 3
+              },
+              "research_guidance": {
+                "min": 3
+              }
+            },
+            "totalCredits": 30,
+            "commonMin": 3
+          },
+          "report": {
+            "label": "졸업연구보고서",
+            "requirements": {
+              "teaching": {
+                "min": 4,
+                "max": 6
+              },
+              "major_required": {
+                "min": 5,
+                "max": 7
+              },
+              "major_elective": {
+                "min": 13,
+                "max": 18
+              },
+              "report": {
+                "min": 3
+              }
+            },
+            "totalCredits": 30,
+            "commonMin": 3
+          },
+          "research": {
+            "label": "연구과정",
+            "requirements": {
+              "teaching": {
+                "min": 2,
+                "max": 5
+              },
+              "major_required": {
+                "min": 4,
+                "max": 6
+              },
+              "major_elective": {
+                "min": 4,
+                "max": 6
+              }
+            },
+            "totalCredits": 12,
+            "commonMin": 1
+          }
+        }
+      },
+      {
+        "id": "NEW",
+        "label": "2025-1학기 이후 입학",
+        "admissionFrom": "2025-1",
+        "tracks": {
+          "thesis": {
+            "label": "학위논문",
+            "requirements": {
+              "teaching": {
+                "min": 6
+              },
+              "major_required": {
+                "min": 6
+              },
+              "major_elective": {
+                "min": 12
+              },
+              "thesis": {
+                "min": 3
+              },
+              "research_guidance": {
+                "min": 3
+              }
+            },
+            "totalCredits": 30,
+            "commonMin": 3
+          },
+          "report": {
+            "label": "졸업연구보고서",
+            "requirements": {
+              "teaching": {
+                "min": 6
+              },
+              "major_required": {
+                "min": 6
+              },
+              "major_elective": {
+                "min": 15
+              },
+              "report": {
+                "min": 3
+              }
+            },
+            "totalCredits": 30,
+            "commonMin": 3
+          },
+          "research": {
+            "label": "연구과정",
+            "requirements": {
+              "teaching": {
+                "min": 3
+              },
+              "major_required": {
+                "min": 6
+              },
+              "major_elective": {
+                "min": 3
+              }
+            },
+            "totalCredits": 12,
+            "commonMin": 1
+          }
+        }
+      }
+    ]
+  }
+}
