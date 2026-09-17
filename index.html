@@ -70,10 +70,105 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .footer{color:var(--muted);font-size:12px;line-height:1.65;margin:20px 4px 40px}
 .empty{padding:24px;text-align:center;color:var(--muted)}
+
+.workflow-strip{
+  margin-top:14px;background:#fff;border:1px solid #d8e2ef;border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:8px;overflow-x:auto
+}
+.workflow-step{
+  display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;
+  font-weight:800;color:#667085
+}
+.workflow-step .num{
+  display:inline-flex;width:23px;height:23px;align-items:center;justify-content:center;
+  border-radius:999px;background:#eef2f6;color:#475467;font-size:11px
+}
+.workflow-step.active{color:#0b57a4}.workflow-step.active .num{background:#0b57a4;color:#fff}
+.workflow-step.done{color:#137333}.workflow-step.done .num{background:#e7f6ec;color:#137333}
+.workflow-arrow{color:#b1bac7;font-size:12px}
+.input-zone{
+  margin-top:14px;padding:14px;border:1px solid #a8c7eb;border-left:5px solid var(--blue2);
+  border-radius:14px;background:linear-gradient(180deg,#f4f9ff,#fbfdff)
+}
+.zone-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.zone-heading h2{font-size:18px;margin:0}.zone-heading p{margin:3px 0 0;color:#667085;font-size:12px;line-height:1.5}
+.zone-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:#eaf2ff;color:#175cd3;font-size:11px;font-weight:800;white-space:nowrap}
+.input-step-label{
+  display:flex;align-items:center;gap:8px;margin:4px 0 8px;font-weight:900;color:#123b69
+}
+.input-step-label .step-no{
+  display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;
+  border-radius:999px;background:#0b57a4;color:#fff;font-size:12px
+}
+.input-zone #profileSection{margin-top:0}
+.input-zone #profileSection>.card{box-shadow:none;border-color:#cbdcf0}
+.input-zone #historySection{
+  margin-top:12px;border-color:#cbdcf0;background:#fff;box-shadow:none
+}
+.input-zone #historySection>summary{color:#123b69}
+.start-hint{
+  margin:8px 0 2px;padding:9px 11px;border-radius:9px;background:#eaf4ff;
+  color:#184f88;font-size:12px;line-height:1.55;border:1px solid #c9def7
+}
+.input-status{
+  display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:#667085
+}
+.input-status strong{color:#172033}
+.analysis-zone{margin-top:16px}
+.analysis-heading{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
+  border-bottom:2px solid #dbe5f0;padding:0 2px 9px;margin-bottom:10px
+}
+.analysis-heading h2{font-size:20px;margin:0;color:#172033}
+.analysis-heading p{font-size:12px;color:#667085;margin:3px 0 0}
+.analysis-empty{
+  display:none;background:#fff;border:1px dashed #a8bfd8;border-radius:14px;
+  padding:26px 18px;text-align:center;color:#667085
+}
+.analysis-empty b{display:block;color:#172033;font-size:16px;margin-bottom:6px}
+.analysis-empty .btn{margin-top:12px}
+.analysis-zone.is-empty .analysis-empty{display:block}
+.analysis-zone.is-empty #kpiSection,
+.analysis-zone.is-empty #requirementsSection,
+.analysis-zone.is-empty #teacherChecklistSection{display:none!important}
+.result-status{font-size:12px;color:#667085;white-space:nowrap}
+.history-compact-summary{display:none}
+#historySection:not([open]) .history-compact-summary{display:inline;color:#667085;font-size:12px;font-weight:600;margin-left:8px}
+@media(max-width:760px){
+  .workflow-strip{padding:9px 10px}
+  .workflow-arrow{display:none}
+  .workflow-step{font-size:11px}
+  .input-zone{padding:10px;border-left-width:4px}
+  .zone-heading{display:block}
+  .zone-badge{margin-top:7px}
+  .analysis-heading{display:block}
+  .result-status{margin-top:5px}
+}
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 @media(max-width:980px){.grid.profile{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr 1fr}.form-grid button{grid-column:span 2}}
 @media(max-width:620px){.app{padding:10px}.header{border-radius:12px;padding:18px}.header h1{font-size:22px}.grid.profile{grid-template-columns:1fr}.grid.kpi{grid-template-columns:1fr 1fr}.form-grid,.form-grid.plan{grid-template-columns:1fr}.form-grid button{grid-column:auto}th{position:static}.card{padding:14px}}
 
+
+.pdf-import-panel{
+  margin-top:12px;border:1px solid #9fc3e8;background:#f3f8ff;border-radius:12px;padding:14px
+}
+.pdf-import-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px}
+.pdf-import-head h3{margin:0;font-size:16px;color:#123b69}
+.pdf-recommended{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:#0b57a4;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.pdf-route{margin:8px 0;padding:9px 11px;border-radius:9px;background:#fff;border:1px solid #cfe0f5;font-size:12px;line-height:1.55;color:#475467}
+.pdf-route b{color:#172033}
+.pdf-import-actions{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:9px;align-items:end;margin-top:10px}
+.pdf-file-box{border:1px dashed #91a8c3;border-radius:10px;padding:11px;background:#fff}
+.pdf-file-box input[type=file]{width:100%;margin-top:6px}
+.pdf-status{margin-top:8px;font-size:12px;color:#667085}
+.pdf-result{margin-top:12px}
+.pdf-result table th{position:static}
+.pdf-row-review{background:#fffaf0}
+.pdf-privacy{font-size:11px;color:#667085;margin-top:7px;line-height:1.5}
+@media(max-width:760px){
+  .pdf-import-actions{grid-template-columns:1fr}
+  .pdf-import-actions .btn{width:100%}
+}
 .ocr-panel{margin-top:12px;border:1px solid #cbd7e6;background:#f8fbff;border-radius:12px;padding:14px}
 .ocr-grid{display:grid;grid-template-columns:170px minmax(240px,1fr) auto;gap:10px;align-items:end}
 .ocr-drop{border:1px dashed #91a8c3;border-radius:10px;padding:12px;background:#fff;outline:none;transition:.15s}.ocr-drop:focus,.ocr-drop.paste-ready{border-color:#0b57a4;box-shadow:0 0 0 3px rgba(11,87,164,.12);background:#f4f9ff}.paste-hint{font-size:13px;color:#53657a;margin-top:6px}.paste-badge{display:inline-block;background:#e9f2ff;color:#0b57a4;border:1px solid #bdd3ef;border-radius:999px;padding:2px 8px;font-weight:700}
@@ -561,6 +656,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   .header p{font-size:7px!important;line-height:1.25!important}
   .title-edit-row{margin-bottom:4px!important}
   .no-print,.quick-actions,.topnote,.sheet-card{display:none!important}
+  .workflow-strip,.zone-heading,.input-step-label,.start-hint,.analysis-heading,.analysis-empty{display:none!important}
+  .input-zone,.analysis-zone{display:contents!important}
   .print-only{display:block!important}
 
   #profileSection{
@@ -763,15 +860,31 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   <details class="card quick-guide no-print" id="quickGuide">
     <summary>사용방법</summary>
     <div class="quick-guide-grid">
-      <div><b>1. 기본정보</b><span>전공·입학학기·과정/졸업유형을 선택합니다.</span></div>
-      <div><b>2. 수강이력</b><span>연세포털 성적 캡처 OCR 또는 강의 찾기/직접 입력으로 이수과목을 등록합니다.</span></div>
-      <div><b>3. 이수현황</b><span>상단 카드와 이수요건 판정에서 부족학점·평점·공통과목을 확인합니다.</span></div>
+      <div><b>1. 기본정보 입력</b><span>전공·입학학기·과정/졸업유형을 먼저 선택합니다.</span></div>
+      <div><b>2. 수강이력 입력</b><span>연세포털 전체성적조회 PDF 가져오기를 권장합니다. 캡처 OCR·강의 찾기·직접 입력도 사용할 수 있습니다.</span></div>
+      <div><b>3. 결과 확인</b><span>입력한 수강이력을 기준으로 부족학점·평점·공통과목을 확인합니다.</span></div>
       <div><b>4. 수강계획</b><span>향후 과목을 추가하면 계획 반영 후 이수현황과 시간표가 자동 계산됩니다.</span></div>
       <div><b>5. 시나리오</b><span>시트를 복제해 서로 다른 수강계획을 비교할 수 있습니다.</span></div>
       <div><b>6. 백업</b><span>개인 데이터는 현재 브라우저에만 저장됩니다. 기기 변경 전 JSON 내보내기를 권장합니다.</span></div>
     </div>
   </details>
 
+  <div class="workflow-strip no-print" id="workflowStrip" aria-label="사용 순서">
+    <div class="workflow-step active" data-step="profile"><span class="num">1</span><span>기본정보</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="history"><span class="num">2</span><span>수강이력</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="result"><span class="num">3</span><span>결과확인</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="plan"><span class="num">4</span><span>수강계획</span></div>
+  </div>
+
+  <section class="input-zone no-print-ui" id="inputZone">
+    <div class="zone-heading no-print">
+      <div><h2>먼저 정보를 입력해주세요</h2><p>① 기본정보를 선택하고 ② 지금까지 수강한 과목을 등록하면 졸업요건 분석 결과가 자동으로 표시됩니다.</p></div>
+      <span class="zone-badge">INPUT · 사용자 입력</span>
+    </div>
+    <div class="input-step-label no-print"><span class="step-no">1</span><span>기본정보 입력</span></div>
   <section class="grid profile profile-v16" id="profileSection">
     <div id="printProfileSummary" class="print-only print-profile-summary"></div>
     <div class="card"><label>전공</label><select id="majorSelect"></select></div>
@@ -794,35 +907,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
       <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
     </div>
   </section>
-
-  <section class="kpi-wrap" id="kpiSection">
-    <div class="grid kpi" id="kpiGrid"></div>
-    <div class="grid kpi cert-kpi" id="certKpiGrid"></div>
-    <div id="qualificationNotes"></div>
-  </section>
-
-  <section class="card section" id="requirementsSection">
-    <h2>이수요건 판정</h2>
-    <div class="req-grid" id="requirementsGrid"></div>
-    <div id="evaluationNotes" style="margin-top:12px"></div>
-  </section>
-
-  <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none">
-    <summary><span>교원자격 이수 체크리스트</span></summary>
-    <div class="callout" style="margin-top:10px">이 영역은 <b>교원자격증 취득 희망자용 보조 체크리스트</b>입니다. 자격종류·기본이수과목·전공학점 등 개인별 요건은 별도 확인이 필요하며, 아래 값만으로 자격취득 여부를 최종 판정하지 않습니다.</div>
-    <div id="teacherChecklistAuto" class="teacher-auto-grid"></div>
-    <div class="teacher-manual-grid">
-      <label class="teacher-check"><input type="checkbox" id="teacherApplicationSubmitted"> 교직과정 이수신청서 제출</label>
-      <label>교육봉사 <span class="muted">(60시간)</span><input type="number" id="teacherVolunteerHours" min="0" max="60" step="1"></label>
-      <label>교직적성·인성검사 <span class="muted">(2회)</span><input type="number" id="teacherAptitudeCount" min="0" max="2" step="1"></label>
-      <label>응급처치·심폐소생술 <span class="muted">(2회)</span><input type="number" id="teacherCprCount" min="0" max="2" step="1"></label>
-      <label>성인지교육 <span class="muted">(통상 2회, 적용여부 확인)</span><input type="number" id="teacherGenderCount" min="0" max="2" step="1"></label>
-    </div>
-    <div class="muted" style="margin-top:10px">교원자격 관련 비수강 요건은 연세포털 교직 자가진단 및 교육대학원 최신 공지에서 최종 확인하십시오.</div>
-  </details>
-
+    <div id="inputStatus" class="input-status no-print"></div>
   <details class="card section input-section history-details" id="historySection" open>
-    <summary><span>1. 기존 수강이력</span></summary>
+    <summary><span>② 기존 수강이력 입력 / 가져오기</span><span id="historyCompactSummary" class="history-compact-summary"></span></summary>
+    <div class="start-hint"><b>여기까지 입력하면 분석이 시작됩니다.</b> 수강이력을 한 과목 이상 등록하면 아래의 이수현황 대시보드가 자동으로 활성화됩니다.</div>
     <div class="callout">
       과거에 이수한 과목은 최신 개설표에서 사라졌더라도 삭제하지 않습니다. <b>과목명·종별·학점 스냅샷을 학생 데이터에 그대로 저장</b>하며 계산에 반영합니다.
       최신 카탈로그에 없는 과목은 <b>과거·폐지·미등재</b>로 표시될 뿐, 이수기록 자체는 유지됩니다.<br>
@@ -831,10 +919,35 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     </div>
     <div class="portal-guide">
       <a href="https://portal.yonsei.ac.kr/" target="_blank" rel="noopener">연세포털서비스 열기 ↗</a>
-      <span>연세포털서비스 로그인 → 학사정보시스템 → 전체 성적조회에서 <b>학기별 수강 내역을 캡처</b>해주세요.</span>
+      <span>연세포털서비스 로그인 → 학사정보시스템 → <b>성적 → 학생 → 전체성적조회</b> → 우측 <b>[출력]</b> → 인쇄 화면에서 <b>PDF로 저장</b>해주세요.</span>
     </div>
+
+    <div class="pdf-import-panel no-print">
+      <div class="pdf-import-head">
+        <div>
+          <h3>전체 수강이력 PDF 가져오기</h3>
+          <div class="muted" style="margin-top:4px">학기별 캡처 없이, 포털에서 출력한 전체성적조회 PDF 한 파일로 수강이력을 읽습니다.</div>
+        </div>
+        <span class="pdf-recommended">권장</span>
+      </div>
+      <div class="pdf-route">
+        <b>PDF 받는 위치</b><br>
+        연세포털 → 성적 → 학생 → 전체성적조회 → 우측 <b>출력</b> → 인쇄/PDF 저장
+      </div>
+      <div class="pdf-import-actions">
+        <div class="pdf-file-box">
+          <label>연세포털 전체성적조회 PDF</label>
+          <input type="file" id="portalPdfFile" accept="application/pdf,.pdf">
+          <div class="pdf-privacy">PDF 원본은 서버에 저장하지 않습니다. 브라우저에서 교과목 정보만 읽고, 등록한 수강이력만 로컬 저장합니다.</div>
+        </div>
+        <button class="btn primary" id="readPortalPdf" type="button">PDF 읽어오기</button>
+      </div>
+      <div id="portalPdfStatus" class="pdf-status">PDF를 선택하면 전체 학기 수강내역을 한 번에 가져올 수 있습니다.</div>
+      <div id="portalPdfResult" class="pdf-result"></div>
+    </div>
+
     <div class="ocr-panel no-print">
-      <h3 style="margin:0 0 8px">성적 캡처 → OCR 일괄등록</h3>
+      <h3 style="margin:0 0 8px">학기별 캡처 OCR <span class="muted">· PDF가 없을 때</span></h3>
       <div class="muted" style="margin-bottom:10px">
         먼저 <b>수강했던 학기</b>를 선택하고 해당 학기의 성적 화면 캡처를 올리십시오.
         OCR은 <b>학정번호를 우선 인식</b>하고 과목명·종별·학점은 카탈로그에서 자동 보완합니다. 성적이 불명확한 과목은 해당 영역을 한 번 더 인식합니다.<br><b class="warn">노란색 ‘확인 필요’ 항목은 성적 등을 확인한 뒤 등록하십시오.</b>
@@ -902,9 +1015,45 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     <div id="printSemesterGpaSummary" class="print-only print-gpa-summary"></div>
     <div id="semesterGpaGrid" class="semester-gpa-grid"></div>
   </details>
+  </section>
+
+  <section class="analysis-zone" id="analysisZone">
+    <div class="analysis-heading no-print">
+      <div><h2>③ 이수현황 분석 결과</h2><p>등록한 수강이력을 기준으로 계산된 결과입니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
+      <div id="resultStatus" class="result-status"></div>
+    </div>
+    <div class="analysis-empty no-print" id="dashboardEmptyState">
+      <b>아직 분석할 수강이력이 없습니다.</b>
+      ② 기존 수강이력 입력에서 이수한 과목을 등록하면 이수학점·평점·졸업요건이 여기에 표시됩니다.
+      <br><button class="btn primary" id="goHistoryInput" type="button">수강이력 입력하러 가기 ↑</button>
+    </div>
+  <section class="kpi-wrap" id="kpiSection">
+    <div class="grid kpi" id="kpiGrid"></div>
+    <div class="grid kpi cert-kpi" id="certKpiGrid"></div>
+    <div id="qualificationNotes"></div>
+  </section>
+  <section class="card section" id="requirementsSection">
+    <h2>이수요건 판정</h2>
+    <div class="req-grid" id="requirementsGrid"></div>
+    <div id="evaluationNotes" style="margin-top:12px"></div>
+  </section>
+  <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none">
+    <summary><span>교원자격 이수 체크리스트</span></summary>
+    <div class="callout" style="margin-top:10px">이 영역은 <b>교원자격증 취득 희망자용 보조 체크리스트</b>입니다. 자격종류·기본이수과목·전공학점 등 개인별 요건은 별도 확인이 필요하며, 아래 값만으로 자격취득 여부를 최종 판정하지 않습니다.</div>
+    <div id="teacherChecklistAuto" class="teacher-auto-grid"></div>
+    <div class="teacher-manual-grid">
+      <label class="teacher-check"><input type="checkbox" id="teacherApplicationSubmitted"> 교직과정 이수신청서 제출</label>
+      <label>교육봉사 <span class="muted">(60시간)</span><input type="number" id="teacherVolunteerHours" min="0" max="60" step="1"></label>
+      <label>교직적성·인성검사 <span class="muted">(2회)</span><input type="number" id="teacherAptitudeCount" min="0" max="2" step="1"></label>
+      <label>응급처치·심폐소생술 <span class="muted">(2회)</span><input type="number" id="teacherCprCount" min="0" max="2" step="1"></label>
+      <label>성인지교육 <span class="muted">(통상 2회, 적용여부 확인)</span><input type="number" id="teacherGenderCount" min="0" max="2" step="1"></label>
+    </div>
+    <div class="muted" style="margin-top:10px">교원자격 관련 비수강 요건은 연세포털 교직 자가진단 및 교육대학원 최신 공지에서 최종 확인하십시오.</div>
+  </details>
+  </section>
 
   <section class="card section input-section" id="planSection">
-    <div class="section-title-row"><h2>2. 향후 수강계획</h2></div>
+    <div class="section-title-row"><h2>④ 향후 수강계획</h2></div>
 <div class="form-grid plan">
       <div><label>계획학기</label><select id="planTerm"></select></div>
       <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
@@ -979,7 +1128,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.0.0:</b> 테스트 버전입니다. <br>
+    <b>v1.10.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -990,7 +1139,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 
 <nav id="mobileNav" class="mobile-nav no-print" aria-label="모바일 빠른 이동">
   <button type="button" data-target="top">홈</button>
-  <button type="button" data-target="requirementsSection">이수현황</button>
+  <button type="button" data-target="analysisZone">이수현황</button>
   <button type="button" data-target="historySection">수강이력</button>
   <button type="button" data-target="planSection">수강계획</button>
 </nav>
@@ -998,6 +1147,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 
 const APP_TITLE_DEFAULT='연세대학교 교육대학원 졸업요건 이수현황 계산기';
@@ -1057,6 +1207,7 @@ function normalizeGrade(raw){
     .replace(/\s+/g,'')
     .replace(/[|!]/g,'I');
   if(!s)return '';
+  if(s==='W' || /(^|[^A-Z])W([^A-Z]|$)/.test(s))return 'W';
   if(s.includes('NP'))return 'NP';
   if(/(^|[^A-Z])P([^A-Z]|$)/.test(s) || s==='P')return 'P';
   if(/(^|[^A-Z])F([^A-Z]|$)/.test(s) || s==='F')return 'F';
@@ -1074,13 +1225,13 @@ function gradePasses(grade){
   const g=normalizeGrade(grade);
   if(!g)return null;
   if(g==='P')return true;
-  if(g==='NP')return false;
+  if(g==='NP' || g==='W')return false;
   const p=gradePoint(g);
   return p==null?null:p>=PASS_GRADE_MIN;
 }
 function gradeOptionsHtml(selected='',allowBlank=true){
   const g=normalizeGrade(selected);
-  const list=['A+','A0','A-','B+','B0','B-','C+','C0','C-','D+','D0','D-','F','P','NP'];
+  const list=['A+','A0','A-','B+','B0','B-','C+','C0','C-','D+','D0','D-','F','P','NP','W'];
   return (allowBlank?`<option value="" ${!g?'selected':''}>미입력</option>`:'')+
     list.map(x=>`<option value="${x}" ${x===g?'selected':''}>${x}${GRADE_POINTS[x]!=null?` (${GRADE_POINTS[x].toFixed(1)})`:''}</option>`).join('');
 }
@@ -1101,7 +1252,7 @@ function gpaStats(records){
       qualityPoints += gp*cr;
       gpaCredits += cr;
     }else if(cr>0 && r.category!=='common' && !['P','NP'].includes(norm)){
-      missingGradeCount++;
+      if(norm!=='W')missingGradeCount++;
     }
     if(r.passed!==false) earnedCredits += (['common','audit'].includes(r.category)?0:cr);
   }
@@ -2048,8 +2199,45 @@ function renderCatalog(){
     return `<tr><td class="mono">${esc(displayCode)}</td><td><div class="course-name">${esc(o.courseName)}</div><div class="muted">${esc(sub)}</div></td><td>${esc(courseOriginLabel(o))}</td><td>${CATEGORY_LABELS[o.category||'unknown']}</td><td>${badge}</td></tr>`;
   }).join(''):`<tr><td colspan="5" class="empty">해당 조건의 과목이 없습니다.</td></tr>`;
 }
+function renderUxState(){
+  const historyCount=state.history.length;
+  const analysis=document.getElementById('analysisZone');
+  if(analysis)analysis.classList.toggle('is-empty',historyCount===0);
+
+  const inputStatus=document.getElementById('inputStatus');
+  if(inputStatus){
+    inputStatus.innerHTML=historyCount
+      ? `<span class="badge actual">입력 완료</span><strong>${historyCount}과목 등록됨</strong><span>· 아래 분석 결과가 활성화되었습니다.</span>`
+      : `<span class="badge planned">입력 필요</span><span>② 수강이력에서 최소 1과목을 등록해주세요.</span>`;
+  }
+
+  const resultStatus=document.getElementById('resultStatus');
+  if(resultStatus)resultStatus.textContent=historyCount?`${historyCount}과목 기준 자동 계산`:'수강이력 입력 대기';
+
+  const compact=document.getElementById('historyCompactSummary');
+  if(compact)compact.textContent=historyCount?`· ${historyCount}과목 등록됨`:'· 입력 필요';
+
+  const historyDetails=document.getElementById('historySection');
+  if(historyDetails && !historyDetails.dataset.uxInitialized){
+    historyDetails.open=historyCount===0;
+    historyDetails.dataset.uxInitialized='1';
+  }
+
+  const steps=[...document.querySelectorAll('#workflowStrip .workflow-step')];
+  if(steps.length){
+    steps.forEach(x=>x.classList.remove('active','done'));
+    if(historyCount===0){
+      steps[0]?.classList.add('done');
+      steps[1]?.classList.add('active');
+    }else{
+      steps[0]?.classList.add('done');
+      steps[1]?.classList.add('done');
+      steps[2]?.classList.add('active');
+    }
+  }
+}
 function render(){
-  renderScenarioTabs();renderKpis();renderQualificationNotes();renderRequirements();renderTeacherChecklist();renderHistory();renderPlan();renderTimetable();renderDiff();renderCatalog();renderPrintProfileSummary();
+  renderScenarioTabs();renderKpis();renderQualificationNotes();renderRequirements();renderTeacherChecklist();renderHistory();renderPlan();renderTimetable();renderDiff();renderCatalog();renderPrintProfileSummary();renderUxState();
 }
 
 
@@ -2599,6 +2787,243 @@ function importOcrCandidates(){
   document.getElementById('ocrResult').innerHTML='';
 }
 
+
+let portalPdfCandidates=[];
+
+function pdfValueText(v){
+  return String(v==null?'':v).trim();
+}
+function pdfNormalizeTerm(raw){
+  const s=pdfValueText(raw).replace(/\s+/g,'');
+  if(/인정학점/.test(s))return PRE_ADMISSION_TERM;
+  const m=s.match(/(\d{4})학년도([12])학기/);
+  return m?`${m[1]}-${m[2]}`:'';
+}
+function pdfGradeValue(raw){
+  const s=pdfValueText(raw).toUpperCase().replace(/[−–—‐]/g,'-').replace(/[ＯO○]/g,'0');
+  if(/^W$/.test(s))return 'W';
+  if(/^Z\d+$/i.test(s))return '';
+  return normalizeGrade(s);
+}
+function nearestColumnIndex(x, centers){
+  let best=0,dist=Infinity;
+  for(let i=0;i<centers.length;i++){
+    const d=Math.abs(x-centers[i]);
+    if(d<dist){best=i;dist=d;}
+  }
+  return best;
+}
+function groupPdfItemsIntoLines(items,tolerance=2.2){
+  const rows=[];
+  const sorted=[...items]
+    .filter(it=>pdfValueText(it.str))
+    .map(it=>({str:pdfValueText(it.str),x:Number(it.transform?.[4]||0),y:Number(it.transform?.[5]||0),w:Number(it.width||0)}))
+    .sort((a,b)=>b.y-a.y || a.x-b.x);
+  for(const item of sorted){
+    let row=rows.find(r=>Math.abs(r.y-item.y)<=tolerance);
+    if(!row){row={y:item.y,items:[]};rows.push(row);}
+    row.items.push(item);
+  }
+  rows.sort((a,b)=>b.y-a.y);
+  rows.forEach(r=>r.items.sort((a,b)=>a.x-b.x));
+  return rows;
+}
+function findPdfHeaderColumns(rows){
+  const labels=['학기','신청','취득','평균','종별','학정번호','분반','교과목명','담당교수','학점','평가','비고'];
+  for(const row of rows){
+    const map={};
+    for(const it of row.items){
+      const key=labels.find(x=>pdfValueText(it.str).replace(/\s+/g,'')===x);
+      if(key)map[key]=it.x;
+    }
+    if(map['학정번호']!=null && map['교과목명']!=null && map['평가']!=null){
+      return labels.map(label=>({label,x:map[label]})).filter(x=>x.x!=null);
+    }
+  }
+  return null;
+}
+function parsePortalPdfRows(rows,headerCols){
+  const centers=headerCols.map(x=>x.x);
+  const labels=headerCols.map(x=>x.label);
+  const idx=Object.fromEntries(labels.map((x,i)=>[x,i]));
+  const courseRows=[];
+  let currentTerm='';
+  for(const row of rows){
+    const cells=labels.map(()=>[]);
+    for(const it of row.items){
+      const ci=nearestColumnIndex(it.x,centers);
+      cells[ci].push(it.str);
+    }
+    const val=Object.fromEntries(labels.map((label,i)=>[label,cells[i].join(' ').trim()]));
+    const term=pdfNormalizeTerm(val['학기']);
+    if(term)currentTerm=term;
+
+    const codeMatch=pdfValueText(val['학정번호']).replace(/\s+/g,'').match(/[A-Z]{2,5}\d{4}/i);
+    if(!codeMatch)continue;
+
+    const code=canonicalCode(codeMatch[0].toUpperCase());
+    const matched=preferredCatalogMatchByCode(code);
+    const portalCategory=pdfValueText(val['종별']);
+    const category=mapPortalCategory(portalCategory,matched);
+    const creditsMatch=pdfValueText(val['학점']).match(/-?\d+(?:\.\d+)?/);
+    const credits=creditsMatch?Number(creditsMatch[0]):(matched?.credits??defaultCredit(currentTerm,category,code));
+    const rawGrade=pdfValueText(val['평가']);
+    const grade=pdfGradeValue(rawGrade);
+    const passed=grade==='W'?false:(grade?gradePasses(grade)!==false:true);
+    const parsedName=pdfValueText(val['교과목명']);
+    const courseName=matched?.courseName||parsedName||code;
+    const section=(pdfValueText(val['분반']).match(/\d{1,2}/)||[])[0]||'';
+    const professor=pdfValueText(val['담당교수']);
+    const note=pdfValueText(val['비고']);
+
+    courseRows.push({
+      selected:true,
+      term:currentTerm||state.profile.admissionTerm,
+      courseCode:code,
+      section,
+      courseName,
+      pdfCourseName:parsedName,
+      professor,
+      portalCategory,
+      category,
+      credits:['common','audit'].includes(category)?0:credits,
+      grade,
+      rawGrade,
+      passed,
+      note,
+      matched:!!matched,
+      matchMajor:matched?.major||'',
+      majorTeachingSwitchable:!!(matched && Array.isArray(matched.categoryOptions) && matched.categoryOptions.includes('teaching') && matched.categoryOptions.includes('major_elective')),
+      confidenceLevel:'high',
+      confidenceReason:matched?'PDF 직접 추출 · 카탈로그 확인':'PDF 직접 추출',
+      source:'portal_pdf'
+    });
+  }
+  return courseRows;
+}
+async function extractPortalPdfCandidates(file){
+  if(typeof pdfjsLib==='undefined')throw new Error('PDF 처리 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하십시오.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const data=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data}).promise;
+  const all=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const content=await page.getTextContent({normalizeWhitespace:true});
+    const rows=groupPdfItemsIntoLines(content.items||[]);
+    const header=findPdfHeaderColumns(rows);
+    if(!header)continue;
+    all.push(...parsePortalPdfRows(rows,header));
+  }
+  return all;
+}
+function renderPortalPdfCandidates(){
+  const box=document.getElementById('portalPdfResult');
+  if(!box)return;
+  if(!portalPdfCandidates.length){box.innerHTML='';return;}
+  box.innerHTML=`<div class="table-wrap">
+    <table>
+      <thead><tr><th>등록</th><th>학기</th><th>과목</th><th>포털 종별</th><th>인정 종별</th><th>학점</th><th>성적</th><th>상태</th></tr></thead>
+      <tbody>${portalPdfCandidates.map((r,i)=>{
+        const duplicate=historyAlreadyExists(r.term,r.courseCode,r.courseName);
+        const status=r.majorTeachingSwitchable?'전공교직 · 종별 변경 가능':r.matched?'카탈로그 확인':'PDF 직접 추출';
+        return `<tr class="${duplicate?'pdf-row-review':''}">
+          <td><input class="ocr-check pdf-select" data-i="${i}" type="checkbox" ${r.selected&&!duplicate?'checked':''} ${duplicate?'disabled':''}></td>
+          <td>${esc(displayAcademicTerm(r.term))}</td>
+          <td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.courseCode)}${r.section?'-'+esc(r.section):''}</div></td>
+          <td>${esc(r.portalCategory||'')}</td>
+          <td><select class="inline-select pdf-cat" data-i="${i}">${categoryOptionsHtml(r.category)}</select></td>
+          <td><select class="inline-select pdf-credit" data-i="${i}">${creditOptionsHtml(r.credits)}</select></td>
+          <td><select class="inline-select pdf-grade" data-i="${i}">${gradeOptionsHtml(r.grade,true)}</select></td>
+          <td><span class="badge ${duplicate?'planned':'conf-high'}">${duplicate?'이미 등록됨':esc(status)}</span>${r.rawGrade&&!r.grade?`<div class="muted">평가 ${esc(r.rawGrade)}</div>`:''}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>
+  <div class="toolbar" style="margin-top:10px">
+    <button class="btn primary" id="importPortalPdf">선택 과목 일괄등록</button>
+    <button class="btn" id="clearPortalPdf" type="button">결과 지우기</button>
+  </div>`;
+
+  document.querySelectorAll('.pdf-select').forEach(x=>x.onchange=()=>{portalPdfCandidates[+x.dataset.i].selected=x.checked;});
+  document.querySelectorAll('.pdf-cat').forEach(x=>x.onchange=()=>{
+    const r=portalPdfCandidates[+x.dataset.i];
+    r.category=x.value;
+    if(['common','audit'].includes(r.category))r.credits=0;
+    renderPortalPdfCandidates();
+  });
+  document.querySelectorAll('.pdf-credit').forEach(x=>x.onchange=()=>{portalPdfCandidates[+x.dataset.i].credits=Number(x.value||0);});
+  document.querySelectorAll('.pdf-grade').forEach(x=>x.onchange=()=>{
+    const r=portalPdfCandidates[+x.dataset.i];
+    r.grade=normalizeGrade(x.value);
+    const gp=gradePasses(r.grade);
+    r.passed=gp==null?r.passed:gp;
+  });
+  document.getElementById('importPortalPdf').onclick=importPortalPdfCandidates;
+  document.getElementById('clearPortalPdf').onclick=()=>{
+    portalPdfCandidates=[];
+    box.innerHTML='';
+    document.getElementById('portalPdfStatus').textContent='PDF 결과를 지웠습니다.';
+  };
+}
+async function readPortalPdf(){
+  const file=document.getElementById('portalPdfFile').files?.[0];
+  if(!file){alert('연세포털에서 출력한 PDF 파일을 선택하십시오.');return;}
+  const btn=document.getElementById('readPortalPdf');
+  const status=document.getElementById('portalPdfStatus');
+  btn.disabled=true;
+  btn.textContent='PDF 읽는 중…';
+  status.textContent='PDF 텍스트를 읽고 학기·학정번호·종별·학점·성적을 분석하는 중입니다.';
+  document.getElementById('portalPdfResult').innerHTML='';
+  try{
+    portalPdfCandidates=await extractPortalPdfCandidates(file);
+    if(!portalPdfCandidates.length){
+      throw new Error('수강 과목 행을 찾지 못했습니다. 연세포털 전체성적조회에서 [출력]으로 생성한 PDF인지 확인하십시오.');
+    }
+    const terms=new Set(portalPdfCandidates.map(x=>x.term));
+    const wCount=portalPdfCandidates.filter(x=>x.grade==='W').length;
+    status.textContent=`PDF 분석 완료 · ${portalPdfCandidates.length}과목 · ${terms.size}개 학기${wCount?` · W(미취득) ${wCount}과목 포함`:''}`;
+    renderPortalPdfCandidates();
+  }catch(err){
+    console.error(err);
+    portalPdfCandidates=[];
+    status.textContent=`PDF를 읽지 못했습니다 · ${err?.message||err}`;
+    document.getElementById('portalPdfResult').innerHTML=`<div class="callout warnbox">PDF 텍스트를 읽을 수 없습니다. 포털의 <b>전체성적조회 → 출력</b>에서 생성한 PDF를 사용하거나, 아래의 학기별 캡처 OCR을 이용하십시오.</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent='PDF 읽어오기';
+  }
+}
+function importPortalPdfCandidates(){
+  const selected=portalPdfCandidates.filter(x=>x.selected && !historyAlreadyExists(x.term,x.courseCode,x.courseName));
+  if(!selected.length){alert('새로 등록할 과목을 선택하십시오.');return;}
+  let added=0,skipped=0;
+  for(const r of selected){
+    if(historyAlreadyExists(r.term,r.courseCode,r.courseName)){skipped++;continue;}
+    state.history.push({
+      id:uid('h'),
+      term:r.term,
+      courseCode:canonicalCode(r.courseCode),
+      courseName:r.courseName,
+      category:r.category||'unknown',
+      credits:Number(r.credits||0),
+      passed:r.passed!==false,
+      grade:r.grade||'',
+      portalCategory:r.portalCategory||'',
+      source:'portal_pdf',
+      professor:r.professor||'',
+      section:r.section||'',
+      portalNote:r.note||''
+    });
+    added++;
+  }
+  save();
+  render();
+  document.getElementById('portalPdfStatus').textContent=`PDF 일괄등록 완료 · ${added}과목 등록${skipped?` · 중복 ${skipped}과목 건너뜀`:''}`;
+  portalPdfCandidates=[];
+  document.getElementById('portalPdfResult').innerHTML='';
+}
+
 let pastedOcrBlob=null;
 
 function setOcrPreviewBlob(blob, label='붙여넣은 이미지'){
@@ -2879,6 +3304,20 @@ document.getElementById('resetData').onclick=()=>{
 };
 
 document.getElementById('editTitleBtn').onclick=editCustomTitle;
+const portalPdfBtn=document.getElementById('readPortalPdf');
+if(portalPdfBtn)portalPdfBtn.onclick=readPortalPdf;
+const portalPdfInput=document.getElementById('portalPdfFile');
+if(portalPdfInput)portalPdfInput.onchange=()=>{
+  const f=portalPdfInput.files?.[0];
+  document.getElementById('portalPdfStatus').textContent=f?`선택됨: ${f.name} · [PDF 읽어오기]를 누르십시오.`:'PDF를 선택하십시오.';
+  portalPdfCandidates=[];
+  document.getElementById('portalPdfResult').innerHTML='';
+};
+const goHistoryInputBtn=document.getElementById('goHistoryInput');
+if(goHistoryInputBtn)goHistoryInputBtn.onclick=()=>{
+  const h=document.getElementById('historySection');
+  if(h){h.open=true;h.scrollIntoView({behavior:'smooth',block:'start'});}
+};
 
 function applyPrintMode(enabled){
   PRINT_MODE=enabled;
