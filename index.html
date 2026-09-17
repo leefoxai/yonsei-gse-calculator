@@ -820,7 +820,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </details>
 
   <section class="card section input-section" id="planSection">
-    <div class="section-title-row"><h2>2. 향후 수강계획</h2><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정">⚙</button></div>
+    <div class="section-title-row"><h2>2. 향후 수강계획</h2></div>
 <div id="planSettingsPanel" class="plan-settings no-print"></div>
     <div class="form-grid plan">
       <div><label>계획학기</label><select id="planTerm"></select></div>
@@ -842,13 +842,13 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 
     <div class="schedule-compare">
       <div class="schedule-pane">
-        <div class="section-title-row"><h3 id="planTimetableTitle">계획 학기 시간표</h3></div>
+        <div class="section-title-row"><h3 id="planTimetableTitle">학기 시간표</h3><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정" aria-label="시간표 표시 설정">⚙</button></div>
         <div id="planTimetableGrid" class="weekly-schedule"></div>
         <div id="planTimetableUnplaced" class="plan-unplaced"></div>
       </div>
       <div class="schedule-pane reference-pane">
-        <div class="section-title-row"><h3>저장한 계획 시간표</h3><button class="btn small no-print" id="savePlanTimetableBtn" type="button">계획 학기 시간표 추가하기</button></div>
-        <div class="muted" style="margin:7px 0 10px">왼쪽의 현재 계획 학기 시간표를 스냅샷으로 저장합니다. 저장된 시간표를 선택하면 왼쪽의 현재 계획과 나란히 비교할 수 있습니다.</div>
+        <div class="section-title-row"><h3>저장한 계획 시간표</h3><button class="btn small no-print" id="savePlanTimetableBtn" type="button">현재 시간표 저장</button></div>
+        <div class="muted" style="margin:7px 0 10px">왼쪽의 현재 학기 시간표를 스냅샷으로 저장합니다. 저장된 시간표를 선택하면 왼쪽의 현재 계획과 나란히 비교할 수 있습니다.</div>
         <div id="scheduleReferenceViewer" class="reference-viewer"><div class="empty">저장한 계획 시간표가 없습니다.</div></div>
         <div id="scheduleReferenceFeed" class="reference-feed"></div>
       </div>
@@ -895,7 +895,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   </section>
 
   <footer class="footer">
-    <b>v1.9.7:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
+    <b>v1.9.8:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 희망자 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1700,7 +1700,7 @@ function buildWeeklyScheduleHtml(records,settings){
 }
 function renderPlanTimetable(){
   const term=document.getElementById('planTerm').value;
-  document.getElementById('planTimetableTitle').textContent=`(${term})학기 계획 학기 시간표`;
+  document.getElementById('planTimetableTitle').textContent=`${term}학기 시간표`;
   const settings=state.scheduleSettings||defaultState().scheduleSettings;
   const rawRecords=currentScenario().planned.filter(r=>r.term===term);
   const records=dedupePlannedRecords(rawRecords);
