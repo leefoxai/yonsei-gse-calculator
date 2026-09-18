@@ -1326,7 +1326,6 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
 .ocr-queue-meta{min-width:0}.ocr-queue-name{font-size:12px;font-weight:800;color:#344054;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ocr-queue-meta .muted{font-size:11px}
 .ocr-queue-term label{margin-bottom:4px}.ocr-queue-remove{padding:6px 8px!important}
 .ocr-batch-note{margin-top:7px;font-size:11px;color:#667085;line-height:1.5}
-.teacher-basic-help{display:block;margin-top:5px;padding:7px 9px;border-radius:7px;background:#f8fafc;border:1px solid #e4e9f0;color:#596579;line-height:1.45}
 @media(max-width:680px){
   .quick-guide-extra-list{display:grid;grid-template-columns:1fr}
   .quick-guide-extra-item{border-radius:9px;justify-content:flex-start}
@@ -1572,7 +1571,6 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
     <div id="teacherCertificateVariantWrap" class="teacher-cert-variant"></div>
     <div id="teacherRuleNotice" class="callout warnbox" style="margin-top:10px"></div>
     <div id="teacherChecklistAuto" class="teacher-auto-grid teacher-auto-grid-v2"></div>
-    <div id="teacherBasicDetail" class="teacher-basic-detail"></div>
 
     <h3 class="teacher-subtitle">개인별 인정 결과</h3>
     <div class="teacher-manual-grid teacher-manual-grid-v2">
@@ -1749,7 +1747,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   
 
   <footer class="footer">
-    <b>v2.7:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR을 지원합니다.<br>
+    <b>v2.7.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR을 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -3153,13 +3151,6 @@ function renderTeacherChecklist(){
   }
   document.querySelectorAll('.teacher-secondary-only').forEach(el=>el.style.display=isCounselor1?'none':'');
   const expWrap=document.getElementById('teacherCounselor1ExperienceWrap');if(expWrap)expWrap.style.display=isCounselor1?'block':'none';
-  const detail=document.getElementById('teacherBasicDetail');
-  if(detail){
-    const matched=projected.basicAuto.matchedGroups.map(x=>`<span class="matched">✓ ${x.group.no}. ${esc(x.group.basicSubject||x.best.course.courseName)} (${esc(x.best.record.courseCode||x.best.course.code)})</span>`);
-    const allNos=(projected.variant?.groups||[]).map(g=>Number(g.no));
-    const missing=allNos.filter(n=>!projected.basicAuto.groupNos.has(n));
-    detail.innerHTML=`<b>기본이수 자동판정</b> · ${esc(projected.variant?.conditionText||basicLabel)}<br>${matched.length?matched.join(' · '):'<span class="missing">교육대학원 수강이력에서 자동 확인된 기본이수 과목이 없습니다.</span>'}${missing.length?`<div class="muted" style="margin-top:5px"><b>아직 자동 확인되지 않은 기본이수 영역:</b> 관리번호 ${missing.join(', ')}</div><span class="teacher-basic-help"><b>관리번호란?</b> 학교의 공식 기본이수과목표에서 과목 영역을 구분하기 위한 번호입니다. 여기 표시된 번호가 모두 필수라는 뜻은 아닙니다. 위의 필수·선택·영역 조건에 따라 필요한 영역을 확인하고, 학부에서 인정받은 과목은 아래 입력란에 별도로 반영하세요.</span>`:''}`;
-  }
   const specialWrap=document.getElementById('teacherBasicSpecialConfirmedWrap');
   if(specialWrap)specialWrap.style.display=projected.basicRule?.type==='groups'?'flex':'none';
 
