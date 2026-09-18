@@ -14,11 +14,13 @@ def load(name):
         errors.append(f'{name} load failed: {e}'); return {}
 
 html=(ROOT/'index.html').read_text(encoding='utf-8')
+app=(ROOT/'app.js').read_text(encoding='utf-8')
+css=(ROOT/'styles.css').read_text(encoding='utf-8')
 data=load('data-pack.json'); rules=load('rules-pack.json'); cert=load('certificate-rules.json')
 check('public admin UI removed','id="dataUpdateSection"' not in html)
-check('public local override disabled','const ALLOW_LOCAL_PACK_OVERRIDES = false;' in html)
-check('cache bypass enabled',"cache:'no-store'" in html and 'Date.now()' in html)
-check('client regression suite present','function runDeterministicSelfTests()' in html and '동일 학정번호 중복 감지' in html)
+check('public local override disabled','const ALLOW_LOCAL_PACK_OVERRIDES = false;' in app)
+check('cache bypass enabled',"cache:'no-store'" in app and 'Date.now()' in app)
+check('client regression suite present','function runDeterministicSelfTests()' in app and '동일 학정번호 중복 감지' in app)
 check('data pack type',data.get('packType')=='yonsei-gse-data')
 check('rules pack type',rules.get('packType')=='yonsei-gse-rules')
 check('cert pack type',cert.get('packType')=='yonsei-gse-certificate-rules')
@@ -77,7 +79,19 @@ check('teacher common mandatory 2x',common.get('aptitudeCount')==2 and common.ge
 check('teacher common includes existing license',common.get('appliesToExistingLicenseHolders') is True)
 c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')=='counselor1'),{})
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
-check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in html and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in html)
+check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
+
+
+check('modular css linked','styles.css?v=3.0.0' in html)
+check('modular js linked','app.js?v=3.0.0' in html)
+check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
+check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
+check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
+check('gap candidates present','function renderGapCandidates()' in app and 'id="planGapCandidates"' in html)
+check('offering pattern present','function courseOfferingPattern(' in app and '데이터 수록 학기' in app)
+check('ocr canvas release present','releaseCanvas(prepared)' in app and 'pageCache.clear()' in app)
+check('extras grouped','id="extraFeatures"' in html and '수강계획 · 시나리오 비교' in html)
+check('field confidence present','function fieldConfidenceHtml(' in app and '.field-confidence' in css)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')
