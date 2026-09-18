@@ -1,9 +1,9 @@
 {
   "packType": "yonsei-gse-rules",
   "schemaVersion": 1,
-  "appVersion": "2.5.0",
+  "appVersion": "2.6.0",
   "snapshot": "2026-2",
-  "updatedAt": "2026-09-18T02:49:00+09:00",
+  "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": "v2.2.1 embedded baseline",
   "rules": {
     "snapshot": "2026-2",

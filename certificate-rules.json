@@ -1,9 +1,9 @@
 {
   "packType": "yonsei-gse-certificate-rules",
   "schemaVersion": 1,
-  "appVersion": "2.5.0",
+  "appVersion": "2.6.0",
   "snapshot": "2026-2",
-  "updatedAt": "2026-09-18T02:49:00+09:00",
+  "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": {
     "title": "연세대학교 교육대학원 전공별 기본이수과목 및 교과교육과목",
     "file": "[붙임2]기본이수과목_교육대학원개설_260617_.pdf",
@@ -510,7 +510,11 @@
               }
             }
           ],
-          "pedagogyRequired": false
+          "pedagogyRequired": false,
+          "eligibility": {
+            "type": "professional_counselor_2",
+            "genericSecondaryCourseFramework": true
+          }
         },
         {
           "label": "전문상담교사 1급",
@@ -685,7 +689,15 @@
             "minCredits": 0
           },
           "id": "counselor1",
-          "pedagogyRequired": false
+          "pedagogyRequired": false,
+          "eligibility": {
+            "type": "professional_counselor_1",
+            "requiresExistingTeacherLicense": true,
+            "minPreAdmissionTeachingYears": 3,
+            "experienceMustBeBeforeAdmission": true,
+            "genericSecondaryCourseFramework": false,
+            "sourceNote": "유치원·초등·중등학교 정교사(2급) 이상 자격증 소지 및 입학 전 3년 이상 교육경력 필요. 보건·사서·영양교사 등도 취득 가능."
+          }
         }
       ],
       "defaultVariant": "counselor2"
@@ -2563,14 +2575,22 @@
       "maxCredits": 9
     },
     "prerequisite": {
-      "maxCoursesPerTerm": 2
+      "maxCoursesPerTerm": 2,
+      "exception": {
+        "admissionFrom": "2024-1",
+        "fromSemester": 3,
+        "toSemester": 5,
+        "maxCourses": 3,
+        "maxUses": 1,
+        "sourceNote": "2024학년도 이후 입학생은 3~5학기 중 한 학기에 선수과목 3과목까지 수강 가능"
+      }
     },
     "common": {
       "maxCoursesPerTerm": 1,
       "maxCoursesTotal": 4
     }
   },
-  "packVersion": "2026-06-17.1",
+  "packVersion": "2026-09-18.2",
   "sources": [
     {
       "file": "[붙임2]기본이수과목_교육대학원개설_260617_.pdf",
@@ -2581,6 +2601,46 @@
       "file": "2026-2_신입생_오리엔테이션_260820_업로드.pdf",
       "date": "2026-08-20",
       "role": "교원자격 공통 필수사항·수강한도·시험 규칙 검증"
+    },
+    {
+      "title": "중등학교(2급) 정교사 - 2024학년도 입학자부터",
+      "url": "https://gse.yonsei.ac.kr/gse/license/t_secondary_2013.do",
+      "accessed": "2026-09-18",
+      "role": "교원자격 소지자 면제범위·2024+ 교직기준"
+    },
+    {
+      "title": "교직 이수자 수강신청 안내",
+      "url": "https://gse.yonsei.ac.kr/gse/select05.do",
+      "accessed": "2026-09-18",
+      "role": "선수과목 수강한도 및 3~5학기 1회 3과목 특례"
+    },
+    {
+      "title": "전문상담교사(1급/2급)",
+      "url": "https://gse.yonsei.ac.kr/gse/license/t_counselor.do",
+      "accessed": "2026-09-18",
+      "role": "전문상담교사 1급 자격·교육경력·교과목 요건"
+    },
+    {
+      "title": "2026-1 교직과정 이수신청서 검토결과 안내",
+      "url": "https://gse.yonsei.ac.kr/gse/board/notice.do?articleNo=473476&mode=view",
+      "accessed": "2026-09-18",
+      "role": "공통필수 3영역 각 2회·기존 자격증/현직교원 포함"
     }
-  ]
+  ],
+  "commonMandatory": {
+    "aptitudeCount": 2,
+    "cprCount": 2,
+    "genderCount": 2,
+    "appliesToExistingLicenseHolders": true,
+    "appliesToIncumbentTeachers": true,
+    "sourceNote": "교직적성·인성검사, 응급처치·심폐소생술, 성인지교육은 각 2회. 기존 교원자격증 소지자 및 현직교원 포함."
+  },
+  "existingTeacherLicenseExemptions": {
+    "minimumLicenseLevel": "2급 이상",
+    "theory": true,
+    "literacy": true,
+    "practice": true,
+    "volunteer": true,
+    "sourceNote": "중등학교(2급) 정교사 2013~2023 및 2024학년도 이후 공식 안내의 면제범위 기준."
+  }
 }
