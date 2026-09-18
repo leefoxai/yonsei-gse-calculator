@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.1';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -66,6 +66,7 @@ const RULES_PACK_LOCAL_KEY = 'yonsei-gse-rules-pack-v1';
 const CERT_RULES_PACK_LOCAL_KEY = 'yonsei-gse-certificate-rules-pack-v1';
 const AUTO_BACKUP_KEY = 'yonsei-gse-auto-backups-v1';
 let runtimePackMeta = {dataSource:'embedded fallback',rulesSource:'embedded fallback',certSource:'embedded fallback',dataEnvelope:null,rulesEnvelope:null,certEnvelope:null,dataValidation:null,rulesValidation:null,certValidation:null,selfTests:null};
+let gapCandidateTerm='';
 const CATEGORY_LABELS = {
   common:'공통', teaching:'교직', prerequisite:'선수', major_required:'전공필수', major_elective:'전공선택',
   thesis:'논문', research_guidance:'연구지도', report:'졸업연구보고서', audit:'청강/비산입', unknown:'종별 확인 필요'
@@ -1402,10 +1403,15 @@ function courseOfferingPattern(course){
     return !code&&name&&normName(r.courseName)===name;
   });
   const terms=[...new Set(rows.map(r=>r.term).filter(validTermValue))].sort((a,b)=>termIndex(a)-termIndex(b));
-  if(!terms.length)return {terms:[],text:'현재 데이터팩에 개설 학기 정보 없음',pattern:''};
-  const sems=[...new Set(terms.map(t=>t.endsWith('-1')?'1':'2'))];
-  const pattern=sems.length===1?`${sems[0]}학기 데이터에 수록`:'1·2학기 데이터에 모두 수록';
-  return {terms,text:`데이터 수록 학기: ${terms.slice(-5).join(' · ')}`,pattern};
+  if(!terms.length)return {terms:[],text:'학기별 개설표 수록 정보 없음',pattern:''};
+  const labels=terms.map(t=>{
+    const actual=rows.some(r=>r.term===t&&r.availability==='actual');
+    return `${t} ${actual?'실제':'계획'}`;
+  });
+  const plannedTerms=terms.filter(t=>rows.some(r=>r.term===t&&r.availability!=='actual'));
+  const sems=[...new Set(plannedTerms.map(t=>t.endsWith('-1')?'1':'2'))];
+  const pattern=sems.length===1?`계획상 ${sems[0]}학기 중심`:sems.length>1?'계획상 1·2학기 모두':'';
+  return {terms,text:`개설계획 수록 학기: ${labels.slice(-5).join(' · ')}`,pattern};
 }
 function plannedConflictWithCourse(course,term){
   const probe={term,courseCode:course.courseCode,courseName:course.courseName,professor:course.professor||'',day:course.day||'',timeRaw:course.timeRaw||'',room:course.room||''};
@@ -1414,38 +1420,145 @@ function plannedConflictWithCourse(course,term){
     const rr=timeRangeForPlanRecord(r);return rr&&rr.day===pr.day&&Math.max(rr.start,pr.start)<Math.min(rr.end,pr.end);
   });
 }
+function gapCandidateTerms(){
+  return [...new Set(DATA.offerings.map(o=>o.term).filter(validTermValue))]
+    .filter(t=>termIndex(t)>=termIndex(DATA.snapshot))
+    .sort((a,b)=>termIndex(a)-termIndex(b));
+}
+function gapCourseCanSatisfy(c,key){
+  if((c.category||'unknown')===key)return true;
+  return Array.isArray(c.categoryOptions)&&c.categoryOptions.includes(key);
+}
+function gapCatalogOfferingsForTerm(term,used){
+  const major=state.profile.major;
+  let list=DATA.offerings.filter(o=>o.major===major&&o.term===term);
+  if(term===DATA.snapshot)list=[...list,...DATA.globalOfferings.filter(o=>o.term===term)];
+  return list.filter(c=>c.availability!=='planned_missing_actual'&&!used.has(recordKey(c)));
+}
+function gapCandidateCountForTerm(term,deficits,used){
+  const rows=gapCatalogOfferingsForTerm(term,used),seen=new Set();
+  for(const d of deficits){
+    for(const c of rows){
+      if(!gapCourseCanSatisfy(c,d.key))continue;
+      const k=recordKey(c);if(k)seen.add(k);
+    }
+  }
+  return seen.size;
+}
+function gapTermKind(term){return term===DATA.snapshot?'실제':'계획';}
+function gapCandidateCard(c,d,term,{special=false}={}){
+  const pattern=courseOfferingPattern(c),conflict=special?false:plannedConflictWithCourse(c,term),schedule=scheduleInfo(c);
+  const code=(c.sectionCodes||[])[0]||c.courseCode||'';
+  const key=encodeURIComponent(`${term}|${canonicalCode(c.courseCode)}|${normName(c.courseName)}|${d.key}`);
+  const dataBadge=special
+    ? `<span class="mini-tag">별도 등록과목</span>`
+    : c.availability==='actual'
+      ? `<span class="mini-tag good">실제개설</span>`
+      : `<span class="mini-tag">개설계획</span>`;
+  const timing=special
+    ? `<div class="gap-special-note">${c.targetSemester?`권장/기준 시점: ${esc(c.targetSemester)} · `:''}학기별 개설예정표와 별도로 관리되는 과목입니다.</div>`
+    : `<div class="offering-pattern">${esc(pattern.text)}${pattern.pattern?` <span class="pattern-chip">${esc(pattern.pattern)}</span>`:''}</div>`;
+  return `<div class="gap-candidate">
+    <div class="gap-candidate-top">
+      <div>
+        <div class="gap-candidate-name">${esc(c.courseName)}</div>
+        <div class="gap-candidate-meta">${esc(code)}${c.professor?` · ${esc(c.professor)}`:''}${c.day?` · ${esc(c.day)} ${esc(schedule.time)}`:''}</div>
+      </div>
+      ${special?'':`<span class="mini-tag ${conflict?'warn':'good'}">${conflict?'시간충돌':'충돌 없음'}</span>`}
+    </div>
+    <div class="gap-candidate-tags">
+      <span class="mini-tag">${esc(CATEGORY_LABELS[d.key]||d.label)}</span>
+      <span class="mini-tag">${fmtCredits(c.credits??defaultCredit(term,d.key,c.courseCode))}학점</span>
+      ${dataBadge}
+    </div>
+    ${timing}
+    <button class="btn small gap-add-btn" type="button" data-gap-key="${key}" ${conflict?'title="현재 계획과 시간이 겹칩니다."':''}>${esc(term)} 계획에 추가</button>
+  </div>`;
+}
 function renderGapCandidates(){
   const box=document.getElementById('planGapCandidates');if(!box)return;
   if(!state.profileConfirmed||!state.history.length){box.innerHTML='';return;}
-  const term=document.getElementById('planTerm')?.value||DATA.snapshot;
   const current=evaluate(state.history.filter(r=>r.passed!==false));
-  const deficits=current.requirements.filter(r=>r.key!=='total'&&r.current<r.min);
-  if(!deficits.length){box.innerHTML=`<h3>부족요건 충족 후보</h3><div class="muted">현재 학점 요건에서 부족한 종별이 없어 별도 후보를 표시하지 않습니다.</div>`;return;}
+  const gapPriority={major_required:0,major_elective:1,teaching:2,common:3};
+  const deficits=current.requirements
+    .filter(r=>r.key!=='total'&&r.current<r.min)
+    .sort((a,b)=>(gapPriority[a.key]??99)-(gapPriority[b.key]??99));
+  if(!deficits.length){
+    box.innerHTML=`<h3>부족요건 충족 후보</h3><div class="muted">현재 학점 요건에서 부족한 종별이 없어 별도 후보를 표시하지 않습니다.</div>`;
+    return;
+  }
   const used=new Set([...state.history,...currentScenario().planned].map(r=>recordKey(r)).filter(Boolean));
-  const offered=offeringsForTerm(term,'mine').filter(c=>c.availability!=='planned_missing_actual'&&!used.has(canonicalCode(c.courseCode)||normName(c.courseName)));
+  const terms=gapCandidateTerms();
+  const planTerm=document.getElementById('planTerm')?.value||DATA.snapshot;
+  if(!gapCandidateTerm||!terms.includes(gapCandidateTerm))gapCandidateTerm=terms.includes(planTerm)?planTerm:(terms[0]||DATA.snapshot);
+  const term=gapCandidateTerm;
+  const tabs=terms.map(t=>{
+    const count=gapCandidateCountForTerm(t,deficits,used);
+    return `<button class="gap-term-tab ${t===term?'active':''}" type="button" role="tab" aria-selected="${t===term?'true':'false'}" data-gap-term="${esc(t)}">
+      <span>${esc(t)}</span><span class="term-kind">${gapTermKind(t)==='실제'?'실제':'계획'}</span><span class="term-count">${count}</span>
+    </button>`;
+  }).join('');
+
+  const offered=gapCatalogOfferingsForTerm(term,used);
   const groups=[];
   for(const d of deficits){
-    const candidates=offered.filter(c=>(c.category||'unknown')===d.key).slice(0,6);
+    const candidates=offered.filter(c=>gapCourseCanSatisfy(c,d.key)).slice(0,8);
     if(!candidates.length)continue;
-    groups.push(`<div class="gap-candidate-group"><div class="gap-candidate-group-title"><span>${esc(d.label)}</span><span class="mini-tag warn">부족 ${fmtCredits(d.min-d.current)}${esc(d.unit)}</span></div><div class="gap-candidate-grid">${candidates.map((c,idx)=>{
-      const pattern=courseOfferingPattern(c), conflict=plannedConflictWithCourse(c,term), schedule=scheduleInfo(c), code=(c.sectionCodes||[])[0]||c.courseCode||'';
-      const key=encodeURIComponent(`${canonicalCode(c.courseCode)}|${normName(c.courseName)}|${d.key}`);
-      return `<div class="gap-candidate"><div class="gap-candidate-top"><div><div class="gap-candidate-name">${esc(c.courseName)}</div><div class="gap-candidate-meta">${esc(code)}${c.professor?` · ${esc(c.professor)}`:''}${c.day?` · ${esc(c.day)} ${esc(schedule.time)}`:''}</div></div><span class="mini-tag ${conflict?'warn':'good'}">${conflict?'시간충돌':'충돌 없음'}</span></div><div class="gap-candidate-tags"><span class="mini-tag">${esc(CATEGORY_LABELS[d.key]||d.label)}</span><span class="mini-tag">${fmtCredits(c.credits??defaultCredit(term,d.key,c.courseCode))}학점</span>${c.availability==='actual'?'<span class="mini-tag good">실제개설</span>':'<span class="mini-tag">개설데이터</span>'}</div><div class="offering-pattern">${esc(pattern.text)}${pattern.pattern?` <span class="pattern-chip">${esc(pattern.pattern)}</span>`:''}</div><button class="btn small gap-add-btn" type="button" data-gap-key="${key}" ${conflict?'title="현재 계획과 시간이 겹칩니다."':''}>계획에 추가</button></div>`;
-    }).join('')}</div></div>`);
+    groups.push(`<div class="gap-candidate-group">
+      <div class="gap-candidate-group-title"><span>${esc(d.label)}</span><span class="mini-tag warn">부족 ${fmtCredits(d.min-d.current)}${esc(d.unit)}</span></div>
+      <div class="gap-candidate-grid">${candidates.map(c=>gapCandidateCard(c,d,term)).join('')}</div>
+    </div>`);
   }
-  box.innerHTML=`<h3>부족요건 충족 후보</h3><div class="muted">${esc(term)} 개설 데이터에서 현재 부족한 종별에 해당하는 과목만 보여줍니다. 추천·개설 보장이 아니라 <b>후보 필터</b>이며 실제 수강편람을 최종 확인하십시오.</div>${groups.length?groups.join(''):'<div class="muted" style="margin-top:8px">현재 선택 학기 데이터에서 부족요건에 해당하는 후보를 찾지 못했습니다.</div>'}`;
+
+  const specialGroups=[];
+  for(const d of deficits){
+    const candidates=DATA.specialCourses.filter(c=>gapCourseCanSatisfy(c,d.key)&&!used.has(recordKey(c)));
+    if(!candidates.length)continue;
+    specialGroups.push(`<div class="gap-candidate-group">
+      <div class="gap-candidate-group-title"><span>${esc(d.label)}</span><span class="mini-tag warn">부족 ${fmtCredits(d.min-d.current)}${esc(d.unit)}</span></div>
+      <div class="gap-candidate-grid">${candidates.map(c=>gapCandidateCard(c,d,term,{special:true})).join('')}</div>
+    </div>`);
+  }
+
+  const selectedKind=gapTermKind(term);
+  const note=selectedKind==='실제'
+    ? `${term}은 현재 데이터팩의 <b>실제 시간표</b> 기준입니다.`
+    : `${term}은 <b>5학기 개설예정표의 계획 데이터</b>입니다. 실제 개설 시 변경될 수 있습니다.`;
+  box.innerHTML=`
+    <div class="gap-candidate-head">
+      <div><h3>부족요건 충족 후보</h3><div class="muted">학기 탭을 눌러 부족한 요건을 채울 수 있는 과목을 확인하세요. 전공필수 → 전공선택 → 교직 → 공통 순으로 표시합니다.</div></div>
+    </div>
+    <div class="gap-term-tabs" role="tablist" aria-label="부족요건 후보 학기 선택">${tabs}</div>
+    <div class="gap-term-note">${note} 숫자는 해당 학기에 현재 부족요건과 연결되는 <b>미이수 후보 과목 수</b>입니다. 추천이나 개설 보장이 아니며 실제 수강편람을 최종 확인하십시오.</div>
+    ${groups.length?groups.join(''):`<div class="gap-term-empty"><b>${esc(term)}</b>에는 현재 부족요건에 해당하는 정규 개설 후보를 찾지 못했습니다. 다른 학기 탭을 눌러 확인해 보세요.</div>`}
+    ${specialGroups.length?`<div class="gap-special-wrap"><div class="gap-special-title">학기별 개설표와 별도로 관리되는 요건 과목</div>${specialGroups.join('')}</div>`:''}
+  `;
+  box.querySelectorAll('[data-gap-term]').forEach(btn=>btn.onclick=()=>{
+    gapCandidateTerm=btn.dataset.gapTerm;
+    const planSel=document.getElementById('planTerm');
+    if(planSel&&[...planSel.options].some(o=>o.value===gapCandidateTerm)){
+      planSel.value=gapCandidateTerm;
+      refreshPlanCourse();applyPlanSelection();renderPlanTimetable();renderPlanWarnings();
+    }
+    renderGapCandidates();
+  });
   box.querySelectorAll('.gap-add-btn').forEach(btn=>btn.onclick=()=>addGapCandidate(btn.dataset.gapKey));
 }
 function addGapCandidate(encoded){
   let raw='';try{raw=decodeURIComponent(encoded||'');}catch(e){raw=encoded||'';}
-  const [code,name,category]=raw.split('|'),term=document.getElementById('planTerm').value;
-  const c=offeringsForTerm(term,'mine').find(x=>(code&&canonicalCode(x.courseCode)===code)||(!code&&normName(x.courseName)===name));
-  if(!c)return alert('현재 개설 데이터에서 해당 과목을 다시 찾지 못했습니다.');
+  const [term,code,name,category]=raw.split('|');
+  const targetTerm=validTermValue(term)?term:(document.getElementById('planTerm')?.value||DATA.snapshot);
+  const c=offeringsForTerm(targetTerm,'mine').find(x=>(code&&canonicalCode(x.courseCode)===code)||(!code&&normName(x.courseName)===name));
+  if(!c)return alert('선택한 학기의 개설 데이터에서 해당 과목을 다시 찾지 못했습니다.');
   if(c.availability==='planned_missing_actual')return alert('실제 개설이 확인되지 않은 과목은 계획에 바로 추가할 수 없습니다.');
-  const candidate={id:uid('p'),term,courseCode:canonicalCode(c.courseCode),sectionCode:(c.sectionCodes||[])[0]||'',courseName:c.courseName,category:category||recommendedCategory(c),credits:Number((category==='common'||category==='audit')?0:(c.credits??defaultCredit(term,category,c.courseCode))),availability:c.availability,source:'gap_candidate',professor:c.professor||'',day:c.day||'',timeRaw:c.timeRaw||'',room:c.room||''};
+  const candidate={id:uid('p'),term:targetTerm,courseCode:canonicalCode(c.courseCode),sectionCode:(c.sectionCodes||[])[0]||'',courseName:c.courseName,category:category||recommendedCategory(c),credits:Number((category==='common'||category==='audit')?0:(c.credits??defaultCredit(targetTerm,category,c.courseCode))),availability:c.availability,source:'gap_candidate',professor:c.professor||'',day:c.day||'',timeRaw:c.timeRaw||'',room:c.room||''};
   const sc=currentScenario(),key=planRecordKey(candidate);
   if(sc.planned.some(r=>planRecordKey(r)===key))return alert('같은 학기의 동일 과목이 이미 계획에 등록되어 있습니다.');
-  sc.planned.push(candidate);sc.planned=dedupePlannedRecords(sc.planned);save();render();
+  sc.planned.push(candidate);sc.planned=dedupePlannedRecords(sc.planned);save();
+  const planSel=document.getElementById('planTerm');
+  if(planSel&&[...planSel.options].some(o=>o.value===targetTerm))planSel.value=targetTerm;
+  gapCandidateTerm=targetTerm;
+  render();
 }
 
 function renderQualificationNotes(){
@@ -4025,7 +4138,7 @@ document.getElementById('historyGrade').onchange=()=>{
   const p=gradePasses(document.getElementById('historyGrade').value);
   if(p!=null)document.getElementById('historyPassed').value=p?'true':'false';
 };
-document.getElementById('planTerm').onchange=()=>{refreshPlanCourse();applyPlanSelection();renderGapCandidates();renderPlanTimetable();};
+document.getElementById('planTerm').onchange=()=>{gapCandidateTerm=document.getElementById('planTerm').value;refreshPlanCourse();applyPlanSelection();renderGapCandidates();renderPlanTimetable();};
 document.getElementById('planFilterCategory').onchange=refreshPlanCourse;
 document.getElementById('planScope').onchange=refreshPlanCourse;
 document.getElementById('planCourseSearch').oninput=refreshPlanCourse;

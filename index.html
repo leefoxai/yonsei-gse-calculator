@@ -10,7 +10,7 @@
 <title>연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.0.0">
+<link rel="stylesheet" href="styles.css?v=3.1.1">
 <meta name="application-version" content="3.0.0">
 </head>
 <body>
@@ -39,11 +39,11 @@
       <div><b>3. 결과 확인</b><span>졸업 인정학점·평점·종별 요건과 교원자격 이수현황을 확인합니다.</span></div>
     </div>
     <div class="quick-guide-extra">
-      <span class="quick-guide-extra-title">필요할 때 사용하는 부가 기능</span>
+      <span class="quick-guide-extra-title">수강 계획 시뮬레이터</span>
       <div class="quick-guide-extra-list">
-        <span class="quick-guide-extra-item">수강계획 · 향후 과목과 시간표 확인</span>
-        <span class="quick-guide-extra-item">시나리오 · 여러 수강계획 비교</span>
-        <span class="quick-guide-extra-item">백업/복원 · 기기 변경 및 안전백업</span>
+        <span class="quick-guide-extra-item">수강계획 · 필요한 과목을 학기별로 확인</span>
+        <span class="quick-guide-extra-item">시나리오 · 여러 수강계획 저장·비교</span>
+        <span class="quick-guide-extra-item">개설예정 · 학기별 개설 예정 과목 조회</span>
       </div>
     </div>
   </details>
@@ -332,7 +332,7 @@
   
 
   <details class="card extras-shell" id="extraFeatures">
-  <summary class="no-print"><div class="extras-summary-copy"><h2>부가 기능</h2><p>수강계획 · 시나리오 비교 · 개설과목 조회 · 백업/복원이 필요할 때 펼쳐 사용합니다.</p></div><span class="addon-badge">선택 사용</span></summary>
+  <summary class="no-print"><div class="extras-summary-copy"><h2>수강 계획 시뮬레이터</h2><p>수강 계획 저장, 개설 예정 과목 조회 서비스입니다.</p></div><span class="addon-badge">선택 사용</span></summary>
   <div class="extras-body">
     <div class="card sheet-card no-print">
       <label>시나리오 비교</label>
@@ -340,7 +340,7 @@
       <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
     </div>
 <details class="card section input-section step-details" id="planSection">
-    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">부가기능</span></h2></summary>
+    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2></summary>
 <div class="plan-builder">
       <div class="pdf-import-head">
         <div>
@@ -416,7 +416,7 @@
   </section>
 
   <section class="card section backup-section no-print">
-    <h2>데이터 관리 · 백업 <span class="addon-badge">부가기능</span></h2>
+    <h2>데이터 관리 · 백업 <span class="addon-badge">백업</span></h2>
     <div class="toolbar">
       <button class="btn" id="exportData">내보내기</button>
       <label class="btn" style="display:inline-block;margin:0;font-size:14px">불러오기<input type="file" id="importData" accept=".json" style="display:none"></label>
@@ -435,7 +435,7 @@
   
 
   <footer class="footer">
-    <b>v3.0:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·개설 데이터 패턴·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>v3.1.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -453,6 +453,6 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.0.0"></script>
+<script defer src="app.js?v=3.1.1"></script>
 </body>
 </html>

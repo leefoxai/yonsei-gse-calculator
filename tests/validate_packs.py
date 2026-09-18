@@ -82,16 +82,23 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.0.0' in html)
-check('modular js linked','app.js?v=3.0.0' in html)
+check('modular css linked','styles.css?v=3.1.1' in html)
+check('modular js linked','app.js?v=3.1.1' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
 check('gap candidates present','function renderGapCandidates()' in app and 'id="planGapCandidates"' in html)
-check('offering pattern present','function courseOfferingPattern(' in app and '데이터 수록 학기' in app)
+check('offering pattern present','function courseOfferingPattern(' in app and '개설계획 수록 학기' in app)
 check('ocr canvas release present','releaseCanvas(prepared)' in app and 'pageCache.clear()' in app)
-check('extras grouped','id="extraFeatures"' in html and '수강계획 · 시나리오 비교' in html)
+check('simulator naming','id="extraFeatures"' in html and '수강 계획 시뮬레이터' in html and '수강 계획 저장, 개설 예정 과목 조회 서비스입니다.' in html)
 check('field confidence present','function fieldConfidenceHtml(' in app and '.field-confidence' in css)
+
+check('gap term tabs present','function gapCandidateTerms()' in app and 'data-gap-term' in app and '.gap-term-tabs' in css)
+check('gap tabs distinguish actual/planned',"gapTermKind(term){return term===DATA.snapshot?'실제':'계획';}" in app)
+check('gap add carries selected term','const [term,code,name,category]=raw.split' in app and 'gapCandidateTerm=targetTerm' in app)
+check('special courses separated','학기별 개설표와 별도로 관리되는 요건 과목' in app)
+
+check('gap candidate category priority',"gapPriority={major_required:0,major_elective:1,teaching:2,common:3}" in app)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')
