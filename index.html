@@ -750,10 +750,10 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     margin:0 0 6px!important;
     break-inside:avoid!important;
   }
-  #kpiSection .grid.kpi{margin-top:5px!important;gap:5px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #kpiSection .grid.kpi{margin-top:4px!important;gap:4px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
   #kpiSection .cert-kpi{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-  #kpiSection .card{padding:5px 6px!important;border-radius:6px!important}
-  #kpiSection .kpi .value{font-size:11px!important}
+  #kpiSection .card{padding:4px 5px!important;border-radius:6px!important}
+  #kpiSection .kpi .value{font-size:10px!important}
   #kpiSection .kpi .sub{font-size:7px!important;margin-top:2px!important}
 
   #requirementsSection{
@@ -768,6 +768,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
   #requirementsSection .req-grid>div{padding:3px 4px!important}
   #requirementsSection #evaluationNotes{margin-top:5px!important}
   #requirementsSection .callout{font-size:7px!important;padding:5px 6px!important}
+  #requirementsSection .result-summary{font-size:7px!important;line-height:1.3!important;padding:4px 6px!important;margin-top:4px!important;border-radius:6px!important}
+  #requirementsSection .qualification-note{font-size:6.8px!important;line-height:1.3!important;padding:4px 6px!important;margin-top:4px!important;border-radius:6px!important}
 
   #historySection{
     display:block!important;
@@ -860,13 +862,13 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
     break-inside:avoid!important;
     page-break-inside:avoid!important;
   }
-  #planSection .schedule-pane{padding:5px!important;border-radius:6px!important}
+  #planSection .schedule-pane{padding:4px!important;border-radius:6px!important}
   #planSection .weekly-schedule{overflow:visible!important}
   #planSection .weekly-schedule table{min-width:0!important;width:100%!important;table-layout:fixed!important}
   #planSection .schedule-course{font-size:8px!important;padding:4px!important;margin:1px 0!important;border-radius:4px!important}
   #planSection .timeline-wrap{width:100%!important;min-width:0!important}
   #planSection .timeline-head{font-size:8px!important}
-  #planSection .timeline-head>div{padding:5px 3px!important}
+  #planSection .timeline-head>div{padding:3px 3px!important}
   #planSection .timeline-time-label{font-size:7px!important;width:48px!important;padding-right:4px!important}
   #planSection .timeline-course{left:4px!important;right:4px!important;padding:5px!important;font-size:8px!important;overflow:hidden!important}
   #planSection .timeline-course b{font-size:9px!important;line-height:1.25!important;margin-bottom:2px!important}
@@ -1721,7 +1723,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   
 
   <footer class="footer">
-    <b>v2.6:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건을 지원합니다.<br>
+    <b>v2.6.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건을 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -1774,7 +1776,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.6.1';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -3433,8 +3435,8 @@ function timelineHtmlFromItems(items,settings){
   const rangeEnd=hhmmToMinutes(settings.timetableEnd||'23:00');
   const unit=Math.max(15,Number(settings.gridMinutes||60));
   const total=Math.max(60,rangeEnd-rangeStart);
-  const pxPerMinute=(PRINT_MODE?40:64)/60;
-  const bodyHeight=Math.max(240,Math.round(total*pxPerMinute));
+  const pxPerMinute=(PRINT_MODE?32:64)/60;
+  const bodyHeight=PRINT_MODE?Math.max(190,Math.round(total*pxPerMinute)):Math.max(240,Math.round(total*pxPerMinute));
   const timeCol=58;
   const colWidth=`calc((100% - ${timeCol}px) / ${Math.max(1,days.length)})`;
 
