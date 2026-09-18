@@ -1313,6 +1313,28 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   .topnote .data-health-badge{margin-left:auto}
 }
 
+
+/* ===== v2.7 usability pass ===== */
+.quick-guide-extra{margin-top:10px;border-top:1px dashed #d5dde8;padding-top:10px}
+.quick-guide-extra-title{display:block;font-size:12px;font-weight:800;color:#475569;margin-bottom:7px}
+.quick-guide-extra-list{display:flex;gap:7px;flex-wrap:wrap}
+.quick-guide-extra-item{display:inline-flex;align-items:center;gap:5px;border:1px solid #dde4ee;background:#fff;border-radius:999px;padding:6px 10px;font-size:11px;color:#53657a;font-weight:700}
+.addon-badge{display:inline-flex;align-items:center;border:1px solid #ccd7e5;background:#f3f6fa;color:#53657a;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;margin-left:6px;vertical-align:middle}
+.ocr-queue{display:grid;gap:8px;margin-top:10px}
+.ocr-queue-item{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(135px,180px) auto;gap:9px;align-items:center;border:1px solid #dbe3ed;border-radius:10px;padding:8px;background:#f8fafc}
+.ocr-queue-thumb{width:76px;height:54px;object-fit:cover;border-radius:7px;border:1px solid #d8dee8;background:#fff}
+.ocr-queue-meta{min-width:0}.ocr-queue-name{font-size:12px;font-weight:800;color:#344054;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ocr-queue-meta .muted{font-size:11px}
+.ocr-queue-term label{margin-bottom:4px}.ocr-queue-remove{padding:6px 8px!important}
+.ocr-batch-note{margin-top:7px;font-size:11px;color:#667085;line-height:1.5}
+.teacher-basic-help{display:block;margin-top:5px;padding:7px 9px;border-radius:7px;background:#f8fafc;border:1px solid #e4e9f0;color:#596579;line-height:1.45}
+@media(max-width:680px){
+  .quick-guide-extra-list{display:grid;grid-template-columns:1fr}
+  .quick-guide-extra-item{border-radius:9px;justify-content:flex-start}
+  .ocr-queue-item{grid-template-columns:64px minmax(0,1fr) auto}
+  .ocr-queue-thumb{width:64px;height:48px}
+  .ocr-queue-term{grid-column:2/4}
+}
+
 </style>
 </head>
 <body>
@@ -1334,14 +1356,19 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   </header>
 
   <details class="card quick-guide no-print" id="quickGuide" open>
-    <summary>사용방법</summary>
+    <summary>사용방법 · 3단계</summary>
     <div class="quick-guide-grid">
-      <div><b>1. 기본정보 입력</b><span>전공·입학학기·과정/졸업유형을 먼저 선택합니다.</span></div>
-      <div><b>2. 수강이력 입력</b><span>연세포털 전체성적조회 PDF 가져오기를 권장합니다. 캡처 OCR·강의 찾기·직접 입력도 사용할 수 있습니다.</span></div>
-      <div><b>3. 결과 확인</b><span>입력한 수강이력을 기준으로 부족학점·평점·공통과목을 확인합니다.</span></div>
-      <div><b>4. 수강계획</b><span>향후 과목을 추가하면 계획 반영 후 이수현황과 시간표가 자동 계산됩니다.</span></div>
-      <div><b>5. 시나리오</b><span>시트를 복제해 서로 다른 수강계획을 비교할 수 있습니다.</span></div>
-      <div><b>6. 백업</b><span>개인 데이터는 현재 브라우저에만 저장됩니다. 기기 변경 전 JSON 내보내기를 권장합니다.</span></div>
+      <div><b>1. 기본정보 입력</b><span>전공·입학학기·과정/졸업유형을 선택하고 기본정보를 확인합니다.</span></div>
+      <div><b>2. 수강이력 입력</b><span>성적조회 PDF를 불러오거나, 여러 장의 캡처 OCR·강의 찾기·직접 입력으로 등록합니다.</span></div>
+      <div><b>3. 결과 확인</b><span>졸업 인정학점·평점·종별 요건과 교원자격 이수현황을 확인합니다.</span></div>
+    </div>
+    <div class="quick-guide-extra">
+      <span class="quick-guide-extra-title">필요할 때 사용하는 부가 기능</span>
+      <div class="quick-guide-extra-list">
+        <span class="quick-guide-extra-item">수강계획 · 향후 과목과 시간표 확인</span>
+        <span class="quick-guide-extra-item">시나리오 · 여러 수강계획 비교</span>
+        <span class="quick-guide-extra-item">백업/복원 · 기기 변경 및 안전백업</span>
+      </div>
     </div>
   </details>
 
@@ -1351,8 +1378,6 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
     <div class="workflow-step" data-step="history"><span class="num">2</span><span>수강이력</span></div>
     <span class="workflow-arrow">→</span>
     <div class="workflow-step" data-step="result"><span class="num">3</span><span>결과확인</span></div>
-    <span class="workflow-arrow">→</span>
-    <div class="workflow-step" data-step="plan"><span class="num">4</span><span>수강계획</span></div>
   </div>
 
   <details class="input-zone no-print-ui step-details" id="inputZone" open>
@@ -1376,7 +1401,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
       </div>
     </div>
     <div class="card sheet-card">
-      <label>시트</label>
+      <label>시나리오 <span class="addon-badge">부가기능</span></label>
       <div class="sheet-row"><div id="scenarioTabs" class="tabs"></div><button class="btn small sheet-add" id="addScenario" type="button" title="새 시트">+</button></div>
       <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
     </div>
@@ -1401,7 +1426,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
       성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, <b>누적평점 3.00 이상</b>이 별도 졸업요건입니다.
     </div>
     <div class="tabs import-tabs no-print" id="importTabs">
-      <button class="tab active" type="button" data-pane="pdfImportPane">PDF 가져오기 (권장)</button>
+      <button class="tab active" type="button" data-pane="pdfImportPane">성적조회 PDF 불러오기 (권장)</button>
       <button class="tab" type="button" data-pane="ocrImportPane">캡처 OCR</button>
       <button class="tab" type="button" data-pane="finderPane">강의 찾기 · 직접 입력</button>
     </div>
@@ -1414,8 +1439,8 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
     <div class="pdf-import-panel no-print">
       <div class="pdf-import-head">
         <div>
-          <h3>전체 수강이력 PDF 가져오기</h3>
-          <div class="muted" style="margin-top:4px">전체성적조회 PDF 한 파일로 전체 학기 수강이력을 가져옵니다.</div>
+          <h3>연세포털 성적조회 PDF 불러오기</h3>
+          <div class="muted" style="margin-top:4px">연세포털 → 학사정보시스템 → 성적 → 학생 → 전체성적조회 → 우측 [출력] → PDF로 저장한 파일을 불러오세요. 한 파일로 전체 학기를 가져옵니다.</div>
         </div>
         <span class="pdf-recommended">권장</span>
       </div>
@@ -1425,7 +1450,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
           <input type="file" id="portalPdfFile" accept="application/pdf,.pdf">
           <div class="pdf-privacy">PDF 원본은 서버에 저장하지 않습니다. 브라우저에서 교과목 정보만 읽고, 등록한 수강이력만 로컬 저장합니다.</div>
         </div>
-        <button class="btn primary" id="readPortalPdf" type="button">PDF 읽어오기</button>
+        <button class="btn primary" id="readPortalPdf" type="button">성적조회 PDF 불러오기</button>
       </div>
       <div id="portalPdfStatus" class="pdf-status">PDF를 선택하면 전체 학기 수강내역을 한 번에 가져올 수 있습니다.</div>
       <div id="portalPdfResult" class="pdf-result"></div>
@@ -1436,31 +1461,32 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
     <div class="ocr-panel no-print">
       <div class="pdf-import-head">
         <div>
-          <h3>학기별 캡처 OCR</h3>
-          <div class="muted" style="margin-top:4px">수강한 학기를 선택하고 성적 화면 캡처를 올리면, 학정번호를 우선 인식해 과목 정보를 자동 보완합니다.</div>
+          <h3>캡처 여러 장 OCR</h3>
+          <div class="muted" style="margin-top:4px">성적 화면 캡처를 여러 장 한 번에 선택하거나 차례로 붙여넣을 수 있습니다. 각 캡처의 수강학기를 확인한 뒤 한 번에 분석합니다.</div>
         </div>
         <span class="ocr-alt-badge">PDF가 없을 때</span>
       </div>
       <div class="ocr-form">
         <div class="ocr-term-row">
-          <label>수강했던 학기</label>
+          <label>새 캡처의 기본 수강학기</label>
           <select id="ocrTerm"></select>
         </div>
-        <div class="ocr-drop" id="ocrPasteZone" tabindex="0" aria-label="성적 캡처 붙여넣기 영역">
-          <span class="paste-badge">Ctrl+V 붙여넣기 지원</span>
-          <div class="paste-hint">PC: 캡처(Win+Shift+S) 후 이 영역 클릭 → <b>Ctrl+V</b> &nbsp;·&nbsp; 모바일: 파일 선택에서 캡처 선택</div>
-          <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp">
-          <img id="ocrPreview" class="ocr-preview" alt="OCR 미리보기">
+        <div class="ocr-drop" id="ocrPasteZone" tabindex="0" aria-label="성적 캡처 여러 장 선택 또는 붙여넣기 영역">
+          <span class="paste-badge">여러 장 선택 · Ctrl+V 추가 지원</span>
+          <div class="paste-hint">PC: 여러 이미지 파일을 한 번에 선택하거나, 캡처(Win+Shift+S) 후 이 영역에서 <b>Ctrl+V</b>를 반복하면 목록에 계속 추가됩니다.</div>
+          <input type="file" id="ocrImage" accept="image/png,image/jpeg,image/webp" multiple>
+          <div id="ocrQueue" class="ocr-queue"></div>
+          <div class="ocr-batch-note">작은 글씨는 자동 확대·명암 보정 후 인식하며, 인식이 약한 이미지는 더 크게 보정해 한 번 더 분석합니다.</div>
         </div>
         <div class="ocr-actions">
-          <div class="muted">학정번호·성적이 잘리지 않은 스크린샷일수록 정확합니다. ‘확인 필요’ 항목은 성적 확인 후 등록하세요.</div>
+          <div class="muted">학정번호·성적이 잘리지 않은 캡처가 가장 정확합니다. 서로 다른 학기 캡처를 함께 올린 경우 이미지별 수강학기를 수정할 수 있습니다.</div>
           <div class="ocr-btns">
-            <button class="btn" id="clearOcrImage" type="button">이미지 지우기</button>
-            <button class="btn primary" id="runOcr">OCR로 읽어오기</button>
+            <button class="btn" id="clearOcrImage" type="button">캡처 모두 지우기</button>
+            <button class="btn primary" id="runOcr">선택한 캡처 OCR</button>
           </div>
         </div>
       </div>
-      <div id="ocrStatus" class="pdf-status">이미지를 선택하면 미리보기가 표시됩니다.</div>
+      <div id="ocrStatus" class="pdf-status">캡처를 여러 장 선택하거나 하나씩 붙여넣으세요.</div>
       <div class="ocr-progress"><div id="ocrProgressBar"></div></div>
       <div id="ocrResult" class="ocr-result"></div>
     </div>
@@ -1631,7 +1657,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   </details>
 
   <details class="card section input-section step-details" id="planSection" open>
-    <summary class="section-title-row"><h2 class="step-title"><span class="step-no">4</span><span>향후 수강계획</span></h2></summary>
+    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">부가기능</span></h2></summary>
 <div class="plan-builder">
       <div class="pdf-import-head">
         <div>
@@ -1706,7 +1732,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   </section>
 
   <section class="card section backup-section no-print">
-    <h2>데이터 관리</h2>
+    <h2>데이터 관리 · 백업 <span class="addon-badge">부가기능</span></h2>
     <div class="toolbar">
       <button class="btn" id="exportData">내보내기</button>
       <label class="btn" style="display:inline-block;margin:0;font-size:14px">불러오기<input type="file" id="importData" accept=".json" style="display:none"></label>
@@ -1723,7 +1749,7 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   
 
   <footer class="footer">
-    <b>v2.6.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건을 지원합니다.<br>
+    <b>v2.7:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR을 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -2516,7 +2542,7 @@ function applyDataCandidate(candidate,sourceLabel='관리자 로컬 업데이트
   localStorage.setItem(DATA_PACK_LOCAL_KEY,JSON.stringify(pack));
   DATA=deepClone(candidate);runtimePackMeta.dataSource='로컬 업데이트';
   if(!DATA.majors.includes(state.profile.major))state.profileConfirmed=false;
-  fillStaticControls();refreshCourseSelectors();render();updateRuntimeMetaUi();runIntegrityChecks();
+  fillStaticControls();refreshCourseSelectors();render();renderOcrQueue();updateRuntimeMetaUi();runIntegrityChecks();
 }
 
 function save(){
@@ -3017,7 +3043,7 @@ function renderKpis(){
   {
     const cur=current.totalCredits,min=rule.totalCredits,proj=projected.totalCredits;
     const st=reqState(cur,proj,min);
-    cards.push(kpiCard('총 학점',`${fmtCredits(cur)} / ${min}학점`,`학기 수강 시 ${fmtCredits(proj)} / ${min}`,
+    cards.push(kpiCard('졸업 인정학점',`${fmtCredits(cur)} / ${min}학점`,`졸업요건에 산입되는 학점 · 계획 반영 시 ${fmtCredits(proj)} / ${min}`,
       reqChip(st,`부족 ${fmtCredits(min-cur)}학점`),cur,min,st==='bad'));
   }
   {
@@ -3027,6 +3053,7 @@ function renderKpis(){
     cards.push(kpiCard('전체 평점',`${g.gpa==null?'-':fmtGpa(g.gpa)} / 4.3`,sub,chip,g.gpa,4.3,st==='bad'));
   }
   for(const pr of projected.requirements){
+    if(pr.key==='total')continue; // 상단 '졸업 인정학점'과 동일하므로 중복 카드 생성 금지
     const cur=(current.requirements.find(x=>x.key===pr.key)||{current:0}).current;
     const st=reqState(cur,pr.current,pr.min);
     cards.push(kpiCard(pr.label,`${fmtCredits(cur)} / ${fmtCredits(pr.min)}${pr.unit}`,
@@ -3131,7 +3158,7 @@ function renderTeacherChecklist(){
     const matched=projected.basicAuto.matchedGroups.map(x=>`<span class="matched">✓ ${x.group.no}. ${esc(x.group.basicSubject||x.best.course.courseName)} (${esc(x.best.record.courseCode||x.best.course.code)})</span>`);
     const allNos=(projected.variant?.groups||[]).map(g=>Number(g.no));
     const missing=allNos.filter(n=>!projected.basicAuto.groupNos.has(n));
-    detail.innerHTML=`<b>기본이수 자동판정</b> · ${esc(projected.variant?.conditionText||basicLabel)}<br>${matched.length?matched.join(' · '):'<span class="missing">교육대학원 수강이력에서 자동 매칭된 기본이수 과목이 없습니다.</span>'}${missing.length?`<div class="muted" style="margin-top:5px">미매칭 관리번호: ${missing.join(', ')} · 학부 인정분은 아래에 별도 입력하고 필수/영역 조건을 확인하십시오.</div>`:''}`;
+    detail.innerHTML=`<b>기본이수 자동판정</b> · ${esc(projected.variant?.conditionText||basicLabel)}<br>${matched.length?matched.join(' · '):'<span class="missing">교육대학원 수강이력에서 자동 확인된 기본이수 과목이 없습니다.</span>'}${missing.length?`<div class="muted" style="margin-top:5px"><b>아직 자동 확인되지 않은 기본이수 영역:</b> 관리번호 ${missing.join(', ')}</div><span class="teacher-basic-help"><b>관리번호란?</b> 학교의 공식 기본이수과목표에서 과목 영역을 구분하기 위한 번호입니다. 여기 표시된 번호가 모두 필수라는 뜻은 아닙니다. 위의 필수·선택·영역 조건에 따라 필요한 영역을 확인하고, 학부에서 인정받은 과목은 아래 입력란에 별도로 반영하세요.</span>`:''}`;
   }
   const specialWrap=document.getElementById('teacherBasicSpecialConfirmedWrap');
   if(specialWrap)specialWrap.style.display=projected.basicRule?.type==='groups'?'flex':'none';
@@ -4176,6 +4203,7 @@ function renderOcrCandidates(){
   document.getElementById('clearOcrCandidates').onclick=()=>{ocrCandidates=[];box.innerHTML='';};
 }
 
+
 async function ensureOcrWorker(){
   if(ocrWorker)return ocrWorker;
   if(typeof Tesseract==='undefined')throw new Error('OCR 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하십시오.');
@@ -4186,7 +4214,9 @@ async function ensureOcrWorker(){
     logger:m=>{
       const status=document.getElementById('ocrStatus'), bar=document.getElementById('ocrProgressBar');
       const pct=Number(m.progress||0);
-      bar.style.width=Math.round(pct*100)+'%';
+      const batch=ocrBatchContext;
+      const overall=batch?Math.min(1,((batch.index-1)+pct)/batch.total):pct;
+      bar.style.width=Math.round(overall*100)+'%';
       const labels={
         'loading tesseract core':'OCR 엔진 불러오는 중',
         'initializing tesseract':'OCR 엔진 초기화 중',
@@ -4194,7 +4224,8 @@ async function ensureOcrWorker(){
         'initializing api':'문자 인식 준비 중',
         'recognizing text':'이미지 문자 인식 중'
       };
-      status.textContent=(labels[m.status]||m.status||'OCR 처리 중')+(pct?` · ${Math.round(pct*100)}%`:'');
+      const prefix=batch?`${batch.index}/${batch.total} · `:'';
+      status.textContent=prefix+(labels[m.status]||m.status||'OCR 처리 중')+(pct?` · ${Math.round(pct*100)}%`:'');
     }
   });
   await ocrWorker.setParameters({
@@ -4205,10 +4236,11 @@ async function ensureOcrWorker(){
   return ocrWorker;
 }
 
-async function preprocessOcrImage(blob){
+async function preprocessOcrImage(blob,aggressive=false){
   const bitmap=await createImageBitmap(blob);
-  const maxDim=4600;
-  const scale=Math.max(1,Math.min(3,maxDim/Math.max(bitmap.width,bitmap.height)));
+  const maxDim=aggressive?5600:4600;
+  const maxScale=aggressive?4:3;
+  const scale=Math.max(1,Math.min(maxScale,maxDim/Math.max(bitmap.width,bitmap.height)));
   const canvas=document.createElement('canvas');
   canvas.width=Math.round(bitmap.width*scale);
   canvas.height=Math.round(bitmap.height*scale);
@@ -4227,7 +4259,7 @@ async function preprocessOcrImage(blob){
     d[i]=d[i+1]=d[i+2]=g;
   }
   const px=canvas.width*canvas.height;
-  const lowTarget=px*0.01, highTarget=px*0.99;
+  const lowTarget=px*(aggressive?0.015:0.01), highTarget=px*(aggressive?0.985:0.99);
   let acc=0, low=0, high=255;
   for(let i=0;i<256;i++){acc+=hist[i];if(acc>=lowTarget){low=i;break;}}
   acc=0;
@@ -4237,8 +4269,7 @@ async function preprocessOcrImage(blob){
   for(let i=0;i<d.length;i+=4){
     let g=Math.round((d[i]-low)*255/span);
     g=Math.max(0,Math.min(255,g));
-    // Slightly increase contrast while keeping antialiased text.
-    g = g < 145 ? Math.max(0,g-18) : Math.min(255,g+8);
+    g = g < (aggressive?155:145) ? Math.max(0,g-(aggressive?28:18)) : Math.min(255,g+(aggressive?12:8));
     d[i]=d[i+1]=d[i+2]=g;
   }
   ctx.putImageData(image,0,0);
@@ -4248,62 +4279,81 @@ async function preprocessOcrImage(blob){
 function countCourseCodes(text){
   return ([...String(text||'').matchAll(/\b[A-Z]{2,5}\s*\d{4}(?:\s*-\s*\d{2})?\b/g)]).length;
 }
+function ocrConfidenceScore(r){
+  const level={high:30,review:20,low:10}[r?.confidenceLevel]||0;
+  return level+(r?.grade?4:0)+(r?.matched?3:0)+(canonicalCode(r?.courseCode)?3:0)+(Number(r?.credits)>=0?1:0);
+}
+function mergeOcrCandidateBatches(items){
+  const map=new Map();
+  for(const r of items||[]){
+    const key=historyRecordKey(r.term,r.courseCode,r.courseName)||`${r.term}|${normName(r.courseName)}|${Math.random()}`;
+    const prev=map.get(key);
+    if(!prev || ocrConfidenceScore(r)>ocrConfidenceScore(prev))map.set(key,r);
+  }
+  return [...map.values()];
+}
+async function recognizeOcrQueueItem(item,worker,index,total){
+  ocrBatchContext={index,total};
+  document.getElementById('ocrStatus').textContent=`${index}/${total} · ${item.name} 확대·명암 보정 중…`;
+  let prepared=await preprocessOcrImage(item.blob,false);
+  await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+  let result=await worker.recognize(prepared,{}, {text:true,tsv:true});
+  let text=result?.data?.text||'';
+  let tsv=result?.data?.tsv||'';
+  let candidates=parseOcrCandidates(text,item.term);
+  candidates=supplementCandidatesByTsvLines(candidates,tsv,item.term);
+
+  // 확대가 필요했던 사용자 피드백 반영: 후보가 없으면 더 큰 배율·강한 대비로 자동 재처리.
+  if(!candidates.length || countCourseCodes(text)===0){
+    document.getElementById('ocrStatus').textContent=`${index}/${total} · 작은 글씨 자동 확대 재인식 중…`;
+    prepared=await preprocessOcrImage(item.blob,true);
+    await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'360'});
+    const retry=await worker.recognize(prepared,{}, {text:true,tsv:true});
+    const text2=retry?.data?.text||'';
+    const tsv2=retry?.data?.tsv||'';
+    text=text+'\n'+text2;
+    tsv=tsv+'\n'+tsv2;
+    candidates=parseOcrCandidates(text,item.term);
+    candidates=supplementCandidatesByTsvLines(candidates,tsv,item.term);
+    await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+  }
+
+  candidates=supplementCandidatesByCatalogName(candidates,text,item.term);
+  candidates=await refineOcrGradesByRow(candidates,tsv,worker,prepared);
+  candidates=finalizeOcrConfidence(candidates);
+  return {candidates,text};
+}
 async function runOcr(){
-  const input=document.getElementById('ocrImage');
-  const file=input.files?.[0] || pastedOcrBlob;
-  if(!file){alert('성적 캡처 이미지를 붙여넣거나 파일로 선택하십시오.');return;}
-  const term=document.getElementById('ocrTerm').value;
+  if(!ocrImageQueue.length){alert('성적 캡처 이미지를 한 장 이상 선택하거나 붙여넣으십시오.');return;}
   const btn=document.getElementById('runOcr');
-  btn.disabled=true; btn.textContent='OCR 처리 중…';
+  btn.disabled=true; btn.textContent='여러 장 OCR 처리 중…';
   document.getElementById('ocrProgressBar').style.width='2%';
   document.getElementById('ocrResult').innerHTML='';
   try{
-    document.getElementById('ocrStatus').textContent='이미지 확대·명암 보정 중…';
-    const prepared=await preprocessOcrImage(file);
     const worker=await ensureOcrWorker();
-
-    await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
-    let result=await worker.recognize(prepared,{}, {text:true,tsv:true});
-    let text=result?.data?.text||'';
-    let tsv=result?.data?.tsv||'';
-
-    ocrCandidates=parseOcrCandidates(text,term);
-    ocrCandidates=supplementCandidatesByTsvLines(ocrCandidates,tsv,term);
-
-    // 학정번호가 하나도 잡히지 않았을 때만 더 조밀한 페이지 분할 방식으로 전체 재인식한다.
-    if(!ocrCandidates.length){
-      document.getElementById('ocrStatus').textContent='학정번호 보조 인식 중…';
-      document.getElementById('ocrProgressBar').style.width='68%';
-      await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1',user_defined_dpi:'300'});
-      const retry=await worker.recognize(prepared,{}, {text:true,tsv:true});
-      const text2=retry?.data?.text||'';
-      const tsv2=retry?.data?.tsv||'';
-      text = text + '\n' + text2;
-      tsv = tsv + '\n' + tsv2;
-      ocrCandidates=parseOcrCandidates(text,term);
-      ocrCandidates=supplementCandidatesByTsvLines(ocrCandidates,tsv,term);
-      await worker.setParameters({tessedit_pageseg_mode:'11',preserve_interword_spaces:'1',user_defined_dpi:'300'});
+    const all=[]; const raw=[];
+    for(let i=0;i<ocrImageQueue.length;i++){
+      const item=ocrImageQueue[i];
+      const one=await recognizeOcrQueueItem(item,worker,i+1,ocrImageQueue.length);
+      all.push(...one.candidates);
+      raw.push(`===== ${i+1}. ${item.name} · ${item.term} =====\n${one.text}`);
     }
-
-    // 학정번호가 핵심 키이며, 과목명은 학정번호가 실패했을 때만 보조 후보로 사용한다.
-    ocrCandidates=supplementCandidatesByCatalogName(ocrCandidates,text,term);
-    document.getElementById('ocrProgressBar').style.width='84%';
-    ocrCandidates=await refineOcrGradesByRow(ocrCandidates,tsv,worker,prepared);
+    ocrCandidates=mergeOcrCandidateBatches(all);
     ocrCandidates=finalizeOcrConfidence(ocrCandidates);
-
     const high=ocrCandidates.filter(r=>r.confidenceLevel==='high').length;
     const review=ocrCandidates.length-high;
-    document.getElementById('ocrStatus').textContent=`OCR 완료 · ${ocrCandidates.length}개 후보 · 자동확인 ${high} · 확인 필요 ${review}`;
+    document.getElementById('ocrStatus').textContent=`OCR 완료 · 캡처 ${ocrImageQueue.length}장 · 중복 통합 후 ${ocrCandidates.length}개 후보 · 자동확인 ${high} · 확인 필요 ${review}`;
     document.getElementById('ocrProgressBar').style.width='100%';
     renderOcrCandidates();
     const box=document.getElementById('ocrResult');
-    box.insertAdjacentHTML('beforeend',`<details style="margin-top:10px"><summary>OCR 인식 원문 보기 (문제 진단용)</summary><pre class="ocr-raw">${esc(text)}</pre></details>`);
+    box.insertAdjacentHTML('beforeend',`<details style="margin-top:10px"><summary>OCR 인식 원문 보기 (문제 진단용)</summary><pre class="ocr-raw">${esc(raw.join('\n\n'))}</pre></details>`);
   }catch(err){
     console.error(err);
     document.getElementById('ocrStatus').textContent='OCR 실패';
-    document.getElementById('ocrResult').innerHTML=`<div class="callout badbox">OCR 처리에 실패했습니다: ${esc(err?.message||err)}<br>인터넷 연결을 확인한 뒤 다시 시도하십시오. 이미지 자체는 서버에 업로드되지 않습니다.</div>`;
+    document.getElementById('ocrResult').innerHTML=`<div class="callout badbox">OCR 처리에 실패했습니다: ${esc(err?.message||err)}<br>인터넷 연결을 확인한 뒤 다시 시도하십시오. 이미지는 서버에 저장하지 않습니다.</div>`;
   }finally{
-    btn.disabled=false; btn.textContent='OCR로 읽어오기';
+    ocrBatchContext=null;
+    btn.disabled=false; btn.textContent='선택한 캡처 OCR';
   }
 }
 
@@ -5366,58 +5416,79 @@ function importPortalPdfCandidates(){
   document.getElementById('portalPdfResult').innerHTML='';
 }
 
-let pastedOcrBlob=null;
 
-function setOcrPreviewBlob(blob, label='붙여넣은 이미지'){
+let ocrImageQueue=[];
+let ocrBatchContext=null;
+
+function ocrTermOptionsHtml(selected){
+  const source=document.getElementById('ocrTerm');
+  return [...(source?.options||[])].map(o=>`<option value="${esc(o.value)}" ${o.value===selected?'selected':''}>${esc(o.textContent)}</option>`).join('');
+}
+function revokeOcrQueueUrls(){
+  for(const item of ocrImageQueue){if(item.url)URL.revokeObjectURL(item.url);}
+}
+function renderOcrQueue(){
+  const box=document.getElementById('ocrQueue');
+  if(!box)return;
+  if(!ocrImageQueue.length){
+    box.innerHTML='<div class="muted" style="padding:7px 2px">아직 선택된 캡처가 없습니다.</div>';
+    document.getElementById('ocrPasteZone')?.classList.remove('paste-ready');
+    return;
+  }
+  document.getElementById('ocrPasteZone')?.classList.add('paste-ready');
+  box.innerHTML=ocrImageQueue.map((item,i)=>`<div class="ocr-queue-item" data-ocr-id="${esc(item.id)}">
+    <img class="ocr-queue-thumb" src="${esc(item.url)}" alt="${esc(item.name)} 미리보기">
+    <div class="ocr-queue-meta"><div class="ocr-queue-name">${i+1}. ${esc(item.name)}</div><div class="muted">${Math.max(1,Math.round((item.blob.size||0)/1024))} KB</div></div>
+    <div class="ocr-queue-term"><label>수강학기</label><select class="ocr-queue-term-select" data-id="${esc(item.id)}">${ocrTermOptionsHtml(item.term)}</select></div>
+    <button class="btn small danger ocr-queue-remove" type="button" data-id="${esc(item.id)}" title="이 캡처 제거">삭제</button>
+  </div>`).join('');
+  box.querySelectorAll('.ocr-queue-term-select').forEach(el=>el.onchange=()=>{
+    const item=ocrImageQueue.find(x=>x.id===el.dataset.id);if(item)item.term=el.value;
+  });
+  box.querySelectorAll('.ocr-queue-remove').forEach(el=>el.onclick=()=>{
+    const idx=ocrImageQueue.findIndex(x=>x.id===el.dataset.id);if(idx<0)return;
+    const [item]=ocrImageQueue.splice(idx,1);if(item?.url)URL.revokeObjectURL(item.url);
+    renderOcrQueue();
+    document.getElementById('ocrStatus').textContent=ocrImageQueue.length?`캡처 ${ocrImageQueue.length}장 준비됨 · 이미지별 수강학기를 확인하세요.`:'캡처를 여러 장 선택하거나 하나씩 붙여넣으세요.';
+  });
+}
+function addOcrQueueBlob(blob,name='붙여넣은 이미지',term){
   if(!blob || !String(blob.type||'').startsWith('image/'))return false;
-  pastedOcrBlob=blob;
-  const img=document.getElementById('ocrPreview');
-  if(img.dataset.objectUrl)URL.revokeObjectURL(img.dataset.objectUrl);
+  const selectedTerm=term||document.getElementById('ocrTerm')?.value||state.profile.admissionTerm;
+  const id=`ocr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
   const url=URL.createObjectURL(blob);
-  img.dataset.objectUrl=url;
-  img.src=url;
-  img.style.display='block';
-  document.getElementById('ocrStatus').textContent=`${label} · 수강학기 ${document.getElementById('ocrTerm').value}`;
-  document.getElementById('ocrPasteZone').classList.add('paste-ready');
+  ocrImageQueue.push({id,blob,name,term:selectedTerm,url});
+  renderOcrQueue();
   ocrCandidates=[];
   document.getElementById('ocrResult').innerHTML='';
+  document.getElementById('ocrStatus').textContent=`캡처 ${ocrImageQueue.length}장 준비됨 · 이미지별 수강학기를 확인하세요.`;
   return true;
 }
 function handleOcrPaste(e){
-  const items=[...(e.clipboardData?.items||[])];
-  const imageItem=items.find(x=>String(x.type||'').startsWith('image/'));
-  if(!imageItem)return;
+  const items=[...(e.clipboardData?.items||[])].filter(x=>String(x.type||'').startsWith('image/'));
+  if(!items.length)return;
   e.preventDefault();
-  const blob=imageItem.getAsFile();
-  if(blob)setOcrPreviewBlob(blob,'클립보드 이미지 붙여넣기 완료');
+  let added=0;
+  for(const imageItem of items){const blob=imageItem.getAsFile();if(blob&&addOcrQueueBlob(blob,`붙여넣은 캡처 ${ocrImageQueue.length+1}`))added++;}
+  if(added)document.getElementById('ocrStatus').textContent=`클립보드 캡처 ${added}장 추가 · 총 ${ocrImageQueue.length}장 준비됨`;
 }
-
 function previewOcrImage(){
-  const file=document.getElementById('ocrImage').files?.[0];
-  const img=document.getElementById('ocrPreview');
-  if(!file){if(!pastedOcrBlob)img.style.display='none';return;}
-  pastedOcrBlob=null;
-  if(img.dataset.objectUrl)URL.revokeObjectURL(img.dataset.objectUrl);
-  const url=URL.createObjectURL(file);
-  img.dataset.objectUrl=url;
-  img.src=url;
-  img.style.display='block';
-  document.getElementById('ocrPasteZone').classList.add('paste-ready');
-  document.getElementById('ocrStatus').textContent=`파일 선택됨: ${file.name} · 수강학기 ${document.getElementById('ocrTerm').value}`;
-}
-
-
-function clearOcrImage(){
   const input=document.getElementById('ocrImage');
+  const files=[...(input.files||[])];
+  if(!files.length)return;
+  const defaultTerm=document.getElementById('ocrTerm').value;
+  let added=0;
+  for(const file of files){if(addOcrQueueBlob(file,file.name,defaultTerm))added++;}
   input.value='';
-  pastedOcrBlob=null;
-  const img=document.getElementById('ocrPreview');
-  if(img.dataset.objectUrl){URL.revokeObjectURL(img.dataset.objectUrl);delete img.dataset.objectUrl;}
-  img.removeAttribute('src');
-  img.style.display='none';
-  document.getElementById('ocrPasteZone').classList.remove('paste-ready');
+  document.getElementById('ocrStatus').textContent=`파일 ${added}장 추가 · 총 ${ocrImageQueue.length}장 준비됨`;
+}
+function clearOcrImage(){
+  document.getElementById('ocrImage').value='';
+  revokeOcrQueueUrls();
+  ocrImageQueue=[];
+  renderOcrQueue();
   document.getElementById('ocrProgressBar').style.width='0';
-  document.getElementById('ocrStatus').textContent=`이미지가 삭제되었습니다. 수강학기 ${document.getElementById('ocrTerm').value}에 해당하는 새 캡처를 붙여넣으십시오.`;
+  document.getElementById('ocrStatus').textContent='캡처를 여러 장 선택하거나 하나씩 붙여넣으세요.';
   ocrCandidates=[];
   document.getElementById('ocrResult').innerHTML='';
 }
@@ -5549,7 +5620,7 @@ document.getElementById('admissionSelect').onchange=e=>{
   save();
   updateHistoryCreditNote();
   applyHistorySelection();
-  document.getElementById('ocrStatus').textContent=`수강학기 ${state.profile.admissionTerm} 선택됨. 캡처 후 Ctrl+V로 붙여넣거나 이미지 파일을 선택하십시오.`;
+  document.getElementById('ocrStatus').textContent=`새 캡처의 기본 수강학기 ${state.profile.admissionTerm} 선택됨.`;
   ocrCandidates=[];
   document.getElementById('ocrResult').innerHTML='';
   render();
@@ -5585,9 +5656,8 @@ document.addEventListener('paste',e=>{
   if(!editing)handleOcrPaste(e);
 });
 document.getElementById('ocrTerm').onchange=()=>{
-  document.getElementById('ocrStatus').textContent=`수강학기 ${document.getElementById('ocrTerm').value} 선택됨. 캡처 후 Ctrl+V로 붙여넣거나 이미지 파일을 선택하십시오.`;
-  ocrCandidates=[];
-  document.getElementById('ocrResult').innerHTML='';
+  const term=document.getElementById('ocrTerm').value;
+  document.getElementById('ocrStatus').textContent=`새로 추가하는 캡처의 기본 수강학기: ${term}${ocrImageQueue.length?` · 기존 ${ocrImageQueue.length}장의 학기는 목록에서 개별 변경 가능`:''}`;
 };
 document.getElementById('runOcr').onclick=runOcr;
 document.getElementById('clearOcrImage').onclick=clearOcrImage;
@@ -5788,7 +5858,7 @@ document.getElementById('pdfSaveBottom').onclick=()=>window.print();
 document.getElementById('scrollTopBtn').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 document.getElementById('quickReset').onclick=()=>document.getElementById('resetData').click();
 
-const workflowTargets={profile:'inputZone',history:'historySection',result:'analysisZone',plan:'planSection'};
+const workflowTargets={profile:'inputZone',history:'historySection',result:'analysisZone'};
 document.querySelectorAll('#workflowStrip .workflow-step').forEach(s=>{
   s.addEventListener('click',()=>{
     const el=document.getElementById(workflowTargets[s.dataset.step]);
