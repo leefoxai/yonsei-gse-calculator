@@ -82,8 +82,8 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.1.2' in html)
-check('modular js linked','app.js?v=3.1.2' in html)
+check('modular css linked','styles.css?v=3.1.4' in html)
+check('modular js linked','app.js?v=3.1.4' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -102,6 +102,14 @@ check('gap candidate category priority',"gapPriority={major_required:0,major_ele
 
 check('category priority order',"const CATEGORY_OPTIONS = ['major_required','major_elective','teaching','common','prerequisite'" in app)
 check('mobile catalog plan add','data-offering-plan' in app and 'catalog-plan-btn' in css and '<th>계획</th>' in html)
+
+check('zero-term display preserved',"isZeroAcademicTerm(s)" in app and "return s;" in app)
+check('comparison program pre-admission migrates to zero term',"normalizeComparisonProgramTerm" in app and "SPG6658" in app and "comparisonProgramZeroTerm" in app)
+check('history accepts zero term',"validHistoryTermValue" in app and "[012]" in app)
+check('test title applied',"[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기" in html and "[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기" in app)
+
+check('category filter exact order',"const ordered=['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance']" in app and '<option value="lifelong">평생교육사</option>' in app)
+check('audit label simplified',"audit:'청강'" in app)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')

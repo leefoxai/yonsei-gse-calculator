@@ -1,4 +1,4 @@
-const APP_TITLE_DEFAULT='연세대학교 교육대학원 졸업요건 이수현황 계산기';
+const APP_TITLE_DEFAULT='[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기';
 const APP_TITLE_KEY='yonsei-gse-calculator-custom-title';
 
 // ===== v3.0 on-demand external libraries =====
@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.2';
+const APP_VERSION = '3.1.4';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -69,7 +69,7 @@ let runtimePackMeta = {dataSource:'embedded fallback',rulesSource:'embedded fall
 let gapCandidateTerm='';
 const CATEGORY_LABELS = {
   common:'공통', teaching:'교직', prerequisite:'선수', major_required:'전공필수', major_elective:'전공선택',
-  thesis:'논문', research_guidance:'연구지도', report:'졸업연구보고서', audit:'청강/비산입', unknown:'종별 확인 필요'
+  thesis:'논문', research_guidance:'연구지도', report:'졸업연구보고서', audit:'청강', unknown:'종별 확인 필요'
 };
 
 const GRADE_POINTS={
@@ -166,11 +166,14 @@ function gpaRequirementStatus(records){
   return {state:s.gpa>=CUMULATIVE_GPA_MIN?'pass':'fail',...s};
 }
 
-const CATEGORY_OPTIONS = ['major_required','major_elective','teaching','common','prerequisite','thesis','report','research_guidance','audit','unknown'];
+const CATEGORY_OPTIONS = ['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance','audit','unknown'];
 
 function termIndex(t){
-  const m=String(t||'').match(/^(\d{4})-(1|2)$/); if(!m) return -999999;
-  return Number(m[1])*2 + (m[2]==='2'?1:0);
+  const m=String(t||'').match(/^(\d{4})-(0|1|2)$/); if(!m) return -999999;
+  const sem=m[2];
+  // YYYY-0은 같은 해 1학기 직전의 특수학기로 정렬하되,
+  // 정규학기(1·2학기) 간 간격 계산은 기존 값을 유지한다.
+  return Number(m[1])*2 + (sem==='0'?-0.5:sem==='2'?1:0);
 }
 function canonicalCode(s){return String(s||'').toUpperCase().replace(/\s+/g,'').replace(/(?:-\d{2})+$/,'');}
 function normName(s){return String(s||'').replace(/\s+/g,'').replace(/[()（）·ㆍ\-_,.]/g,'').toLowerCase();}
@@ -199,17 +202,37 @@ function categoryOptionsHtml(selected){
   return CATEGORY_OPTIONS.map(c=>`<option value="${c}" ${c===selected?'selected':''}>${CATEGORY_LABELS[c]}</option>`).join('');
 }
 const PRE_ADMISSION_TERM='__PRE_ADMISSION__';
+function isZeroAcademicTerm(term){return /^\d{4}-0$/.test(String(term||''));}
+function comparisonProgramZeroTerm(admissionTerm=state.profile.admissionTerm){
+  const m=String(admissionTerm||'').match(/^(\d{4})-1$/);
+  return m?`${m[1]}-0`:'';
+}
+function shouldUseComparisonProgramZeroTerm(record,admissionTerm=state.profile.admissionTerm){
+  if(!record)return false;
+  const isComparison=canonicalCode(record.courseCode)==='SPG6658'||/비교과프로그램/.test(String(record.courseName||''));
+  return isComparison && !!comparisonProgramZeroTerm(admissionTerm);
+}
+function normalizeComparisonProgramTerm(record,admissionTerm=state.profile.admissionTerm){
+  if(!record)return record;
+  if(record.term===PRE_ADMISSION_TERM && shouldUseComparisonProgramZeroTerm(record,admissionTerm)){
+    record.term=comparisonProgramZeroTerm(admissionTerm);
+  }
+  return record;
+}
 function isPreAdmissionTerm(term){
   const admission=state.profile.admissionTerm;
   const s=String(term||'');
+  if(isZeroAcademicTerm(s))return false; // YYYY-0은 '입학학기 이전'으로 축약하지 않고 그대로 표시
   if(s===PRE_ADMISSION_TERM || /\s*이전$/.test(s)) return true;
 
   const t=termIndex(s), a=termIndex(admission);
-  // 입학학기 자체는 '이전'이 아니다. 오직 엄격히 앞선 학기만 이전으로 묶는다.
+  // 입학학기 자체는 '이전'이 아니다. 오직 엄격히 앞선 정규학기만 이전으로 묶는다.
   return t>-999999 && a>-999999 && t<a;
 }
 function displayAcademicTerm(term){
-  return isPreAdmissionTerm(term) ? `${state.profile.admissionTerm} 이전` : String(term||'');
+  const s=String(term||'');
+  if(isZeroAcademicTerm(s))return s;
+  return isPreAdmissionTerm(s) ? `${state.profile.admissionTerm} 이전` : s;
 }
 function nextAcademicTerm(term){
   const m=String(term||'').match(/^(\d{4})-(1|2)$/);
@@ -227,11 +250,13 @@ function academicTermOptionsHtml(selected){
     terms.push(t);
     t=nextAcademicTerm(t);
   }
-  if(selected && !isPreAdmissionTerm(selected) && termIndex(selected)>maxIndex && !terms.includes(selected)){
+  const zeroTerm=comparisonProgramZeroTerm(admission);
+  if(selected && validHistoryTermValue(selected) && !terms.includes(selected) && !isZeroAcademicTerm(selected) && termIndex(selected)>maxIndex){
     terms.push(selected);
   }
   const preSelected=isPreAdmissionTerm(selected);
   return `<option value="${PRE_ADMISSION_TERM}" ${preSelected?'selected':''}>${esc(admission)} 이전</option>`+
+    (zeroTerm?`<option value="${zeroTerm}" ${zeroTerm===selected?'selected':''}>${zeroTerm}</option>`:'')+
     terms.map(t=>`<option value="${t}" ${t===selected?'selected':''}>${t}</option>`).join('');
 }
 function recordKey(r){return canonicalCode(r.courseCode)||normName(r.courseName);}
@@ -354,6 +379,7 @@ function downloadJson(filename,obj){
   setTimeout(()=>URL.revokeObjectURL(a.href),500);
 }
 function validTermValue(t){return /^\d{4}-[12]$/.test(String(t||''));}
+function validHistoryTermValue(t){return /^\d{4}-[012]$/.test(String(t||''));}
 function dataPackEnvelope(data=DATA,extra={}){
   return {packType:'yonsei-gse-data',schemaVersion:DATA_PACK_SCHEMA_VERSION,appVersion:APP_VERSION,snapshot:data.snapshot,updatedAt:packNowIso(),data:deepClone(data),...extra};
 }
@@ -449,7 +475,7 @@ function validateRulesCore(rules){
 function historyRecordIssues(r){
   const critical=[],warnings=[];
   const term=String(r?.term||'');
-  if(!(validTermValue(term)||term===PRE_ADMISSION_TERM||/\s*이전$/.test(term)))critical.push('학기 형식 오류');
+  if(!(validHistoryTermValue(term)||term===PRE_ADMISSION_TERM||/\s*이전$/.test(term)))critical.push('학기 형식 오류');
   if(!String(r?.courseName||'').trim())critical.push('과목명 없음');
   const cr=Number(r?.credits);
   if(!Number.isFinite(cr)||cr<0||cr>9)critical.push('학점 이상값');
@@ -649,6 +675,7 @@ function restoreLatestAutoBackup(){
 function migrateImportedState(x){
   x=deepClone(x);
   x.history=Array.isArray(x.history)?x.history:[];
+  for(const r of x.history)normalizeComparisonProgramTerm(r,x.profile?.admissionTerm||state?.profile?.admissionTerm||'');
   x.scenarios=Array.isArray(x.scenarios)&&x.scenarios.length?x.scenarios:[{id:'sc_default',name:'시트 1',planned:[]}];
   x.profile=x.profile||defaultState().profile;
   x.profile.wantsTeacherCertificate=!!x.profile.wantsTeacherCertificate;
@@ -893,6 +920,9 @@ let state=load();
 function normalizeSavedHistoryCredits(){
   let changed=false;
   for(const r of state.history||[]){
+    const beforeTerm=r.term;
+    normalizeComparisonProgramTerm(r,state.profile.admissionTerm);
+    if(r.term!==beforeTerm)changed=true;
     if(r.grade){
       const ng=normalizeGrade(r.grade);
       if(ng!==r.grade){r.grade=ng;changed=true;}
@@ -913,11 +943,13 @@ function normalizeSavedHistoryCredits(){
 normalizeSavedHistoryCredits();
 
 function filterCategoryOptions(){
-  const primary=['major_required','major_elective','teaching','common','prerequisite']
-    .map(c=>`<option value="${c}">${CATEGORY_LABELS[c]}</option>`).join('');
-  const secondary=['thesis','report','research_guidance','audit','unknown']
-    .map(c=>`<option value="${c}">${CATEGORY_LABELS[c]}</option>`).join('');
-  return `<option value="all">전체 종별</option>`+primary+`<option value="lifelong">평생교육사</option>`+secondary;
+  const ordered=['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance'];
+  const main=ordered.map(c=>`<option value="${c}">${CATEGORY_LABELS[c]}</option>`).join('');
+  return `<option value="all">전체 종별</option>`+
+    main+
+    `<option value="lifelong">평생교육사</option>`+
+    `<option value="audit">${CATEGORY_LABELS.audit}</option>`+
+    `<option value="unknown">${CATEGORY_LABELS.unknown}</option>`;
 }
 
 function isTeacherCertMajor(){return teacherCertMajors().has(state.profile.major);}
@@ -2960,16 +2992,16 @@ function pdfNormalizeTerm(raw){
     .normalize('NFKC')
     .replace(/[\u200B-\u200D\uFEFF\u0000-\u001F]/g,'')
     .replace(/\s+/g,'');
+
+  // 2023-0 같은 특수학기 표기가 있으면 '인정학점'보다 우선하여 그대로 보존한다.
+  let m=s.match(/(20\d{2})[^0-9]{0,10}([012])(?:[^0-9]{0,6}학기)?/);
+  if(m && (m[2]==='0' || /학기/.test(s)))return `${m[1]}-${m[2]}`;
+
   if(/인정학점/.test(s))return PRE_ADMISSION_TERM;
 
-  // 표준 표기: 2024학년도 2학기
-  let m=s.match(/(20\d{2})[^0-9]{0,10}([12])[^0-9]{0,6}학기/);
-  if(m)return `${m[1]}-${m[2]}`;
-
   // PDF.js가 한글 일부를 깨뜨려도 '연도 + 학기 숫자'는 보존되는 경우가 많다.
-  // 학기 열 단독 문자열에서 20242 → 2024-2 형태를 복원한다.
   const digits=s.replace(/\D/g,'');
-  m=digits.match(/^(20\d{2})([12])/);
+  m=digits.match(/^(20\d{2})([012])/);
   return m?`${m[1]}-${m[2]}`:'';
 }
 function pdfGradeValue(raw){
@@ -3920,6 +3952,7 @@ async function readPortalPdf(){
   document.getElementById('portalPdfResult').innerHTML='';
   try{
     portalPdfCandidates=await extractPortalPdfCandidates(file);
+    portalPdfCandidates.forEach(r=>normalizeComparisonProgramTerm(r,state.profile.admissionTerm));
     if(!portalPdfCandidates.length){
       throw new Error('수강 과목 행을 찾지 못했습니다. 연세포털 전체성적조회에서 [출력]으로 생성한 PDF인지 확인하십시오.');
     }
