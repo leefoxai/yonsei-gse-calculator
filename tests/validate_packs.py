@@ -82,15 +82,15 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.1.5' in html)
-check('modular js linked','app.js?v=3.1.5' in html)
+check('modular css linked','styles.css?v=3.1.6' in html)
+check('modular js linked','app.js?v=3.1.6' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
 check('gap candidates present','function renderGapCandidates()' in app and 'id="planGapCandidates"' in html)
 check('offering pattern present','function courseOfferingPattern(' in app and '개설계획 수록 학기' in app)
 check('ocr canvas release present','releaseCanvas(prepared)' in app and 'pageCache.clear()' in app)
-check('simulator naming','id="extraFeatures"' in html and '수강 계획 시뮬레이터' in html and '수강 계획 저장, 개설 예정 과목 조회 서비스입니다.' in html)
+check('integrated analysis and optional catalog','id="analysisWorkspace"' in html and 'id="extraFeatures"' in html and '개설정보 더 보기' in html)
 check('field confidence present','function fieldConfidenceHtml(' in app and '.field-confidence' in css)
 
 check('gap term tabs present','function gapCandidateTerms()' in app and 'data-gap-term' in app and '.gap-term-tabs' in css)
@@ -110,6 +110,31 @@ check('test title applied',"[테스트]연세대학교 교육대학원 조럽요
 
 check('category filter exact order',"const ordered=['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance']" in app and '<option value="lifelong">평생교육사</option>' in app)
 check('audit label simplified',"audit:'청강'" in app)
+
+# Parse the real HTML topology to keep workflow sections adjacent and accessible.
+from html.parser import HTMLParser
+class WorkflowMarkup(HTMLParser):
+    def __init__(self):
+        super().__init__(); self.stack=[]; self.nodes={}; self.duplicates=[]
+    def handle_starttag(self, tag, attrs):
+        attrs=dict(attrs); ident=attrs.get('id'); ancestors=[item[1] for item in self.stack if item[1]]
+        if ident:
+            if ident in self.nodes: self.duplicates.append(ident)
+            self.nodes[ident]={'ancestors':ancestors, 'open':'open' in attrs}
+        if tag not in {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}:
+            self.stack.append((tag,ident))
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack)-1,-1,-1):
+            if self.stack[i][0]==tag:
+                self.stack=self.stack[:i]; break
+markup=WorkflowMarkup(); markup.feed(html)
+check('unique element IDs',not markup.duplicates,str(markup.duplicates))
+for ident in ['resultDetailsPanel','planSection']:
+    check(ident+' in analysis workspace',markup.nodes[ident]['ancestors'][-2:]==['analysisZone','analysisWorkspace'])
+    check(ident+' initially open',markup.nodes[ident]['open'])
+check('teacher checklist initially open',markup.nodes['teacherChecklistSection']['open'])
+check('scenario controls belong to plan','planSection' in markup.nodes['scenarioTabs']['ancestors'])
+check('backup outside optional catalog','extraFeatures' not in markup.nodes['exportData']['ancestors'])
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')

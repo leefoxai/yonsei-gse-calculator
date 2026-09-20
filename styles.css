@@ -1411,3 +1411,23 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
 .analysis-zone.is-empty #projectionControls{display:none!important}
 @media(min-width:661px){.teacher-auto-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{.projection-controls{padding:6px;margin:4px 0}.projection-controls p{margin:4px 0}.requirement-status{font-size:inherit;padding:0 2px}}
+
+/* Requirements and planning form a single stage, with optional catalogs below. */
+.analysis-links{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.analysis-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
+.analysis-workspace>details{min-width:0;margin-top:0}
+#planSection>.sheet-card{margin:0 0 14px;padding:12px;background:#f8fbff}
+.analysis-workspace #resultDetailsPanel,.analysis-workspace #planSection{scroll-margin-top:20px}
+.analysis-zone.is-empty .analysis-workspace,.analysis-zone.is-empty .analysis-links{display:none!important}
+@media screen and (min-width:1200px){
+  .analysis-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+  .analysis-workspace .grid.kpi,.analysis-workspace .teacher-auto-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .analysis-workspace .teacher-manual-grid,.analysis-workspace .graduation-check-grid{grid-template-columns:1fr}
+  .analysis-workspace .plan-filter-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .analysis-workspace .plan-course-row{grid-template-columns:1fr}
+  .analysis-workspace .schedule-compare{grid-template-columns:1fr!important}
+  .analysis-workspace .plan-add-row{flex-wrap:wrap}
+  .analysis-workspace .plan-add-row>div:nth-child(1){flex:1;min-width:140px}
+  .analysis-workspace .plan-add-row .btn{width:100%}
+}
+@media print{.analysis-workspace{display:block}.analysis-workspace>details{margin-top:0}}

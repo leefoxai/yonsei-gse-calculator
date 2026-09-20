@@ -170,4 +170,30 @@ test('Counselor certificate variant edits refresh eligibility actions', () => {
   document.getElementById('teacherCertificateVariantSelect').onchange({target:{value:'counselor2'}});
   assert.doesNotMatch(html('resultPrimarySummary'),/전문상담교사 1급 기존자격/);
 });
-console.log(`Projection regression: ${passed}/${passed} passed`);
+test('Steps open on entry, including saved sessions; edits preserve manual folding', () => {
+  run('state=defaultState();delete window.__prevProfileConfirmed;delete window.__prevAnalysisReady;renderUxState();');
+  assert.equal(document.getElementById('inputZone').open,true);
+  assert.equal(document.getElementById('historySection').open,false);
+  run('state.profileConfirmed=true;renderUxState();');
+  assert.equal(document.getElementById('historySection').open,true);
+  run("state.history.push({courseName:'테스트',category:'common',credits:0,passed:true});renderUxState();");
+  for(const id of ['analysisZone','resultDetailsPanel','planSection','teacherChecklistSection','graduationChecklistSection']) {
+    assert.equal(document.getElementById(id).open,true,id);
+    document.getElementById(id).open=false;
+  }
+  run('renderUxState();');
+  for(const id of ['analysisZone','resultDetailsPanel','planSection'])assert.equal(document.getElementById(id).open,false,id);
+  run('delete window.__prevProfileConfirmed;delete window.__prevAnalysisReady;renderUxState();');
+  for(const id of ['historySection','analysisZone','resultDetailsPanel','planSection'])assert.equal(document.getElementById(id).open,true,id);
+});
+test('Navigation opens the plan and its ancestor, never the unrelated catalog', () => {
+  const plan=document.getElementById('planSection'),analysis=document.getElementById('analysisZone'),extras=document.getElementById('extraFeatures');
+  plan.tagName=analysis.tagName='DETAILS';plan.parentElement=analysis;
+  plan.open=analysis.open=extras.open=false;
+  run("openWorkflowTarget('planSection');");
+  assert.equal(plan.open,true);assert.equal(analysis.open,true);assert.equal(extras.open,false);
+  const input=document.getElementById('inputZone');input.tagName='DETAILS';input.open=false;plan.open=false;
+  run("state.profileConfirmed=false;openWorkflowTarget('planSection');");
+  assert.equal(input.open,true);assert.equal(plan.open,false);
+});
+console.log(`Application regression: ${passed}/${passed} passed`);

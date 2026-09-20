@@ -10,8 +10,8 @@
 <title>[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.1.5">
-<meta name="application-version" content="3.1.5">
+<link rel="stylesheet" href="styles.css?v=3.1.6">
+<meta name="application-version" content="3.1.6">
 </head>
 <body>
 <div class="app">
@@ -39,10 +39,10 @@
       <div><b>3. 결과 확인</b><span>졸업 인정학점·평점·종별 요건과 교원자격 이수현황을 확인합니다.</span></div>
     </div>
     <div class="quick-guide-extra">
-      <span class="quick-guide-extra-title">수강 계획 시뮬레이터</span>
+      <span class="quick-guide-extra-title">결과 확인과 수강계획</span>
       <div class="quick-guide-extra-list">
         <span class="quick-guide-extra-item">수강계획 · 필요한 과목을 학기별로 확인</span>
-        <span class="quick-guide-extra-item">시나리오 · 여러 수강계획 저장·비교</span>
+        <span class="quick-guide-extra-item">시나리오 · 향후 수강계획에서 저장·비교</span>
         <span class="quick-guide-extra-item">개설예정 · 학기별 개설 예정 과목 조회</span>
       </div>
     </div>
@@ -208,7 +208,7 @@
 
   <details class="analysis-zone step-details" id="analysisZone" open>
     <summary class="analysis-heading no-print">
-      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황 분석 결과</span></h2><p>등록한 수강이력을 기준으로 계산된 결과입니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
+      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황 분석 결과</span></h2><p>현재 요건과 향후 수강계획을 함께 확인합니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
       <div id="resultStatus" class="result-status"></div>
     </summary>
     <div class="analysis-empty no-print" id="dashboardEmptyState">
@@ -219,8 +219,13 @@
     </div>
   <section id="projectionControls" class="card projection-controls" aria-label="계획 반영 범위"></section>
   <div id="resultPrimarySummary" class="result-primary-summary"></div>
-  <details class="result-details-panel" id="resultDetailsPanel">
-    <summary>상세 계산 · 체크리스트 보기</summary>
+  <nav class="analysis-links no-print" aria-label="분석과 수강계획 이동">
+    <button type="button" class="btn small" data-analysis-target="resultDetailsPanel">요건·체크리스트</button>
+    <button type="button" class="btn small" data-analysis-target="planSection">향후 수강계획</button>
+  </nav>
+  <div class="analysis-workspace" id="analysisWorkspace">
+  <details class="result-details-panel" id="resultDetailsPanel" open>
+    <summary>상세 계산 · 체크리스트</summary>
   <section class="kpi-wrap" id="kpiSection">
     <h2 class="req-cards-title">이수요건 판정</h2>
     <div class="grid kpi" id="kpiGrid"></div>
@@ -236,7 +241,7 @@
     <h2>이수요건 판정</h2>
     <div class="req-grid" id="requirementsGrid"></div>
   </section>
-  <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none">
+  <details class="card section teacher-checklist no-print" id="teacherChecklistSection" style="display:none" open>
     <summary><span>교원자격 이수 체크리스트</span></summary>
     <div class="callout" style="margin-top:10px">
       <b>교원자격증 취득 희망자용 보조 체크리스트</b>입니다.
@@ -328,20 +333,14 @@
     </div>
   </details>
   </details>
-  </details>
-
-  
-
-  <details class="card extras-shell" id="extraFeatures">
-  <summary class="no-print"><div class="extras-summary-copy"><h2>수강 계획 시뮬레이터</h2><p>수강 계획 저장, 개설 예정 과목 조회 서비스입니다.</p></div><span class="addon-badge">선택 사용</span></summary>
-  <div class="extras-body">
+<details class="card section input-section step-details" id="planSection" open>
+    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2></summary>
     <div class="card sheet-card no-print">
       <label>시나리오 비교</label>
       <div class="sheet-row"><div id="scenarioTabs" class="tabs"></div><button class="btn small sheet-add" id="addScenario" type="button" title="새 시트">+</button></div>
       <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
     </div>
-<details class="card section input-section step-details" id="planSection">
-    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2></summary>
+
 <div class="plan-builder">
       <div class="pdf-import-head">
         <div>
@@ -374,7 +373,7 @@
     <div id="planWarnings"></div>
     <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>데이터 상태</th><th></th></tr></thead><tbody id="planBody"></tbody></table></div>
 
-    <div class="muted no-print" style="margin-top:14px">오른쪽 [현재 시간표 저장]을 누르면 현재 학기 시간표가 스냅샷으로 저장됩니다. 저장된 시간표를 선택하면 현재 계획과 나란히 비교할 수 있습니다.</div>
+    <div class="muted no-print" style="margin-top:14px">[현재 시간표 저장]을 누르면 현재 학기 시간표가 스냅샷으로 저장됩니다. 저장된 시간표를 선택하면 현재 계획과 나란히 비교할 수 있습니다.</div>
     <div class="schedule-compare">
       <div class="schedule-pane">
         <div class="section-title-row"><h3 id="planTimetableTitle">학기 시간표</h3><button class="icon-btn no-print" id="planSettingsBtn" type="button" title="시간표 표시 설정" aria-label="시간표 표시 설정">⚙</button></div>
@@ -389,6 +388,14 @@
       </div>
     </div>
   </details>
+  </div>
+  </details>
+
+
+
+  <details class="card extras-shell" id="extraFeatures">
+  <summary class="no-print"><div class="extras-summary-copy"><h2>개설정보 더 보기</h2><p>개설 예정 시간표와 학기별 강의 목록을 조회합니다.</p></div><span class="addon-badge">선택 사용</span></summary>
+  <div class="extras-body">
 
   <section class="two section">
     <div class="card catalog-section">
@@ -416,6 +423,11 @@
     </div>
   </section>
 
+
+  </div>
+</details>
+
+
   <section class="card section backup-section no-print">
     <h2>데이터 관리 · 백업 <span class="addon-badge">백업</span></h2>
     <div class="toolbar">
@@ -430,13 +442,9 @@
     <div id="packMetaSummary" class="muted" style="margin-top:8px"></div>
     <div class="muted" style="margin-top:10px">모든 학생 데이터는 이 브라우저의 localStorage에만 저장됩니다. 불러오기·초기화 직전에는 자동 안전백업을 남기며, 기기 변경 전에는 JSON 내보내기를 권장합니다.</div>
   </section>
-  </div>
-</details>
-
-  
 
   <footer class="footer">
-    <b>v3.1.5:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>v3.1.6:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -454,6 +462,6 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.1.5"></script>
+<script defer src="app.js?v=3.1.6"></script>
 </body>
 </html>
