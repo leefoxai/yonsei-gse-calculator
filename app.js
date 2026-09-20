@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.5';
+const APP_VERSION = '3.1.6';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -1626,6 +1626,8 @@ function renderTeacherChecklist(){
   if(!section)return;
   const enabled=teacherTrackEnabled();
   section.style.display=enabled?'block':'none';
+  if(enabled&&section.dataset.wasEnabled!=='true')section.open=true;
+  section.dataset.wasEnabled=String(enabled);
   if(!enabled)return;
 
   const majorRule=certificateMajorRule();
@@ -2323,27 +2325,30 @@ function renderUxState(){
     planDetails.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!profileConfirmed;});
   }
 
-  // 기본정보 확인 전에는 핵심 단계만 제어하며, 부가기능은 사용자가 필요할 때 직접 펼칩니다.
-  const justUnlocked=profileConfirmed&&window.__prevProfileConfirmed===false;
+  // Open relevant steps once on entry; preserve manual folding during ordinary edits.
+  const firstVisit=window.__prevProfileConfirmed===undefined;
+  const justUnlocked=profileConfirmed&&(firstVisit||window.__prevProfileConfirmed===false);
+  const justReady=readyForAnalysis&&(window.__prevAnalysisReady!==true);
+  const historyDetails=document.getElementById('historySection');
   if(!profileConfirmed){
+    document.getElementById('inputZone').open=true;
     if(analysisDetails)analysisDetails.open=false;
     if(planDetails)planDetails.open=false;
-  }else if(justUnlocked){
-    if(analysisDetails)analysisDetails.open=true;
-    const h=document.getElementById('historySection');
-    if(h)h.open=true;
+    if(historyDetails)historyDetails.open=false;
+  }else{
+    if(justUnlocked&&historyDetails)historyDetails.open=true;
+    if(justUnlocked&&analysisDetails)analysisDetails.open=true;
+    if(justReady){
+      ['analysisZone','resultDetailsPanel','planSection','teacherChecklistSection','graduationChecklistSection'].forEach(id=>{
+        const el=document.getElementById(id);if(el)el.open=true;
+      });
+    }
   }
   window.__prevProfileConfirmed=profileConfirmed;
-
-  const historyDetails=document.getElementById('historySection');
+  window.__prevAnalysisReady=readyForAnalysis;
   if(historyDetails){
     historyDetails.classList.toggle('profile-locked',!profileConfirmed);
     historyDetails.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!profileConfirmed;});
-    if(!historyDetails.dataset.uxInitialized){
-      historyDetails.open=profileConfirmed&&historyCount===0;
-      historyDetails.dataset.uxInitialized='1';
-    }
-    if(!profileConfirmed)historyDetails.open=false;
   }
 
   const emptyTitle=document.getElementById('dashboardEmptyTitle');
@@ -4439,15 +4444,18 @@ window.addEventListener('afterprint',()=>{
 
 document.getElementById('quickPrint').onclick=()=>window.print();
 
+function openWorkflowTarget(id){
+  let target=id==='top'?document.body:document.getElementById(id);
+  if(!target)return;
+  if(id!=='top'&&!state.profileConfirmed)target=document.getElementById('inputZone');
+  for(let el=target;el;el=el.parentElement){if(el.tagName==='DETAILS')el.open=true;}
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+}
 document.querySelectorAll('#mobileNav [data-target]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const id=btn.dataset.target;
-    const target=id==='top'?document.body:document.getElementById(id);
-    if(!target)return;
-    if(id==='planSection'){const extras=document.getElementById('extraFeatures');if(extras)extras.open=true;}
-    if(target.tagName==='DETAILS')target.open=true;
-    target.scrollIntoView({behavior:'smooth',block:'start'});
-  });
+  btn.addEventListener('click',()=>openWorkflowTarget(btn.dataset.target));
+});
+document.querySelectorAll('[data-analysis-target]').forEach(btn=>{
+  btn.addEventListener('click',()=>openWorkflowTarget(btn.dataset.analysisTarget));
 });
 
 document.getElementById('pdfSaveBottom').onclick=()=>window.print();
@@ -4456,12 +4464,7 @@ document.getElementById('quickReset').onclick=()=>document.getElementById('reset
 
 const workflowTargets={profile:'inputZone',history:'historySection',result:'analysisZone'};
 document.querySelectorAll('#workflowStrip .workflow-step').forEach(s=>{
-  s.addEventListener('click',()=>{
-    const el=document.getElementById(workflowTargets[s.dataset.step]);
-    if(!el)return;
-    if(el.tagName==='DETAILS'&&!el.classList.contains('profile-locked'))el.open=true;
-    el.scrollIntoView({behavior:'smooth',block:'start'});
-  });
+  s.addEventListener('click',()=>openWorkflowTarget(workflowTargets[s.dataset.step]));
 });
 
 document.getElementById('importTabs').addEventListener('click',e=>{
