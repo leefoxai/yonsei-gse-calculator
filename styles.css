@@ -1370,3 +1370,19 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   .gap-term-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
   .gap-term-tab{flex:0 0 auto}
 }
+
+
+/* v3.1.2 모바일 개설강의 빠른 계획 추가 */
+.course-plan-action{white-space:nowrap;text-align:right}
+.catalog-plan-btn{min-width:88px}
+.catalog-plan-btn.is-added{background:#eef6ff;color:#175cd3;border-color:#bfd4ef;opacity:1}
+@media(max-width:760px){
+  .catalog-section tbody td.course-plan-action{
+    order:99;flex:1 1 100%;margin-top:7px!important;padding-top:7px!important;
+    border-top:1px dashed #d7e0eb!important
+  }
+  .catalog-section tbody td.course-plan-action .catalog-plan-btn{
+    width:100%;min-height:42px;font-size:13px
+  }
+  .catalog-section tbody tr{align-items:center}
+}

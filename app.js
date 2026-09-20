@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.1.2';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -166,7 +166,7 @@ function gpaRequirementStatus(records){
   return {state:s.gpa>=CUMULATIVE_GPA_MIN?'pass':'fail',...s};
 }
 
-const CATEGORY_OPTIONS = ['common','teaching','prerequisite','major_required','major_elective','thesis','research_guidance','report','audit','unknown'];
+const CATEGORY_OPTIONS = ['major_required','major_elective','teaching','common','prerequisite','thesis','report','research_guidance','audit','unknown'];
 
 function termIndex(t){
   const m=String(t||'').match(/^(\d{4})-(1|2)$/); if(!m) return -999999;
@@ -913,9 +913,11 @@ function normalizeSavedHistoryCredits(){
 normalizeSavedHistoryCredits();
 
 function filterCategoryOptions(){
-  const regular=['common','teaching','prerequisite','major_required','major_elective','thesis','research_guidance','report','audit','unknown']
+  const primary=['major_required','major_elective','teaching','common','prerequisite']
     .map(c=>`<option value="${c}">${CATEGORY_LABELS[c]}</option>`).join('');
-  return `<option value="all">전체 종별</option><option value="lifelong">평생교육사</option>`+regular;
+  const secondary=['thesis','report','research_guidance','audit','unknown']
+    .map(c=>`<option value="${c}">${CATEGORY_LABELS[c]}</option>`).join('');
+  return `<option value="all">전체 종별</option>`+primary+`<option value="lifelong">평생교육사</option>`+secondary;
 }
 
 function isTeacherCertMajor(){return teacherCertMajors().has(state.profile.major);}
@@ -2143,12 +2145,76 @@ function termTimetableList(){
   list=list.filter(o=>{const k=(o.major||'')+'|'+canonicalCode(o.courseCode)+'|'+(o.day||'')+'|'+(o.room||'')+'|'+(o.timeRaw||'');if(key.has(k))return false;key.add(k);return true;});
   return list.sort((a,b)=>(DAY_ORDER[a.day]||9)-(DAY_ORDER[b.day]||9)||scheduleInfo(a).order-scheduleInfo(b).order||(a.courseName||'').localeCompare(b.courseName||'','ko'));
 }
+function offeringPlanKey(term,course){
+  return encodeURIComponent(`${term}|${canonicalCode(course?.courseCode)}|${normName(course?.courseName)}`);
+}
+function findOfferingForPlan(term,code,name){
+  const cc=canonicalCode(code), nn=normName(name);
+  const regular=[
+    ...DATA.offerings.filter(o=>o.term===term),
+    ...(term===DATA.snapshot?DATA.globalOfferings.filter(o=>o.term===term):[])
+  ];
+  let found=regular.find(o=>(cc&&canonicalCode(o.courseCode)===cc)||(!cc&&nn&&normName(o.courseName)===nn));
+  if(found)return found;
+  return DATA.specialCourses.find(o=>(cc&&canonicalCode(o.courseCode)===cc)||(!cc&&nn&&normName(o.courseName)===nn))||null;
+}
+function isOfferingAlreadyPlanned(term,course){
+  const code=canonicalCode(course?.courseCode),name=normName(course?.courseName);
+  return currentScenario().planned.some(r=>r.term===term&&((code&&canonicalCode(r.courseCode)===code)||(!code&&name&&normName(r.courseName)===name)));
+}
+function offeringPlanButton(term,course){
+  if(course.availability==='planned_missing_actual'){
+    return `<button class="btn small catalog-plan-btn no-print" type="button" disabled title="예정표에는 있었지만 실제 개설이 확인되지 않았습니다.">추가 불가</button>`;
+  }
+  if(isOfferingAlreadyPlanned(term,course)){
+    return `<button class="btn small catalog-plan-btn no-print is-added" type="button" disabled>계획됨</button>`;
+  }
+  const key=offeringPlanKey(term,course);
+  return `<button class="btn small catalog-plan-btn no-print" type="button" data-offering-plan="${key}">계획에 추가</button>`;
+}
+function addOfferingFromCatalog(encoded){
+  let raw='';try{raw=decodeURIComponent(encoded||'');}catch(e){raw=encoded||'';}
+  const [term,code,name]=raw.split('|');
+  const targetTerm=validTermValue(term)?term:DATA.snapshot;
+  const c=findOfferingForPlan(targetTerm,code,name);
+  if(!c)return alert('선택한 학기의 개설 데이터에서 해당 과목을 다시 찾지 못했습니다.');
+  if(c.availability==='planned_missing_actual')return alert('예정표에는 있었지만 실제 개설이 확인되지 않은 과목은 계획에 바로 추가할 수 없습니다.');
+  const category=recommendedCategory(c);
+  const candidate={
+    id:uid('p'),term:targetTerm,courseCode:canonicalCode(c.courseCode),
+    sectionCode:(c.sectionCodes||[])[0]||'',courseName:c.courseName,
+    category,credits:Number((category==='common'||category==='audit')?0:(c.credits??defaultCredit(targetTerm,category,c.courseCode))),
+    availability:c.availability,source:'catalog_quick_add',professor:c.professor||'',
+    day:c.day||'',timeRaw:c.timeRaw||'',room:c.room||''
+  };
+  const sc=currentScenario(), key=planRecordKey(candidate);
+  if(sc.planned.some(r=>planRecordKey(r)===key))return alert('같은 학기의 동일 과목이 이미 계획에 등록되어 있습니다.');
+  sc.planned.push(candidate);
+  sc.planned=dedupePlannedRecords(sc.planned);
+  const planSel=document.getElementById('planTerm');
+  if(planSel&&[...planSel.options].some(o=>o.value===targetTerm))planSel.value=targetTerm;
+  gapCandidateTerm=targetTerm;
+  save();render();
+}
+function bindOfferingPlanButtons(root=document){
+  root.querySelectorAll('[data-offering-plan]').forEach(btn=>btn.onclick=()=>addOfferingFromCatalog(btn.dataset.offeringPlan));
+}
+
 function renderTimetable(){
   const list=termTimetableList(), body=document.getElementById('timetableBody');
+  const term=document.getElementById('timetableTerm')?.value||DATA.snapshot;
   body.innerHTML=list.length?list.map(o=>{
     const p=scheduleInfo(o),video=String(o.timeRaw||'').includes('동영상')?' · 동영상 병행':'';
-    return `<tr><td>${esc(o.day||'미정')}</td><td class="period">${esc(p.label)}${p.label!==p.time?`<div class="muted">${esc(p.time)}</div>`:''}</td><td><div class="course-name">${esc(o.courseName)}</div><div class="muted mono">${esc((o.sectionCodes||[])[0]||o.courseCode||'')}${video}</div></td><td>${CATEGORY_LABELS[o.category||'unknown']}</td><td>${esc(o.professor||'')} / ${esc(o.room||'')}</td></tr>`;
-  }).join(''):`<tr><td colspan="5" class="empty">해당 학기/범위의 강의 정보가 없습니다.</td></tr>`;
+    return `<tr>
+      <td>${esc(o.day||'미정')}</td>
+      <td class="period">${esc(p.label)}${p.label!==p.time?`<div class="muted">${esc(p.time)}</div>`:''}</td>
+      <td><div class="course-name">${esc(o.courseName)}</div><div class="muted mono">${esc((o.sectionCodes||[])[0]||o.courseCode||'')}${video}</div></td>
+      <td>${CATEGORY_LABELS[o.category||'unknown']}</td>
+      <td>${esc(o.professor||'')} / ${esc(o.room||'')}</td>
+      <td class="course-plan-action">${offeringPlanButton(term,o)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="6" class="empty">해당 학기/범위의 강의 정보가 없습니다.</td></tr>`;
+  bindOfferingPlanButtons(body);
 }
 function renderCatalog(){
   const term=document.getElementById('catalogTerm').value, major=document.getElementById('catalogMajor').value, q=normName(document.getElementById('catalogSearch').value);
@@ -2158,13 +2224,23 @@ function renderCatalog(){
   else list=DATA.offerings.filter(o=>o.major===major&&o.term===term);
   list=list.filter(o=>{const text=normName((o.courseName||'')+(o.courseCode||'')+(o.professor||''));return !q||text.includes(q);});
   list.sort((a,b)=>(DAY_ORDER[a.day]||9)-(DAY_ORDER[b.day]||9)||scheduleInfo(a).order-scheduleInfo(b).order||(a.courseName||'').localeCompare(b.courseName||'','ko'));
-  document.getElementById('catalogBody').innerHTML=list.length?list.map(o=>{
+  const body=document.getElementById('catalogBody');
+  body.innerHTML=list.length?list.map(o=>{
     let badge=o.availability==='actual'?`<span class="badge actual">실제개설</span>`:o.availability==='planned'?`<span class="badge planned">개설예정</span>`:o.availability==='planned_missing_actual'?`<span class="badge missing">실제미확인</span>`:`<span class="badge match">특수</span>`;
     const p=scheduleInfo(o);
     const sub=[o.professor||'',o.day||'',p.time!=='시간 미정'?p.time:'',o.room||''].filter(Boolean).join(' ');
     const displayCode=(o.sectionCodes||[])[0]||o.courseCode||'';
-    const pattern=courseOfferingPattern(o);return `<tr><td class="mono">${esc(displayCode)}</td><td><div class="course-name">${esc(o.courseName)}</div><div class="muted">${esc(sub)}</div><div class="offering-pattern">${esc(pattern.text)}${pattern.pattern?` <span class="pattern-chip">${esc(pattern.pattern)}</span>`:''}</div></td><td>${esc(courseOriginLabel(o))}</td><td>${CATEGORY_LABELS[o.category||'unknown']}</td><td>${badge}</td></tr>`;
-  }).join(''):`<tr><td colspan="5" class="empty">해당 조건의 과목이 없습니다.</td></tr>`;
+    const pattern=courseOfferingPattern(o);
+    return `<tr>
+      <td class="mono">${esc(displayCode)}</td>
+      <td><div class="course-name">${esc(o.courseName)}</div><div class="muted">${esc(sub)}</div><div class="offering-pattern">${esc(pattern.text)}${pattern.pattern?` <span class="pattern-chip">${esc(pattern.pattern)}</span>`:''}</div></td>
+      <td>${esc(courseOriginLabel(o))}</td>
+      <td>${CATEGORY_LABELS[o.category||'unknown']}</td>
+      <td>${badge}</td>
+      <td class="course-plan-action">${offeringPlanButton(term,o)}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="6" class="empty">해당 조건의 과목이 없습니다.</td></tr>`;
+  bindOfferingPlanButtons(body);
 }
 function profileSummaryText(){
   return `${state.profile.major} · ${state.profile.admissionTerm} · ${graduationTrackLabel(state.profile.track)}`;

@@ -10,7 +10,7 @@
 <title>연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.1.1">
+<link rel="stylesheet" href="styles.css?v=3.1.2">
 <meta name="application-version" content="3.0.0">
 </head>
 <body>
@@ -400,7 +400,7 @@
           <option value="combined">내 전공 + 교직·교과</option>
         </select>
       </div>
-      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table class="timetable-table"><thead><tr><th>요일</th><th>교시/시간</th><th>과목</th><th>종별</th><th>교수 / 강의실</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table class="timetable-table"><thead><tr><th>요일</th><th>교시/시간</th><th>과목</th><th>종별</th><th>교수 / 강의실</th><th>계획</th></tr></thead><tbody id="timetableBody"></tbody></table></div>
       <div class="muted" style="margin-top:8px">기본 시간은 <b>1·2교시 18:20–20:00</b> / <b>3·4교시 20:10–21:50</b>입니다. 평생교육사 등 별도 시간표가 있는 과목은 <b>원본 요일·시간</b>을 우선합니다.</div>
       <details style="margin-top:10px"><summary>5학기 개설예정표와 실제 시간표의 변경사항 보기</summary><div id="diffBox" style="margin-top:8px"></div></details>
     </div>
@@ -411,7 +411,7 @@
         <select id="catalogMajor"></select>
         <input id="catalogSearch" type="text" placeholder="과목명/학정번호/교수 검색">
       </div>
-      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
+      <div class="table-wrap" style="margin-top:12px;max-height:390px"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th><th>계획</th></tr></thead><tbody id="catalogBody"></tbody></table></div>
     </div>
   </section>
 
@@ -435,7 +435,7 @@
   
 
   <footer class="footer">
-    <b>v3.1.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>v3.1.2:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -453,6 +453,6 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.1.1"></script>
+<script defer src="app.js?v=3.1.2"></script>
 </body>
 </html>
