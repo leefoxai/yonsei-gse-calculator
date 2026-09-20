@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.4';
+const APP_VERSION = '3.1.5';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -364,10 +364,44 @@ function evaluate(records){
   for(const rr of result.requirements){if(rr.current<rr.min) result.complete=false;}
   return result;
 }
+function projectionSettings(){
+  const settings=state.projection||{};
+  return {mode:settings.mode==='selected'?'selected':'all',terms:Array.isArray(settings.terms)?settings.terms.filter(validTermValue):[]};
+}
+function projectionLabel(){return projectionSettings().mode==='selected'?'(선택) 계획 이수 후':'(전체) 계획 이수 후';}
+function projectionPlannedRecords(){
+  const settings=projectionSettings(),planned=currentScenario().planned;
+  return settings.mode==='all'?planned:planned.filter(r=>settings.terms.includes(r.term));
+}
+function requirementState(currentOk,projectedOk){return currentOk?'ok':projectedOk?'plan':'bad';}
+function requirementStateLabel(status){return {ok:'충족',plan:'계획 시 충족',bad:'미충족',pending:'확인 필요',exempt:'해당 없음'}[status]||'확인 필요';}
+function requirementBadge(status){return `<span class="requirement-status ${status}">${requirementStateLabel(status)}</span>`;}
+function comparisonValues(current,projected){
+  return `<div class="requirement-comparison"><div><span>현재</span><b>${esc(current)}</b></div><div><span>${projectionLabel()}</span><b>${esc(projected)}</b></div></div>`;
+}
+function renderProjectionControls(){
+  const wrap=document.getElementById('projectionControls');if(!wrap)return;
+  const settings=projectionSettings();
+  const terms=[...new Set(currentScenario().planned.map(r=>r.term))].filter(validTermValue).sort((a,b)=>termIndex(a)-termIndex(b));
+  const selectedTerms=terms.filter(t=>settings.terms.includes(t));
+  const rows=projectionPlannedRecords();
+  const termText=settings.mode==='all'?terms.join(', '):selectedTerms.join(', ');
+  wrap.innerHTML=`<div class="projection-heading"><b>계획 반영 범위</b><span class="muted">현재 시나리오: ${esc(currentScenario().name)}</span></div>
+    <div class="projection-modes no-print"><label><input type="radio" name="projectionMode" value="all" ${settings.mode==='all'?'checked':''}> (전체) 계획 이수 후</label><label><input type="radio" name="projectionMode" value="selected" ${settings.mode==='selected'?'checked':''}> (선택) 계획 이수 후</label></div>
+    ${settings.mode==='selected'?`<fieldset class="projection-terms no-print"><legend>반영할 계획 학기 선택 · 여러 학기 선택 가능</legend>${terms.length?terms.map(t=>`<label><input type="checkbox" data-projection-term="${esc(t)}" ${selectedTerms.includes(t)?'checked':''}> ${esc(t)}</label>`).join(''):'등록된 계획 학기가 없습니다.'}</fieldset>`:''}
+    <p class="muted">${projectionLabel()} · ${termText?`${esc(termText)} · 계획 ${rows.length}과목 반영`:'반영할 계획이 없어 현재 이수값과 같습니다.'} · 계획 과목의 성적은 예측하지 않습니다.</p>`;
+  wrap.onchange=e=>{
+    if(e.target.name==='projectionMode')state.projection={...projectionSettings(),mode:e.target.value};
+    else if(e.target.dataset.projectionTerm){
+      const term=e.target.dataset.projectionTerm,settings=projectionSettings();
+      state.projection={mode:'selected',terms:e.target.checked?[...new Set([...settings.terms,term])]:settings.terms.filter(t=>t!==term)};
+    }else return;
+    save();render();
+  };
+}
 function evaluateBoth(){
   const history=state.history.filter(r=>r.passed!==false);
-  const sc=currentScenario();
-  return {current:evaluate(history), projected:evaluate([...history,...sc.planned.map(r=>({...r,passed:true}))])};
+  return {current:evaluate(history),projected:evaluate(planCombinedRecords())};
 }
 
 function deepClone(v){return JSON.parse(JSON.stringify(v));}
@@ -837,6 +871,7 @@ function defaultState(){
       admissionTerm:'2025-1',track:'report',hasTeacherLicense:false,wantsTeacherCertificate:false,teacherCertificateVariant:''
     },
     profileConfirmed:false,
+    projection:{mode:'all',terms:[]},
     history:[],
     scenarios:[{id:'sc_default',name:'시트 1',planned:[]}],
     activeScenarioId:'sc_default',
@@ -1139,7 +1174,7 @@ function teacherRequirementModel(records){
     basicCourseCount,basicCredits,teachingAvg,majorAvg};
 }
 function planCombinedRecords(){
-  return [...state.history.filter(r=>r.passed!==false),...currentScenario().planned.map(r=>({...r,passed:true}))];
+  return [...state.history.filter(r=>r.passed!==false),...projectionPlannedRecords().map(r=>({...r,passed:true}))];
 }
 function renderTrackButtons(){
   document.querySelectorAll('#trackButtons [data-track]').forEach(b=>b.classList.toggle('active',b.dataset.track===state.profile.track));
@@ -1308,62 +1343,29 @@ function renderScenarioTabs(){
   document.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>{state.activeScenarioId=b.dataset.scenario;save();render();});
 }
 function renderKpis(){
-  const {current,projected}=evaluateBoth();
-  const rule=getRule();
-  const g=gpaRequirementStatus(state.history);
-  const kpiBar=(cur,max)=>{
-    if(cur==null||!(max>0))return '';
-    const pct=Math.min(100,Math.round(cur/max*100));
-    return `<div class="kpi-bar"><div style="width:${pct}%"></div></div>`;
+  const {current,projected}=evaluateBoth(),rule=getRule(),g=gpaRequirementStatus(state.history);
+  const card=(label,cur,proj,min,unit)=>{
+    const status=requirementState(cur>=min,proj>=min);
+    return `<div class="card ${status==='bad'?'kpi-card-unmet':''}"><div class="kpi-top"><span class="kpi-label">${esc(label)}</span>${requirementBadge(status)}</div>
+      ${comparisonValues(`${fmtCredits(cur)} / ${fmtCredits(min)}${unit}`,`${fmtCredits(proj)} / ${fmtCredits(min)}${unit}`)}
+      <div class="kpi-bar"><div style="width:${min>0?Math.min(100,Math.round(cur/min*100)):0}%"></div></div>
+      <div class="sub">기준 ${fmtCredits(min)}${unit} 이상${cur<min?` · 현재 부족 ${fmtCredits(min-cur)}${unit}`:''}</div></div>`;
   };
-  const chipHtml=(st,text)=>st?`<span class="kpi-flag ${st==='bad'?'':st}">${text}</span>`:'';
-  const kpiCard=(label,valueText,sub,chip,cur,max,bad,extra)=>{
-    const parts=String(valueText).split(' / ');
-    const val=parts.length===2?`<b>${parts[0]}</b><span class="kpi-scale">/ ${parts[1]}</span>`:`<b>${valueText}</b>`;
-    return `<div class="card ${bad?'kpi-card-unmet':''}${extra?' kpi-extra':''}">
-      <div class="kpi-top"><span class="kpi-label">${label}</span>${chip}</div>
-      <div class="value">${val}</div>${kpiBar(cur,max)}<div class="sub">${sub}</div>
-    </div>`;
-  };
-  // 요건 판정과 KPI를 카드 하나로 통합: 현재값 기준 충족/계획 반영 시 충족/부족 3단계
-  const reqState=(cur,proj,min)=>cur>=min?'ok':proj>=min?'plan':'bad';
-  const reqChip=(st,shortText)=>chipHtml(st,st==='ok'?'✓ 충족':st==='plan'?'계획 시 충족':shortText);
-  const cards=[];
-  {
-    const cur=current.totalCredits,min=rule.totalCredits,proj=projected.totalCredits;
-    const st=reqState(cur,proj,min);
-    cards.push(kpiCard('졸업 인정학점',`${fmtCredits(cur)} / ${min}학점`,`졸업요건에 산입되는 학점 · 계획 반영 시 ${fmtCredits(proj)} / ${min}`,
-      reqChip(st,`부족 ${fmtCredits(min-cur)}학점`),cur,min,st==='bad'));
-  }
-  {
-    const st=g.state==='pass'?'ok':g.state==='fail'?'bad':g.state==='incomplete'?'plan':null;
-    const chip=st?chipHtml(st,st==='ok'?'✓ 충족':st==='bad'?'B0 미달':'확인 필요'):'';
-    const sub=g.state==='pass'?'B0(3.00) 이상':g.state==='fail'?'B0(3.00) 미달':g.state==='incomplete'?'성적 일부 미입력':'평점자료 없음';
-    cards.push(kpiCard('전체 평점',`${g.gpa==null?'-':fmtGpa(g.gpa)} / 4.3`,sub,chip,g.gpa,4.3,st==='bad'));
-  }
+  const cards=[card('졸업 인정학점',current.totalCredits,projected.totalCredits,rule.totalCredits,'학점')];
+  const gStatus=g.state==='pass'?'ok':g.state==='fail'?'bad':'pending';
+  cards.push(`<div class="card ${gStatus==='bad'?'kpi-card-unmet':''}"><div class="kpi-top"><span class="kpi-label">현재 누적평점</span>${requirementBadge(gStatus)}</div>
+    <div class="value"><b>${g.gpa==null?'-':fmtGpa(g.gpa)}</b><span class="kpi-scale"> / 4.3</span></div>
+    <div class="sub">기준 B0(3.00) 이상 · ${g.state==='incomplete'?'성적 일부 미입력':g.state==='unknown'?'평점자료 없음':'현재 수강이력 기준'}<br>계획 이수 후 평점은 성적 확정 후 확인</div></div>`);
   for(const pr of projected.requirements){
-    if(pr.key==='total')continue; // 상단 '졸업 인정학점'과 동일하므로 중복 카드 생성 금지
+    if(pr.key==='total')continue;
     const cur=(current.requirements.find(x=>x.key===pr.key)||{current:0}).current;
-    const st=reqState(cur,pr.current,pr.min);
-    cards.push(kpiCard(pr.label,`${fmtCredits(cur)} / ${fmtCredits(pr.min)}${pr.unit}`,
-      `학기 수강 시 ${fmtCredits(pr.current)} / ${fmtCredits(pr.min)}`,
-      reqChip(st,`부족 ${fmtCredits(pr.min-cur)}${pr.unit}`),cur,pr.min,st==='bad'));
+    cards.push(card(pr.label,cur,pr.current,pr.min,pr.unit));
   }
   document.getElementById('kpiGrid').innerHTML=cards.join('');
-
-  // 평생교육사: 번외 과정 — 메인 요건과 분리된 점선 박스에 카드+안내를 함께 표시
-  const curQ=qualificationCounts(state.history), projQ=qualificationCounts(planCombinedRecords()), target=qualificationTargets();
+  const curQ=qualificationCounts(state.history),projQ=qualificationCounts(planCombinedRecords()),target=qualificationTargets();
   const lifelongActive=curQ.lifelong>0||projQ.lifelong>0;
-  const lifelongWrap=document.getElementById('lifelongSection');
-  if(lifelongWrap)lifelongWrap.style.display=lifelongActive?'':'none';
-  if(lifelongActive){
-    const st=reqState(curQ.lifelong,projQ.lifelong,target.lifelong);
-    document.getElementById('certKpiGrid').innerHTML=kpiCard('평생교육사',
-      `${curQ.lifelong} / ${target.lifelong}과목`,`학기 수강 시 ${projQ.lifelong} / ${target.lifelong}`,
-      reqChip(st,`부족 ${target.lifelong-curQ.lifelong}과목`),curQ.lifelong,target.lifelong,st==='bad');
-  }else{
-    document.getElementById('certKpiGrid').innerHTML='';
-  }
+  const lifelongWrap=document.getElementById('lifelongSection');if(lifelongWrap)lifelongWrap.style.display=lifelongActive?'':'none';
+  document.getElementById('certKpiGrid').innerHTML=lifelongActive?card('평생교육사',curQ.lifelong,projQ.lifelong,target.lifelong,'과목'):'';
 }
 
 function graduationActionItems(){
@@ -1381,7 +1383,7 @@ function graduationActionItems(){
   }
   const g=gpaRequirementStatus(state.history);
   if(g.state==='fail')actions.push({kind:'degree',text:`누적평점 3.00 이상 필요 · 현재 ${fmtGpa(g.gpa)}`});
-  else if(g.state==='incomplete')actions.push({kind:'degree',text:'평점 계산을 위해 성적 미입력 과목 확인'});
+  else if(g.state==='incomplete'||g.state==='unknown')actions.push({kind:'degree',text:'평점 계산을 위해 성적 미입력 과목 확인'});
 
   if(state.profile.track!=='research'){
     const cfg=CERT_RULES?.graduationExam||{}, gc=state.graduationChecklist||{};
@@ -1405,7 +1407,10 @@ function graduationActionItems(){
       if(m.literacyCurrent<m.target.literacy)actions.push({kind:'teacher',text:`교직소양 ${m.target.literacy-m.literacyCurrent}과목 추가/인정 확인`});
       if(!m.practiceSatisfied)actions.push({kind:'teacher',text:'학교현장실습 이수 또는 면제·대체 승인 확인'});
       if(!m.volunteerSatisfied)actions.push({kind:'teacher',text:`교육봉사 ${Math.max(0,60-Number(t.volunteerHours||0))}시간 추가 확인`});
-      if(m.teachingAvg==null||m.majorAvg==null)actions.push({kind:'teacher',text:'교직·전공 평균성적 기준 입력/확인'});
+      if(m.teachingAvg==null)actions.push({kind:'teacher',text:'교직 평균성적 입력·확인 · 100점 만점 80점 이상 필요'});
+      else if(m.teachingAvg<80)actions.push({kind:'teacher',text:`교직 평균성적 기준 미달 · 현재 ${m.teachingAvg.toFixed(2)}점 / 80점 이상 필요`});
+      if(m.majorAvg==null)actions.push({kind:'teacher',text:'전공 평균성적 입력·확인 · 100점 만점 75점 이상 필요'});
+      else if(m.majorAvg<75)actions.push({kind:'teacher',text:`전공 평균성적 기준 미달 · 현재 ${m.majorAvg.toFixed(2)}점 / 75점 이상 필요`});
     }
     if(!t.applicationSubmitted)actions.push({kind:'teacher',text:'교직과정 이수신청서 제출 여부 확인'});
     if(Number(t.aptitudeCount||0)<Number(common.aptitudeCount||2))actions.push({kind:'teacher',text:`교직적성·인성검사 ${Number(common.aptitudeCount||2)-Number(t.aptitudeCount||0)}회 추가`});
@@ -1422,13 +1427,13 @@ function renderActionSummary(){
   const {current,projected}=evaluateBoth(),g=gpaRequirementStatus(state.history),actions=graduationActionItems();
   let mode='warn',title='확인할 졸업요건이 있습니다.',sub='현재 입력값을 기준으로 부족한 학점과 체크 항목을 정리했습니다.';
   if(current.complete&&g.state==='pass'){
-    mode='ok';title='학점·평점 기준을 충족했습니다.';sub='시험·교원자격·행정절차는 아래 남은 확인 항목과 상세 체크리스트를 함께 확인하십시오.';
-  }else if(projected.complete&&g.state!=='fail'){
-    mode='plan';title='현재 수강계획 반영 시 학점 기준 충족 예정입니다.';sub='계획 과목의 실제 이수와 평점·시험·행정절차 확인이 별도로 필요합니다.';
+    mode='ok';title='현재 학점 요건 충족 / 현재 누적평점 기준 충족';sub='시험·교원자격·행정절차는 아래 남은 확인 항목과 상세 체크리스트를 함께 확인하십시오.';
+  }else if(projected.complete){
+    mode='plan';title=`${projectionLabel()} 학점 요건 충족 / ${g.state==='pass'?'현재 누적평점 기준 충족':g.state==='fail'?'현재 누적평점 기준 미충족':'현재 누적평점 확인 필요'}`;sub='계획 이수 후 누적평점은 성적 확정 후 확인합니다. 시험·교원자격·행정절차도 별도 확인이 필요합니다.';
   }
   const max=8,shown=actions.slice(0,max),extra=Math.max(0,actions.length-max);
   const list=shown.length?shown.map((a,i)=>`<div class="next-action ${esc(a.kind)}"><span class="next-action-num">${i+1}</span><span>${esc(a.text)}</span></div>`).join(''):`<div class="next-action ok"><span class="next-action-num">✓</span><span>현재 입력된 학점·평점·체크리스트 기준 추가 확인 항목이 없습니다.</span></div>`;
-  wrap.innerHTML=`<div class="result-headline-card ${mode}"><div class="result-headline-kicker">현재 입력 기준</div><div class="result-headline-title">${esc(title)}</div><div class="result-headline-sub">${esc(sub)}</div></div><div class="next-actions-card"><div class="next-actions-head"><h3>지금 해야 할 일</h3><span class="action-count">${actions.length}개</span></div><div class="next-action-list">${list}${extra?`<div class="muted" style="margin-top:3px">외 ${extra}개 항목은 상세 계산에서 확인할 수 있습니다.</div>`:''}</div></div>`;
+  wrap.innerHTML=`<div class="result-headline-card ${mode}"><div class="result-headline-kicker">현재 입력 기준</div><div class="result-headline-title">${esc(title)}</div><div class="result-headline-sub">${esc(sub)}</div></div><div class="next-actions-card"><div class="next-actions-head"><h3>지금 해야 할 일 · 현재 이수 기준</h3><span class="action-count">${actions.length}개</span></div><div class="next-action-list">${list}${extra?`<div class="muted" style="margin-top:3px">외 ${extra}개 항목은 상세 계산에서 확인할 수 있습니다.</div>`:''}</div></div>`;
 }
 function courseOfferingPattern(course){
   const code=canonicalCode(course?.courseCode),name=normName(course?.courseName);
@@ -1604,14 +1609,18 @@ function renderQualificationNotes(){
   if(teacherTrackEnabled())notes.push(`<div class="qualification-note"><b>교원자격 안내</b> · SPT 교직이론·소양 과목은 2학점이며 자격증 취득 희망자는 선수 종별로 수강합니다. 아래 ‘교원자격 이수 체크리스트’에서 비수강 요건도 함께 관리할 수 있습니다.</div>`);
   document.getElementById('qualificationNotes').innerHTML=notes.join('');
 }
-function teacherCardHtml(label,value,note,status='pending'){
-  const cls=status==='ok'?'teacher-ok':status==='bad'?'teacher-bad':status==='exempt'?'teacher-exempt':'';
-  return `<div class="teacher-auto-card ${cls}">
-    <span class="muted">${label}</span>
-    <b>${value}</b>
-    ${note?`<span class="teacher-card-note">${note}</span>`:''}
+function teacherCardHtml(label,value,note,status='pending',projectedValue=null){
+  return `<div class="teacher-auto-card teacher-${status}">
+    <div class="teacher-card-heading"><span>${esc(label)}</span>${requirementBadge(status)}</div>
+    ${projectedValue==null?`<b>${esc(value)}</b>`:comparisonValues(value,projectedValue)}
+    ${note?`<span class="teacher-card-note">${esc(note)}</span>`:''}
   </div>`;
 }
+function teacherAcademicSatisfied(m){
+  return m.isCounselor1?m.counselor1EligibilitySatisfied&&m.basicSatisfied:
+    m.totalMajorCredits>=50&&m.basicSatisfied&&(!m.pedagogyRequired||m.totalPedagogyCredits>=6)&&m.theoryCurrent>=m.target.theory&&m.literacyCurrent>=m.target.literacy&&m.practiceSatisfied&&m.volunteerSatisfied;
+}
+
 function renderTeacherChecklist(){
   const section=document.getElementById('teacherChecklistSection');
   if(!section)return;
@@ -1629,7 +1638,7 @@ function renderTeacherChecklist(){
   if(variantWrap){
     if((majorRule?.variants||[]).length>1){
       variantWrap.innerHTML=`<div><label>취득 예정 자격</label><select id="teacherCertificateVariantSelect">${majorRule.variants.map(v=>`<option value="${esc(v.id)}" ${v.id===state.profile.teacherCertificateVariant?'selected':''}>${esc(v.label)}</option>`).join('')}</select></div><div class="muted">자격종류에 따라 기본이수 관리번호 조건이 달라집니다.</div>`;
-      document.getElementById('teacherCertificateVariantSelect').onchange=e=>{state.profile.teacherCertificateVariant=e.target.value;save();renderTeacherChecklist();};
+      document.getElementById('teacherCertificateVariantSelect').onchange=e=>{state.profile.teacherCertificateVariant=e.target.value;save();renderChecklistResults();};
     }else{
       variantWrap.innerHTML=`<div><label>취득 예정 자격/표시과목</label><div class="callout" style="padding:9px 11px">${esc(current.variant?.label||state.profile.major)}</div></div><div class="muted">2026-06-17 전공별 기본이수·교과교육표 기준</div>`;
     }
@@ -1638,29 +1647,29 @@ function renderTeacherChecklist(){
   const isCounselor1=projected.isCounselor1;
   const commonCfg=CERT_RULES.commonMandatory||{};
   const requiredAptitude=Number(commonCfg.aptitudeCount||2),requiredCpr=Number(commonCfg.cprCount||2),requiredGender=Number(commonCfg.genderCount||2);
-  const theoryStatus=projected.theoryExempt?'exempt':projected.theoryCurrent>=projected.target.theory?'ok':'bad';
-  const literacyStatus=projected.literacyExempt?'exempt':projected.literacyCurrent>=projected.target.literacy?'ok':'bad';
-  const practiceStatus=projected.practiceExempt?'exempt':projected.practiceSatisfied?'ok':'bad';
-  const volunteerStatus=projected.volunteerExempt?'exempt':projected.volunteerSatisfied?'ok':'bad';
   const cards=[];
   const basicLabel=teacherBasicRuleLabel(projected.basicRule,projected.variant);
+  const compareCard=(label,value,ok,note)=>teacherCardHtml(label,value(current),note,requirementState(ok(current),ok(projected)),value(projected));
   if(isCounselor1){
-    cards.push(teacherCardHtml('기존 교원자격',projected.hasLicense?'확인':'필수 확인','정교사(2급) 이상 등 공식 인정 자격요건 확인',projected.hasLicense?'ok':'bad'));
-    cards.push(teacherCardHtml('입학 전 교육경력',`${projected.counselor1ExperienceYears.toFixed(projected.counselor1ExperienceYears%1?1:0)} / ${Number(projected.eligibility?.minPreAdmissionTeachingYears||3)}년`,'교육대학원 재학 중 경력은 포함하지 않음',projected.counselor1ExperienceYears>=Number(projected.eligibility?.minPreAdmissionTeachingYears||3)?'ok':'bad'));
-    cards.push(teacherCardHtml('전문상담 교과목',`${projected.basicCourseCount}영역`,`교육대학원 자동 ${projected.basicAuto.courseCount}영역 + 기타 인정 ${projected.externalBasicCount}영역 · ${basicLabel}`,projected.basicSatisfied?'ok':'bad'));
+    cards.push(teacherCardHtml('기존 교원자격',current.hasLicense?'확인':'필수 확인','정교사(2급) 이상 등 공식 인정 자격요건 확인',current.hasLicense?'ok':'bad'));
+    cards.push(teacherCardHtml('입학 전 교육경력',`${current.counselor1ExperienceYears.toFixed(current.counselor1ExperienceYears%1?1:0)} / ${Number(current.eligibility?.minPreAdmissionTeachingYears||3)}년`,'교육대학원 재학 중 경력은 포함하지 않음',current.counselor1ExperienceYears>=Number(current.eligibility?.minPreAdmissionTeachingYears||3)?'ok':'bad'));
+    cards.push(compareCard('전문상담 교과목',m=>`${m.basicCourseCount}영역`,m=>m.basicSatisfied,`${basicLabel} · 기타 인정 ${current.externalBasicCount}영역 포함`));
   }else{
-    cards.push(teacherCardHtml('전공학점',`${projected.totalMajorCredits} / 50학점`,`학부 인정 ${Number(t.recognizedMajorCredits||0)} + 교육대학원 ${projected.gradMajorCredits}`,projected.totalMajorCredits>=50?'ok':'bad'));
-    cards.push(teacherCardHtml('기본이수',`${projected.basicCourseCount}과목 · ${projected.basicCredits}학점`,`자동 ${projected.basicAuto.courseCount}과목/${projected.basicAuto.credits}학점 + 학부·기타 ${projected.externalBasicCount}과목/${projected.externalBasicCredits}학점 · ${basicLabel}`,projected.basicSatisfied?'ok':'bad'));
-    if(projected.pedagogyRequired)cards.push(teacherCardHtml('교과교육',`${projected.totalPedagogyCredits} / 6학점`,`공식 학정코드 자동 ${projected.gradPedagogyCredits} + 기타 인정 ${Number(t.recognizedPedagogyCredits||0)}`,projected.totalPedagogyCredits>=6?'ok':'bad'));
-    else cards.push(teacherCardHtml('교과교육','공식 목록 없음','사서·영양·전문상담 등은 교과교육 이수가 요구되지 않는 유형','exempt'));
-    cards.push(teacherCardHtml('교직이론',projected.theoryExempt?'면제 대상':`${projected.theoryCurrent} / ${projected.target.theory}과목`,projected.theoryExempt?'2급 이상 교원자격증 보유':`교육대학원 이수 + 학부 인정 ${Number(t.recognizedTheoryCount||0)}과목`,theoryStatus));
-    cards.push(teacherCardHtml('교직소양',projected.literacyExempt?'면제 대상':`${projected.literacyCurrent} / ${projected.target.literacy}과목`,projected.literacyExempt?'2급 이상 교원자격증 보유':`입학연도 기준 ${projected.target.literacy}과목 · 학부 인정 ${Number(t.recognizedLiteracyCount||0)}과목`,literacyStatus));
-    cards.push(teacherCardHtml('학교현장실습',projected.practiceExempt?'면제 대상':projected.practiceSatisfied?'충족/면제 승인':'미충족',projected.practiceExempt?'교원자격증 소지자 면제범위':(t.practiceExemptApproved?'면제/대체 승인 입력됨':'교육실습 이수 또는 면제/대체 승인 필요'),practiceStatus));
-    cards.push(teacherCardHtml('교육봉사',projected.volunteerExempt?'면제 대상':`${Number(t.volunteerHours||0)} / 60시간`,projected.volunteerExempt?'교원자격증 소지자 면제범위':'60시간 이수 후 서류 제출',volunteerStatus));
-    const teachingAvgStatus=current.teachingAvg==null?'pending':current.teachingAvg>=80?'ok':'bad';
-    const majorAvgStatus=current.majorAvg==null?'pending':current.majorAvg>=75?'ok':'bad';
-    cards.push(teacherCardHtml('교직 평균성적',current.teachingAvg==null?'직접 입력':`${current.teachingAvg.toFixed(2)} / 100`,'80점 이상',teachingAvgStatus));
-    cards.push(teacherCardHtml('전공 평균성적',current.majorAvg==null?'직접 입력':`${current.majorAvg.toFixed(2)} / 100`,'75점 이상',majorAvgStatus));
+    cards.push(compareCard('전공학점',m=>`${m.totalMajorCredits} / 50학점`,m=>m.totalMajorCredits>=50,`학부 인정 ${Number(t.recognizedMajorCredits||0)}학점 포함`));
+    cards.push(compareCard('기본이수',m=>`${m.basicCourseCount}과목 · ${m.basicCredits}학점`,m=>m.basicSatisfied,`${basicLabel} · 학부·기타 ${current.externalBasicCount}과목/${current.externalBasicCredits}학점 포함`));
+    if(projected.pedagogyRequired)cards.push(compareCard('교과교육',m=>`${m.totalPedagogyCredits} / 6학점`,m=>m.totalPedagogyCredits>=6,`공식 학정코드 자동 계산 + 기타 인정 ${Number(t.recognizedPedagogyCredits||0)}학점`));
+    else cards.push(teacherCardHtml('교과교육','이수 대상 아님','사서·영양·전문상담 등 교과교육 이수가 요구되지 않는 유형','exempt'));
+    cards.push(compareCard('교직이론',m=>m.theoryExempt?'면제 대상':`${m.theoryCurrent} / ${m.target.theory}과목`,m=>m.theoryCurrent>=m.target.theory,current.theoryExempt?'2급 이상 교원자격증 보유 · 면제 대상 반영':`학부 인정 ${Number(t.recognizedTheoryCount||0)}과목 포함`));
+    cards.push(compareCard('교직소양',m=>m.literacyExempt?'면제 대상':`${m.literacyCurrent} / ${m.target.literacy}과목`,m=>m.literacyCurrent>=m.target.literacy,current.literacyExempt?'2급 이상 교원자격증 보유 · 면제 대상 반영':`입학연도 기준 ${current.target.literacy}과목 · 학부 인정 ${Number(t.recognizedLiteracyCount||0)}과목 포함`));
+    cards.push(compareCard('학교현장실습',m=>m.practiceExempt?'면제 대상':m.practiceSatisfied?'요건 충족':'미이수',m=>m.practiceSatisfied,current.practiceExempt?'교원자격증 소지자 면제범위':t.practiceExemptApproved?'면제/대체 승인 입력됨':'교육실습 이수 또는 면제/대체 승인 필요 · 계획 등록은 실제 이수가 아님'));
+    cards.push(teacherCardHtml('교육봉사',current.volunteerExempt?'면제 대상':`${Number(t.volunteerHours||0)} / 60시간`,current.volunteerExempt?'교원자격증 소지자 면제범위':'60시간 이수 후 서류 제출',current.volunteerSatisfied?'ok':'bad'));
+    const scoreCard=(label,value,min)=>{
+      const status=value==null?'pending':value>=min?'ok':'bad';
+      const detail=value==null?'성적을 입력해 주세요.':value<min?`기준보다 ${(min-value).toFixed(2)}점 부족합니다.`:'현재 입력 성적이 기준을 충족합니다.';
+      return teacherCardHtml(label,value==null?'미입력':`${value.toFixed(2)} / 100`,`기준: 100점 만점 ${min}점 이상. ${detail} 승인·확인된 환산값을 입력하며, 계획 과목의 성적은 예측하지 않습니다.`,status);
+    };
+    cards.push(scoreCard('교직 평균성적',current.teachingAvg,80));
+    cards.push(scoreCard('전공 평균성적',current.majorAvg,75));
   }
   document.getElementById('teacherChecklistAuto').innerHTML=cards.join('');
 
@@ -1681,22 +1690,20 @@ function renderTeacherChecklist(){
   for(const [id,[key,type]] of Object.entries(ids)){
     const el=document.getElementById(id);if(!el)continue;
     if(type==='bool')el.checked=!!t[key];else if(type==='nullableNumber')el.value=t[key]==null?'':t[key];else el.value=Number(t[key]||0);
-    el.onchange=()=>{if(type==='bool')state.teacherChecklist[key]=el.checked;else if(type==='nullableNumber')state.teacherChecklist[key]=el.value===''?null:Number(el.value);else state.teacherChecklist[key]=Math.max(0,Number(el.value||0));save();renderTeacherChecklist();};
+    el.onchange=()=>{if(type==='bool')state.teacherChecklist[key]=el.checked;else if(type==='nullableNumber')state.teacherChecklist[key]=el.value===''?null:Number(el.value);else state.teacherChecklist[key]=Math.max(0,Number(el.value||0));save();renderChecklistResults();};
   }
 
   const relatedOk=!!t.relatedMajorConfirmed,appOk=!!t.applicationSubmitted,aptitudeOk=Number(t.aptitudeCount||0)>=requiredAptitude,cprOk=Number(t.cprCount||0)>=requiredCpr,genderOk=Number(t.genderCount||0)>=requiredGender,noExamOk=!!t.noExamSubmitted,drugOk=!!t.drugCertificateSubmitted;
-  const academicOk=isCounselor1
-    ? current.counselor1EligibilitySatisfied&&current.basicSatisfied
-    : current.totalMajorCredits>=50&&current.basicSatisfied&&(!current.pedagogyRequired||current.totalPedagogyCredits>=6)&&current.theoryCurrent>=current.target.theory&&current.literacyCurrent>=current.target.literacy&&current.practiceSatisfied&&current.volunteerSatisfied;
+  const academicState=requirementState(teacherAcademicSatisfied(current),teacherAcademicSatisfied(projected));
   const scoreOk=current.teachingAvg!=null&&current.teachingAvg>=80&&current.majorAvg!=null&&current.majorAvg>=75,commonOk=aptitudeOk&&cprOk&&genderOk;
   const summary=document.getElementById('teacherChecklistSummary');
   if(summary){
     const item=(ok,label,pending=false)=>`<span class="${pending?'pending':ok?'ok':'bad'}">${ok?'✓':'•'} ${label}</span>`;
     if(isCounselor1){
-      summary.innerHTML=[item(current.counselor1EligibilitySatisfied,'기존자격·입학 전 경력'),item(appOk,'교직과정 이수신청'),item(current.basicSatisfied,'전문상담 교과목'),item(commonOk,'적성·인성/CPR/성인지 공통필수'),item(noExamOk,'무시험검정원서'),item(drugOk,'약물중독 관련 진단서/검사결과')].join(' &nbsp;·&nbsp; ')+`<div class="muted" style="margin-top:6px">※ 전문상담교사 1급의 자격·경력 요건은 공식 자격증 안내를 함께 확인하십시오. 교과목 자동판정은 2026-06-17 기본이수표 학정코드를 기준으로 합니다.</div>`;
+      summary.innerHTML=[item(current.counselor1EligibilitySatisfied,'기존자격·입학 전 경력'),item(appOk,'교직과정 이수신청'),`<span class="${requirementState(current.basicSatisfied,projected.basicSatisfied)}">전문상담 교과목 · ${requirementStateLabel(requirementState(current.basicSatisfied,projected.basicSatisfied))}</span>`,item(commonOk,'적성·인성/CPR/성인지 공통필수'),item(noExamOk,'무시험검정원서'),item(drugOk,'약물중독 관련 진단서/검사결과')].join(' &nbsp;·&nbsp; ')+`<div class="muted" style="margin-top:6px">※ 전문상담교사 1급의 자격·경력 요건은 공식 자격증 안내를 함께 확인하십시오. 교과목 자동판정은 2026-06-17 기본이수표 학정코드를 기준으로 합니다.</div>`;
     }else{
       const scorePending=current.teachingAvg==null||current.majorAvg==null;
-      summary.innerHTML=[item(relatedOk,'관련전공/표시과목 확인'),item(appOk,'교직과정 이수신청'),item(academicOk,'교과목·학점 요건'),item(scoreOk,'성적기준',scorePending),item(commonOk,'적성·인성/CPR/성인지 공통필수'),item(noExamOk,'무시험검정원서'),item(drugOk,'약물중독 관련 진단서/검사결과')].join(' &nbsp;·&nbsp; ')+`<div class="muted" style="margin-top:6px">※ 기본이수 자동판정은 이 PDF의 교육대학원 개설 학정코드에 한합니다. 학부에서 인정받은 과목이나 코드가 없는 관리번호는 개인별 승인결과를 함께 확인하십시오.</div>`;
+      summary.innerHTML=[item(relatedOk,'관련전공/표시과목 확인'),item(appOk,'교직과정 이수신청'),`<span class="${academicState}">교과목·학점 요건 · ${requirementStateLabel(academicState)}</span>`,item(scoreOk,'성적기준',scorePending),item(commonOk,'적성·인성/CPR/성인지 공통필수'),item(noExamOk,'무시험검정원서'),item(drugOk,'약물중독 관련 진단서/검사결과')].join(' &nbsp;·&nbsp; ')+`<div class="muted" style="margin-top:6px">※ 기본이수 자동판정은 이 PDF의 교육대학원 개설 학정코드에 한합니다. 학부에서 인정받은 과목이나 코드가 없는 관리번호는 개인별 승인결과를 함께 확인하십시오.</div>`;
     }
   }
 }
@@ -1707,11 +1714,11 @@ function renderGraduationChecklist(){
   const cfg=CERT_RULES?.graduationExam||{};const g=state.graduationChecklist||defaultState().graduationChecklist;
   const comprehensive=document.getElementById('graduationComprehensivePassed');
   comprehensive.value=Math.max(0,Math.min(Number(cfg.comprehensive?.requiredPassedCourses||2),Number(g.comprehensivePassed||0)));
-  comprehensive.onchange=()=>{state.graduationChecklist.comprehensivePassed=Math.max(0,Math.min(2,Number(comprehensive.value||0)));save();renderGraduationChecklist();};
+  comprehensive.onchange=()=>{state.graduationChecklist.comprehensivePassed=Math.max(0,Math.min(2,Number(comprehensive.value||0)));save();renderChecklistResults();};
   const englishRequired=(cfg.englishRequiredMajors||[]).includes(state.profile.major);
   const ew=document.getElementById('graduationEnglishWrap'),es=document.getElementById('graduationEnglishStatus');
   ew.style.display=englishRequired?'block':'none';es.value=g.englishStatus||'pending';
-  es.onchange=()=>{state.graduationChecklist.englishStatus=es.value;save();renderGraduationChecklist();};
+  es.onchange=()=>{state.graduationChecklist.englishStatus=es.value;save();renderChecklistResults();};
   const compOk=Number(g.comprehensivePassed||0)>=Number(cfg.comprehensive?.requiredPassedCourses||2);
   const engOk=!englishRequired||['passed','replaced'].includes(g.englishStatus);
   const status=document.getElementById('graduationExamStatus'),note=document.getElementById('graduationExamNote');
@@ -1719,47 +1726,26 @@ function renderGraduationChecklist(){
   note.textContent=`종합시험 ${Number(g.comprehensivePassed||0)}/${Number(cfg.comprehensive?.requiredPassedCourses||2)}과목${englishRequired?` · 전공영어 ${g.englishStatus==='passed'?'합격':g.englishStatus==='replaced'?'대체':'미확인'}`:''}`;
 }
 function renderRequirements(){
-  const {current,projected}=evaluateBoth();
-  const cohort=getCohort(), rule=getRule();
+  const {current,projected}=evaluateBoth(),cohort=getCohort(),rule=getRule();
   const g=gpaRequirementStatus(state.history);
   document.getElementById('cohortText').textContent=`적용: ${cohort.label} · ${rule.label}`;
-  const reqBar=(cur,min,ok)=>{
-    if(!(min>0)||cur==null)return '';
-    const pct=Math.min(100,Math.round(cur/min*100));
-    return `<div class="req-bar${ok?' ok':''}"><div style="width:${pct}%"></div></div>`;
-  };
   const reqs=projected.requirements.map(pr=>{
     const cr=current.requirements.find(x=>x.key===pr.key)||{current:0};
-    const isOk=pr.current>=pr.min;
-    const target=`최소 ${fmtCredits(pr.min)}${pr.unit} 이상`;
-    const status=isOk?`<span class="req-ok">✓ 충족</span>`:`<span class="req-bad">부족 ${fmtCredits(pr.min-pr.current)}${pr.unit}</span>`;
-    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`${target} · ${status}${reqBar(pr.current,pr.min,isOk)}`];
+    const status=requirementState(cr.current>=pr.min,pr.current>=pr.min);
+    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`최소 ${fmtCredits(pr.min)}${pr.unit} 이상 · ${requirementBadge(status)}`];
   });
-  let gStatus='<span class="req-bad">평점 확인 필요</span>';
-  if(g.state==='pass')gStatus='<span class="req-ok">✓ 충족</span>';
-  else if(g.state==='fail')gStatus=`<span class="req-bad">B0(3.00) 미달</span>`;
-  else if(g.state==='incomplete')gStatus='<span class="req-bad">성적 일부 미입력</span>';
-  reqs.push(['전체 평균',g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,`B0(3.00) 이상 · ${gStatus}${reqBar(g.gpa,3,g.state==='pass')}`]);
-  const rows=[['요건','이수','이번 학기 수강 후','기준/평가'],...reqs];
-  document.getElementById('requirementsGrid').innerHTML=rows.flat().map((x,i)=>`<div>${x}</div>`).join('');
-
-  const shortages=[];
-  for(const pr of projected.requirements){
-    if(pr.current<pr.min)shortages.push(`${pr.label} ${fmtCredits(pr.min-pr.current)}${pr.unit}`);
-  }
-  if(g.state==='fail')shortages.push(`전체 평점 ${(CUMULATIVE_GPA_MIN-g.gpa).toFixed(2)}점`);
-  if(g.state==='incomplete'||g.state==='unknown')shortages.push('전체 평점 확인');
+  const gStatus=g.state==='pass'?'ok':g.state==='fail'?'bad':'pending';
+  reqs.push(['현재 누적평점',g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,'성적 확정 후 확인',`B0(3.00) 이상 · ${requirementBadge(gStatus)}`]);
+  const rows=[['요건','현재',projectionLabel(),'기준/평가'],...reqs];
+  document.getElementById('requirementsGrid').innerHTML=rows.flat().map(x=>`<div>${x}</div>`).join('');
+  const shortages=projected.requirements.filter(pr=>pr.current<pr.min).map(pr=>`${pr.label} ${fmtCredits(pr.min-pr.current)}${pr.unit}`);
   if(projected.unknowns.length)shortages.push(`종별 확인 필요 ${projected.unknowns.length}건`);
-  let summary='';
-  const projectedCoreComplete=projected.complete&&g.state==='pass'&&projected.unknowns.length===0;
-  if(projectedCoreComplete){
-    summary=`<div class="result-summary ok"><b>이번 학기 수강 시 학점·평점 이수요건 충족</b></div>`;
-  }else{
-    summary=`<div class="result-summary bad"><b>추가로 필요한 요건:</b> ${shortages.length?shortages.join(' · '):'입력 정보를 확인하십시오.'}</div>`;
-  }
-  summary += `<div class="muted" style="margin-top:7px">※ 종합시험, 개별논문지도 진행요건, 연구윤리, 논문·졸업연구보고서 심사 등 별도 학사절차는 이 계산의 자동 판정 대상이 아닙니다.</div>`;
-  document.getElementById('evaluationNotes').innerHTML=summary;
+  const creditComplete=projected.complete&&projected.unknowns.length===0;
+  const gpaText=g.state==='pass'?'현재 누적평점 기준 충족':g.state==='fail'?'현재 누적평점 기준 미충족':g.state==='incomplete'?'현재 누적평점 확인 필요 · 성적 일부 미입력':'현재 누적평점 확인 필요 · 평점자료 없음';
+  document.getElementById('evaluationNotes').innerHTML=`<div class="result-summary ${creditComplete&&g.state==='pass'?'ok':'bad'}"><b>${projectionLabel()} 학점 요건 ${creditComplete?'충족':'미충족'} / ${gpaText}</b>${shortages.length?`<div>계획 반영 후 추가 확인: ${shortages.join(' · ')}</div>`:''}</div>
+    <div class="muted" style="margin-top:7px">계획 이수 후 누적평점은 성적 확정 후 확인합니다. 종합시험, 개별논문지도 진행요건, 연구윤리, 논문·졸업연구보고서 심사 등 별도 학사절차는 학점 계산의 자동 판정 대상이 아닙니다.</div>`;
 }
+
 function renderHistory(){
   const body=document.getElementById('historyBody');
   if(!state.history.length){
@@ -2131,7 +2117,7 @@ function renderPlanWarnings(){
   else if(prereqCount===Number(prereqEx.maxCourses||3)&&prereqMax===Number(prereqEx.maxCourses||3))warnings.push(`<div class="plan-warning"><b>선수 3과목 특례 사용 예정</b> · 2024학년도 이후 입학생의 ${semesterNo}학기차 계획에서 3~5학기 중 1회 가능한 선수 3과목 특례를 사용하는 것으로 계산했습니다. 실제 수강신청 공지를 최종 확인하십시오.</div>`);
   const commonTerm=records.filter(r=>r.category==='common').length;
   if(commonTerm>Number(limits.common?.maxCoursesPerTerm||1))warnings.push(`<div class="plan-warning"><b>공통 과목 확인</b> · 공통은 학기당 최대 ${limits.common?.maxCoursesPerTerm||1}과목입니다. 현재 ${commonTerm}과목입니다.</div>`);
-  const combined=[...state.history.filter(r=>r.passed!==false),...currentScenario().planned.map(r=>({...r,passed:true}))];
+  const combined=[...state.history.filter(r=>r.passed!==false),...projectionPlannedRecords().map(r=>({...r,passed:true}))];
   const commonTotal=combined.filter(r=>r.category==='common'&&!isPreAdmissionTerm(r.term)).length;
   if(commonTotal>Number(limits.common?.maxCoursesTotal||4))warnings.push(`<div class="plan-warning"><b>공통 누적 확인</b> · 개별논문지도를 포함한 공통은 재학 중 최대 ${limits.common?.maxCoursesTotal||4}과목 기준입니다. 현재/계획 합계 ${commonTotal}과목입니다.</div>`);
   const dups=duplicateCourseWarnings(combined).slice(0,5);if(dups.length)warnings.push(`<div class="plan-warning"><b>중복과목 가능성</b> · 학교 안내상 학정번호 또는 교과목명이 동일한 과목은 한 과목만 인정될 수 있습니다.<br>${dups.map(esc).join('<br>')}</div>`);
@@ -2388,8 +2374,11 @@ function renderUxState(){
     }
   }
 }
+function renderChecklistResults(){
+  renderTeacherChecklist();renderGraduationChecklist();renderActionSummary();
+}
 function render(){
-  renderScenarioTabs();renderKpis();renderQualificationNotes();renderRequirements();renderTeacherChecklist();renderGraduationChecklist();renderActionSummary();renderHistory();renderPlan();renderTimetable();renderDiff();renderCatalog();renderPrintProfileSummary();renderUxState();
+  renderProjectionControls();renderScenarioTabs();renderKpis();renderQualificationNotes();renderRequirements();renderTeacherChecklist();renderGraduationChecklist();renderActionSummary();renderHistory();renderPlan();renderTimetable();renderDiff();renderCatalog();renderPrintProfileSummary();renderUxState();
 }
 
 
@@ -4490,3 +4479,4 @@ async function bootApplication(){
   const t=document.getElementById('updateTargetTerm');if(t&&!t.value)t.value=DATA.snapshot;
 }
 bootApplication();
+
