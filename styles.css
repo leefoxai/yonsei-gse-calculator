@@ -1386,3 +1386,28 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   }
   .catalog-section tbody tr{align-items:center}
 }
+
+
+/* Current achievement and the selected projection share one status vocabulary. */
+.projection-controls{margin:12px 0;padding:16px}
+.projection-heading,.projection-modes,.projection-terms{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.projection-modes{margin-top:12px}
+.projection-modes label,.projection-terms label{display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer}
+.projection-modes input,.projection-terms input{width:auto;margin:0}
+.projection-terms{border:1px solid var(--line);border-radius:8px;padding:12px;margin:12px 0 0}
+.projection-terms legend{font-size:12px;padding:0 6px}
+.projection-controls p{margin:12px 0 0;line-height:1.6}
+.requirement-comparison{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:12px 0}
+.requirement-comparison>div+div{border-left:1px solid var(--line);padding-left:12px}
+.requirement-comparison span{display:block;font-size:11px;color:var(--muted);line-height:1.5}
+.requirement-comparison b,.teacher-auto-card .requirement-comparison b{display:block;font-size:17px;line-height:1.5;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.requirement-status{display:inline-flex;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:700;white-space:nowrap;background:#f2f4f7;color:#475467}
+.requirement-status.ok{background:#eaf2ff;color:#1a56a5}
+.requirement-status.plan{background:#fff7e6;color:#9a5a00}
+.requirement-status.bad{background:#fdecec;color:#b42318}
+.teacher-card-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:700}
+.teacher-auto-card.teacher-plan{background:#fffaf0;border-color:#f0d49c}
+.teacher-checklist-summary .plan{color:#9a5a00;font-weight:700}
+.analysis-zone.is-empty #projectionControls{display:none!important}
+@media(min-width:661px){.teacher-auto-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{.projection-controls{padding:6px;margin:4px 0}.projection-controls p{margin:4px 0}.requirement-status{font-size:inherit;padding:0 2px}}
