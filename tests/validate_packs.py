@@ -97,8 +97,8 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.1.12' in html)
-check('modular js linked','app.js?v=3.1.12' in html)
+check('modular css linked','styles.css?v=3.1.13' in html)
+check('modular js linked','app.js?v=3.1.13' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -162,6 +162,24 @@ check('planned list ordering helper','function sortedPlannedRecords(records)' in
 
 check('plan status header renamed','<th>데이터 상태</th>' not in html and '<th>상태</th>' in html)
 check('planned status wording','>개설예정<' not in app and '<span class=\"badge planned\">예정</span>' not in app and '>개설 예정<' in app)
+
+
+# Official teacher-certificate audit (2026-06-17 table + current Yonsei GSE counselor guide)
+def _variant(major, vid=None):
+    vs=cert.get('majors',{}).get(major,{}).get('variants',[])
+    return next((v for v in vs if vid is None or v.get('id')==vid),{})
+def _group(v,no):
+    return next((g for g in v.get('groups',[]) if int(g.get('no',-1))==no),{})
+def _codes(v,no):
+    return {c.get('code') for c in _group(v,no).get('courses',[])}
+check('국어 기본이수 8번 교과교육 과대산입 방지',_codes(_variant('국어교육'),8)=={'SKE6594','SKE6595'},str(_codes(_variant('국어교육'),8)))
+check('역사 기본이수 6번 교과교육 과대산입 방지',_codes(_variant('역사교육'),6)=={'SHE6535','SHE6536','SHE6547'},str(_codes(_variant('역사교육'),6)))
+check('통합과학 기본이수 13번 교과교육 과대산입 방지',_codes(_variant('통합과학교육'),13)=={'SGS6833','SGS6803'},str(_codes(_variant('통합과학교육'),13)))
+c1=_variant('상담교육','counselor1'); c1br=c1.get('basicRule',{})
+check('전문상담1급 10과목 구조',int(c1br.get('minGroups',0))==10 and set(c1br.get('requiredGroups',[]))=={2,3,4,5,6,7,8,18},str(c1br))
+check('전문상담1급 실습 중복선택 방지',c1br.get('choiceGroups',[{}])[0].get('groups')==[16,17,19,20,21] and int(c1br.get('choiceGroups',[{}])[0].get('min',0))==2,str(c1br.get('choiceGroups')))
+c2=_variant('상담교육','counselor2'); c2r=next((r.get('basicRule',{}) for r in c2.get('rulesByAdmission',[]) if r.get('from')=='2026-1'),{})
+check('전문상담2급 2026학번 7과목/13필수',int(c2r.get('minGroups',0))==7 and 13 in c2r.get('requiredGroups',[]),str(c2r))
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')

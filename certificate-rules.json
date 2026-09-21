@@ -1,7 +1,7 @@
 {
   "packType": "yonsei-gse-certificate-rules",
   "schemaVersion": 1,
-  "appVersion": "3.1.12",
+  "appVersion": "3.1.13",
   "snapshot": "2026-2",
   "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": {
@@ -143,18 +143,6 @@
                 {
                   "code": "SKE6595",
                   "courseName": "표현과소통교육"
-                },
-                {
-                  "code": "SKE6592",
-                  "courseName": "국어교재연구및지도법"
-                },
-                {
-                  "code": "SKE6593",
-                  "courseName": "국어교육특강"
-                },
-                {
-                  "code": "SKE6599",
-                  "courseName": "국어창의논술교육연구"
                 }
               ]
             }
@@ -323,7 +311,7 @@
       "variants": [
         {
           "label": "전문상담교사 2급",
-          "conditionText": "5과목 14학점 이상 이수 2026학번부터 7과목 이상 (1~18 중 6과목 이상, 13 필수)",
+          "conditionText": "5과목 14학점 이상 이수 / 2026학번부터 7과목 이상 (1~18 중 6과목 이상, 13 필수)",
           "groups": [
             {
               "no": 1,
@@ -506,7 +494,7 @@
                   13
                 ],
                 "choiceGroups": [],
-                "sourceNote": "1~18 중 6과목 이상, 13번 필수; 전체 7과목 이상"
+                "sourceNote": "2026학번부터 7과목 이상, 1~18 중 6과목 이상, 관리번호 13 필수"
               }
             }
           ],
@@ -677,7 +665,6 @@
                 "groups": [
                   16,
                   17,
-                  18,
                   19,
                   20,
                   21
@@ -685,8 +672,9 @@
                 "min": 2
               }
             ],
-            "minGroups": 9,
-            "minCredits": 0
+            "minGroups": 10,
+            "minCredits": 0,
+            "sourceNote": "연세대학교 교육대학원 전문상담교사 1급 안내: 필수 7과목 + 상담실습및사례연구 1과목 + 선택 2과목 이상. 관리번호 18은 필수 실습으로 선택 2과목에 중복 산입하지 않음."
           },
           "id": "counselor1",
           "pedagogyRequired": false,
@@ -997,22 +985,6 @@
                 {
                   "code": "SHE6547",
                   "courseName": "(구)한국현대사연구"
-                },
-                {
-                  "code": "SHE6592",
-                  "courseName": "역사교재연구및교수론"
-                },
-                {
-                  "code": "SHE6593",
-                  "courseName": "역사학과논술교육"
-                },
-                {
-                  "code": "SHE6594",
-                  "courseName": "영상매체와역사교육"
-                },
-                {
-                  "code": "SHE6595",
-                  "courseName": "역사교과서 비교연구"
                 }
               ]
             }
@@ -2461,22 +2433,6 @@
                 {
                   "code": "SGS6803",
                   "courseName": "(구)대기과학"
-                },
-                {
-                  "code": "SGS6692",
-                  "courseName": "통합과학교재연구 및 지도법"
-                },
-                {
-                  "code": "SGS6693",
-                  "courseName": "통합과학교육 논리및논술"
-                },
-                {
-                  "code": "SGS6694",
-                  "courseName": "통합과학교육실습"
-                },
-                {
-                  "code": "SGS6796",
-                  "courseName": "통합과학체험교육"
                 }
               ]
             }
