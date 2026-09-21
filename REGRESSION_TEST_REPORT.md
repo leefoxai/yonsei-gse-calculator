@@ -1,8 +1,8 @@
 # Regression Test Report
 
 - App version: **3.1.6**
-- Generated: **2026-09-21 02:41 UTC**
-- Data/markup validation: **67/67 checks passed**
+- Generated: **2026-09-21 02:44 UTC**
+- Data/markup validation: **68/68 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -12,12 +12,12 @@
 | --- | ---: | --- | --- | --- | --- | --- |
 | data-pack.json | 1 | 2026-2.1 | 3.1.6 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
 | rules-pack.json | 1 | 2026-2.1 | 3.1.6 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
-| certificate-rules.json | 1 | 2026-09-18.2 | 3.1.6 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
+| certificate-rules.json | 1 | 2026-2.2 | 3.1.6 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
 
 ## Data / markup validation
 
 ```text
-Validation: 67/67 checks passed
+Validation: 68/68 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -28,7 +28,8 @@ PASS - cert pack type
 PASS - snapshot一致 ({'2026-2'})
 PASS - app version detectable (3.1.6)
 PASS - pack appVersion sync (['3.1.6', '3.1.6', '3.1.6'])
-PASS - packVersion metadata (['2026-2.1', '2026-2.1', '2026-09-18.2'])
+PASS - packVersion metadata (['2026-2.1', '2026-2.1', '2026-2.2'])
+PASS - packVersion snapshot prefix (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - pack compatibility metadata (['>=3.0.0', '>=3.0.0', '>=3.0.0'])
 PASS - course rows >=650 (654)
 PASS - course row core fields valid (invalid=0)
