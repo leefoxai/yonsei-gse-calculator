@@ -36,13 +36,16 @@ def normalize_app() -> str:
     text = text.replace("const note=selectedKind==='실제'", "const note=selectedKind==='확정'")
 
     # Timetable accordion titles show only semester + course count.
-    target = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
-    if target in text:
-        text = text.replace(target, '', 1)
-    elif 'plan-term-status' in text:
-        text, removed = re.subn(r'^\s*<span class=\\"plan-term-status[^\n]+\n?', '', text, count=1, flags=re.M)
-        if removed != 1:
-            raise RuntimeError('plan-term-status markup found but could not be removed')
+    status_line = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
+    if status_line in text:
+        text = text.replace(status_line, '', 1)
+    else:
+        # Accept the same template without escaped quotes as a fallback.
+        status_line_plain = "        <span class=\"plan-term-status ${confirmed?'confirmed':'scheduled'}\">${confirmed?'확정':'예정'}</span>\n"
+        if status_line_plain in text:
+            text = text.replace(status_line_plain, '', 1)
+    if 'plan-term-status' in text:
+        raise RuntimeError('plan-term-status markup still remains in app.js')
 
     write_if_changed(path, text)
     return RELEASE_VERSION
