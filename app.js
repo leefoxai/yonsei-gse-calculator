@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.9';
+const APP_VERSION = '3.1.10';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -2042,7 +2042,6 @@ function renderPlanTimetable(){
     return `<details class="plan-term-schedule ${confirmed?'confirmed':'scheduled'}" data-plan-timetable-term="${esc(term)}" ${open?'open':''}>
       <summary>
         <span class="plan-term-schedule-title">${esc(term)}학기 시간표</span>
-        <span class="plan-term-status ${confirmed?'confirmed':'scheduled'}">${confirmed?'확정':'예정'}</span>
         <span class="plan-term-course-count">${records.length}과목</span>
       </summary>
       <div class="plan-term-schedule-body">${scheduleHtml}${empty}${extra}</div>
