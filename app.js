@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.7';
+const APP_VERSION = '3.1.8';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -67,6 +67,9 @@ const CERT_RULES_PACK_LOCAL_KEY = 'yonsei-gse-certificate-rules-pack-v1';
 const AUTO_BACKUP_KEY = 'yonsei-gse-auto-backups-v1';
 let runtimePackMeta = {dataSource:'embedded fallback',rulesSource:'embedded fallback',certSource:'embedded fallback',dataEnvelope:null,rulesEnvelope:null,certEnvelope:null,dataValidation:null,rulesValidation:null,certValidation:null,selfTests:null};
 let gapCandidateTerm='';
+let openPlanTimetableTerms=new Set();
+let planTimetableOpenInitialized=false;
+let activePlanTimetableTerm='';
 const CATEGORY_LABELS = {
   common:'공통', teaching:'교직', prerequisite:'선수', major_required:'전공필수', major_elective:'전공선택',
   thesis:'논문', research_guidance:'연구지도', report:'졸업연구보고서', audit:'청강', unknown:'종별 확인 필요'
@@ -1484,7 +1487,7 @@ function gapCandidateCountForTerm(term,deficits,used){
   }
   return seen.size;
 }
-function gapTermKind(term){return term===DATA.snapshot?'실제':'계획';}
+function gapTermKind(term){return term===DATA.snapshot?'확정':'예정';}
 function gapCandidateCard(c,d,term,{special=false}={}){
   const pattern=courseOfferingPattern(c),conflict=special?false:plannedConflictWithCourse(c,term),schedule=scheduleInfo(c);
   const code=(c.sectionCodes||[])[0]||c.courseCode||'';
@@ -1534,7 +1537,7 @@ function renderGapCandidates(){
   const tabs=terms.map(t=>{
     const count=gapCandidateCountForTerm(t,deficits,used);
     return `<button class="gap-term-tab ${t===term?'active':''}" type="button" role="tab" aria-selected="${t===term?'true':'false'}" data-gap-term="${esc(t)}">
-      <span>${esc(t)}</span><span class="term-kind">${gapTermKind(t)==='실제'?'실제':'계획'}</span><span class="term-count">${count}</span>
+      <span>${esc(t)}</span><span class="term-kind">${gapTermKind(t)==='확정'?'확정':'예정'}</span><span class="term-count">${count}</span>
     </button>`;
   }).join('');
 
@@ -1560,9 +1563,9 @@ function renderGapCandidates(){
   }
 
   const selectedKind=gapTermKind(term);
-  const note=selectedKind==='실제'
-    ? `${term}은 현재 데이터팩의 <b>실제 시간표</b> 기준입니다.`
-    : `${term}은 <b>5학기 개설예정표의 계획 데이터</b>입니다. 실제 개설 시 변경될 수 있습니다.`;
+  const note=selectedKind==='확정'
+    ? `${term}은 현재 데이터팩의 <b>확정 시간표</b> 기준입니다.`
+    : `${term}은 <b>5학기 개설예정표의 예정 데이터</b>입니다. 실제 개설 시 변경될 수 있습니다.`;
   box.innerHTML=`
     <div class="gap-candidate-head">
       <div><h3>부족요건 충족 후보</h3><div class="muted">학기 탭을 눌러 부족한 요건을 채울 수 있는 과목을 확인하세요. 전공필수 → 전공선택 → 교직 → 공통 순으로 표시합니다.</div></div>
@@ -2003,27 +2006,61 @@ function buildWeeklyScheduleHtml(records,settings){
   const m=buildPlanScheduleModel(records,settings);
   return {model:m,html:timelineHtmlFromItems(m.placed,settings)};
 }
-function renderPlanTimetable(){
-  const term=document.getElementById('planTerm').value;
-  document.getElementById('planTimetableTitle').textContent=`${term}학기 시간표`;
-  const settings=state.scheduleSettings||defaultState().scheduleSettings;
-  const rawRecords=currentScenario().planned.filter(r=>r.term===term);
-  const records=dedupePlannedRecords(rawRecords);
-  const built=buildWeeklyScheduleHtml(records,settings);
-  document.getElementById('planTimetableGrid').innerHTML=built.html;
-  const unplaced=built.model.unplaced;
-  const outOfRange=built.model.outOfRange||[];
+function planTimetableExtraHtml(unplaced,outOfRange){
   let extra='';
   if(unplaced.length)extra+=`<h4>시간 미정 과목</h4><div class="table-wrap"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody>${unplaced.map(({r,o})=>{
-    const badge=(r.availability||o.availability)==='actual'?'<span class="badge actual">실제개설</span>':(r.availability||o.availability)==='planned'?'<span class="badge planned">개설예정</span>':'<span class="badge manual">시간 미정</span>';
-    const sub=[o.professor||'',o.day||'',o.room||''].filter(Boolean).join(' ');
+    const badge=(r.availability||o.availability)==='actual'?'<span class="badge actual">확정</span>':(r.availability||o.availability)==='planned'?'<span class="badge planned">예정</span>':'<span class="badge manual">시간 미정</span>';
+    const si=scheduleInfoWithSettings(o||r,state.scheduleSettings||defaultState().scheduleSettings);
+    const sub=[o?.professor||r.professor||'',o?.day||r.day||'',si.time!=='시간 미정'?si.time:'',o?.room||r.room||''].filter(Boolean).join(' ');
     return `<tr><td class="mono">${esc(r.courseCode||'')}</td><td><div class="course-name">${esc(r.courseName)}</div><div class="muted">${esc(sub||'요일·시간 정보 없음')}</div></td><td>${esc(courseOriginLabel(o||r))}</td><td>${esc(CATEGORY_LABELS[r.category||o.category||'unknown'])}</td><td>${badge}</td></tr>`;
   }).join('')}</tbody></table></div>`;
   if(outOfRange.length)extra+=`<div class="callout warnbox" style="margin-top:10px"><b>표시 범위 밖 과목:</b> ${outOfRange.map(x=>`${esc(x.r.courseName)} (${esc(x.si.time)})`).join(' · ')}<br>⚙ 설정에서 시간표 시작/종료 범위를 넓히면 표시됩니다.</div>`;
-  document.getElementById('planTimetableUnplaced').innerHTML=extra;
+  return extra;
+}
+function renderPlanTimetable(){
+  const terms=gapCandidateTerms();
+  const settings=state.scheduleSettings||defaultState().scheduleSettings;
+  const title=document.getElementById('planTimetableTitle');
+  if(title)title.textContent='학기별 계획 시간표';
+  if(!planTimetableOpenInitialized){
+    openPlanTimetableTerms.add(DATA.snapshot);
+    activePlanTimetableTerm=DATA.snapshot;
+    planTimetableOpenInitialized=true;
+  }
+  if(!terms.includes(activePlanTimetableTerm))activePlanTimetableTerm=DATA.snapshot;
+
+  const grid=document.getElementById('planTimetableGrid');
+  if(!grid)return;
+  grid.innerHTML=terms.map(term=>{
+    const confirmed=term===DATA.snapshot;
+    const records=dedupePlannedRecords(currentScenario().planned.filter(r=>r.term===term));
+    const built=buildWeeklyScheduleHtml(records,settings);
+    const extra=planTimetableExtraHtml(built.model.unplaced,built.model.outOfRange||[]);
+    const open=openPlanTimetableTerms.has(term);
+    const scheduleHtml=built.model.placed.length?`<div class="weekly-schedule">${built.html}</div>`:'';
+    const empty=!records.length?`<div class="empty plan-term-empty">이 학기에 계획한 과목이 없습니다.</div>`:'';
+    return `<details class="plan-term-schedule ${confirmed?'confirmed':'scheduled'}" data-plan-timetable-term="${esc(term)}" ${open?'open':''}>
+      <summary>
+        <span class="plan-term-schedule-title">${esc(term)}학기 시간표</span>
+        <span class="plan-term-status ${confirmed?'confirmed':'scheduled'}">${confirmed?'확정':'예정'}</span>
+        <span class="plan-term-course-count">${records.length}과목</span>
+      </summary>
+      <div class="plan-term-schedule-body">${scheduleHtml}${empty}${extra}</div>
+    </details>`;
+  }).join('');
+
+  document.getElementById('planTimetableUnplaced').innerHTML='';
+  grid.querySelectorAll('[data-plan-timetable-term]').forEach(detail=>{
+    detail.addEventListener('toggle',()=>{
+      const term=detail.dataset.planTimetableTerm;
+      if(detail.open){openPlanTimetableTerms.add(term);activePlanTimetableTerm=term;}
+      else openPlanTimetableTerms.delete(term);
+    });
+    detail.querySelector('summary')?.addEventListener('click',()=>{activePlanTimetableTerm=detail.dataset.planTimetableTerm;});
+  });
 }
 function saveCurrentPlanTimetableSnapshot(){
-  const term=document.getElementById('planTerm').value;
+  const term=activePlanTimetableTerm||DATA.snapshot;
   const settings=JSON.parse(JSON.stringify(state.scheduleSettings||defaultState().scheduleSettings));
   const records=dedupePlannedRecords(currentScenario().planned.filter(r=>r.term===term));
   if(!records.length){alert('저장할 계획 과목이 없습니다.');return;}

@@ -30,6 +30,11 @@ app_version_match=re.search(r"const APP_VERSION = '([^']+)';",app)
 app_version=app_version_match.group(1) if app_version_match else ''
 check('app version detectable',bool(app_version),app_version)
 check('footer version sync',f'<b>v{app_version}:</b>' in html)
+check('gap status vocabulary confirmed scheduled',"function gapTermKind(term){return term===DATA.snapshot?'확정':'예정';}" in app)
+check('five-term timetable accordion','plan-term-schedule' in app and 'gapCandidateTerms()' in app and 'plan-term-schedules' in css)
+check('timetable independent from plan dropdown',"const terms=gapCandidateTerms();" in app and "activePlanTimetableTerm||DATA.snapshot" in app)
+check('confirmed timetable default open','openPlanTimetableTerms.add(DATA.snapshot)' in app)
+
 check('pack appVersion sync',all(p.get('appVersion')==app_version for p in (data,rules,cert)),str([p.get('appVersion') for p in (data,rules,cert)]))
 check('packVersion metadata',all(bool(p.get('packVersion')) for p in (data,rules,cert)),str([p.get('packVersion') for p in (data,rules,cert)]))
 check('packVersion snapshot prefix',all(str(p.get('packVersion','')).startswith(str(p.get('snapshot',''))+'.') for p in (data,rules,cert)),str([p.get('packVersion') for p in (data,rules,cert)]))
@@ -91,8 +96,8 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.1.7' in html)
-check('modular js linked','app.js?v=3.1.7' in html)
+check('modular css linked','styles.css?v=3.1.8' in html)
+check('modular js linked','app.js?v=3.1.8' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)

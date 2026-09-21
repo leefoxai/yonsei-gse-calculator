@@ -1449,3 +1449,31 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   .plan-sheet-utility{justify-content:flex-start;padding-left:24px}
 }
 @media print{.plan-scenario-inline,.plan-sheet-utility{display:none!important}}
+
+
+/* v3.1.8 five-term timetable accordions */
+.plan-term-schedules{display:grid;gap:10px;margin-top:8px}
+.plan-term-schedule{border:1px solid var(--line);border-radius:11px;background:#fff;overflow:hidden}
+.plan-term-schedule>summary{display:flex;align-items:center;gap:8px;min-height:46px;padding:10px 12px;cursor:pointer;list-style:none;font-weight:850}
+.plan-term-schedule>summary::-webkit-details-marker{display:none}
+.plan-term-schedule>summary::before{content:'›';font-size:20px;line-height:1;color:#667085;transform:rotate(0deg);transition:transform .15s ease}
+.plan-term-schedule[open]>summary::before{transform:rotate(90deg)}
+.plan-term-schedule.confirmed>summary{background:#f3f8ff}
+.plan-term-schedule.scheduled>summary{background:#fafbfc}
+.plan-term-schedule-title{font-size:14px;color:#1d2939}
+.plan-term-status,.plan-term-course-count{display:inline-flex;align-items:center;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:850}
+.plan-term-status.confirmed{background:#e6f0ff;color:#0b57a4}
+.plan-term-status.scheduled{background:#eef1f5;color:#667085}
+.plan-term-course-count{margin-left:auto;background:#f2f4f7;color:#475467}
+.plan-term-schedule-body{padding:12px;border-top:1px solid var(--line)}
+.plan-term-empty{padding:16px!important;border:1px dashed #d0d9e5;border-radius:9px;background:#fafcff}
+@media(max-width:620px){
+  .plan-term-schedule>summary{padding:9px 10px;gap:6px}
+  .plan-term-schedule-title{font-size:13px}
+  .plan-term-schedule-body{padding:8px}
+}
+@media print{
+  .plan-term-schedule{break-inside:avoid}
+  .plan-term-schedule>summary::before{display:none}
+  .plan-term-schedule-body{display:block!important}
+}
