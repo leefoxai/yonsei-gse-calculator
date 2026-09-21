@@ -10,8 +10,8 @@
 <title>[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.1.6">
-<meta name="application-version" content="3.1.6">
+<link rel="stylesheet" href="styles.css?v=3.1.7">
+<meta name="application-version" content="3.1.7">
 </head>
 <body>
 <div class="app">
@@ -334,12 +334,19 @@
   </details>
   </details>
 <details class="card section input-section step-details" id="planSection" open>
-    <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2></summary>
-    <div class="card sheet-card no-print">
-      <label>시나리오 비교</label>
-      <div class="sheet-row"><div id="scenarioTabs" class="tabs"></div><button class="btn small sheet-add" id="addScenario" type="button" title="새 시트">+</button></div>
-      <div class="toolbar no-print"><button class="btn small" id="duplicateScenario">현재 시트 복제</button><button class="btn small" id="renameScenario">이름 변경</button><button class="btn small danger" id="deleteScenario">삭제</button></div>
+    <summary class="section-title-row plan-section-summary">
+      <h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2>
+      <div class="plan-scenario-inline no-print" onclick="event.stopPropagation()">
+        <div id="scenarioTabs" class="tabs plan-title-tabs"></div>
+        <button class="btn small plan-icon-btn" id="renameScenario" type="button" title="현재 시트 이름 수정" aria-label="현재 시트 이름 수정">✎</button>
+        <button class="btn small plan-icon-btn sheet-add" id="addScenario" type="button" title="새 시트 추가" aria-label="새 시트 추가">+</button>
+      </div>
+    </summary>
+    <div class="plan-sheet-utility no-print">
+      <button class="btn small" id="duplicateScenario" type="button">현재 시트 복제</button>
+      <button class="btn small danger" id="deleteScenario" type="button">현재 시트 삭제</button>
     </div>
+    <div id="planGapCandidates" class="gap-candidates"></div>
 
 <div class="plan-builder">
       <div class="pdf-import-head">
@@ -369,7 +376,6 @@
       2026-2는 <b>실제 시간표(.xls)</b>를 우선합니다. 5학기 예정표에는 있었으나 실제 시간표에서 확인되지 않은 과목은 미개설/변경 가능 항목으로 표시하고 기본 선택에서 제외합니다.
       2027-1 이후는 예정 정보이므로 실제 개설 시 변경될 수 있습니다.
     </div>
-    <div id="planGapCandidates" class="gap-candidates"></div>
     <div id="planWarnings"></div>
     <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>학기</th><th>과목</th><th>종별</th><th>학점</th><th>데이터 상태</th><th></th></tr></thead><tbody id="planBody"></tbody></table></div>
 
@@ -462,6 +468,6 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.1.6"></script>
+<script defer src="app.js?v=3.1.7"></script>
 </body>
 </html>

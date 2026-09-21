@@ -90,8 +90,8 @@ check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('min
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
 
-check('modular css linked','styles.css?v=3.1.6' in html)
-check('modular js linked','app.js?v=3.1.6' in html)
+check('modular css linked','styles.css?v=3.1.7' in html)
+check('modular js linked','app.js?v=3.1.7' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -142,6 +142,10 @@ for ident in ['resultDetailsPanel','planSection']:
     check(ident+' initially open',markup.nodes[ident]['open'])
 check('teacher checklist initially open',markup.nodes['teacherChecklistSection']['open'])
 check('scenario controls belong to plan','planSection' in markup.nodes['scenarioTabs']['ancestors'])
+check('compact scenario controls', 'class="plan-scenario-inline no-print"' in html and 'id="renameScenario"' in html and 'id="addScenario"' in html)
+check('current sheet delete control', 'id="deleteScenario"' in html and '>현재 시트 삭제<' in html)
+check('gap candidates precede plan builder', html.find('id="planGapCandidates"') < html.find('class="plan-builder"'))
+
 check('backup outside optional catalog','extraFeatures' not in markup.nodes['exportData']['ancestors'])
 
 passed=sum(1 for _,ok,_ in checks if ok)
