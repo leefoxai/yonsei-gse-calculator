@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.9'
+RELEASE_VERSION = '3.1.10'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -35,13 +35,14 @@ def normalize_app() -> str:
     text = text.replace("gapTermKind(t)==='실제'?'실제':'계획'", "gapTermKind(t)==='확정'?'확정':'예정'")
     text = text.replace("const note=selectedKind==='실제'", "const note=selectedKind==='확정'")
 
-    # Timetable accordions themselves should show only semester + course count.
-    text = re.sub(
-        r"\n\s*<span class=\\\"plan-term-status \$\{confirmed\?'confirmed':'scheduled'\}\\\">\$\{confirmed\?'확정':'예정'\}</span>",
-        '',
-        text,
-        count=1,
-    )
+    # Timetable accordion titles show only semester + course count.
+    target = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
+    if target in text:
+        text = text.replace(target, '', 1)
+    elif 'plan-term-status' in text:
+        text, removed = re.subn(r'^\s*<span class=\\"plan-term-status[^\n]+\n?', '', text, count=1, flags=re.M)
+        if removed != 1:
+            raise RuntimeError('plan-term-status markup found but could not be removed')
 
     write_if_changed(path, text)
     return RELEASE_VERSION
