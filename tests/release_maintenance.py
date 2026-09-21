@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.11'
+RELEASE_VERSION = '3.1.12'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -80,6 +80,12 @@ function sortedPlannedRecords(records){
     elif new_map not in text:
         raise RuntimeError('planned course map not found')
 
+    # Status wording in planned-course list and timetable unplaced list.
+    text = text.replace('<span class=\\"badge planned\\">개설예정</span>', '<span class=\\"badge planned\\">개설 예정</span>')
+    text = text.replace('<span class="badge planned">개설예정</span>', '<span class="badge planned">개설 예정</span>')
+    text = text.replace("<span class=\\\"badge planned\\\">예정</span>", "<span class=\\\"badge planned\\\">개설 예정</span>")
+    text = text.replace("<span class=\"badge planned\">예정</span>", "<span class=\"badge planned\">개설 예정</span>")
+
     write_if_changed(path, text)
     return RELEASE_VERSION
 
@@ -115,6 +121,9 @@ def normalize_index(app_version: str) -> None:
     elif '과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.' not in text:
         raise RuntimeError('history guidance callout not found')
 
+    # Planned-course table column heading.
+    text = text.replace('<th>데이터 상태</th>', '<th>상태</th>', 1)
+
     write_if_changed(path, text)
 
 
@@ -135,6 +144,15 @@ check('planned list ordering helper','function sortedPlannedRecords(records)' in
         if marker not in text:
             raise RuntimeError('validator insertion marker not found')
         text = text.replace(marker, checks + '\n' + marker, 1)
+
+    status_checks = """check('plan status header renamed','<th>데이터 상태</th>' not in html and '<th>상태</th>' in html)
+check('planned status wording','>개설예정<' not in app and '<span class=\\\"badge planned\\\">예정</span>' not in app and '>개설 예정<' in app)
+"""
+    if "check('plan status header renamed'" not in text:
+        marker = "passed=sum(1 for _,ok,_ in checks if ok)"
+        if marker not in text:
+            raise RuntimeError('validator insertion marker not found')
+        text = text.replace(marker, status_checks + '\n' + marker, 1)
 
     write_if_changed(path, text)
 
