@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.10';
+const APP_VERSION = '3.1.11';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -1733,7 +1733,6 @@ function renderGraduationChecklist(){
 function renderRequirements(){
   const {current,projected}=evaluateBoth(),cohort=getCohort(),rule=getRule();
   const g=gpaRequirementStatus(state.history);
-  document.getElementById('cohortText').textContent=`적용: ${cohort.label} · ${rule.label}`;
   const reqs=projected.requirements.map(pr=>{
     const cr=current.requirements.find(x=>x.key===pr.key)||{current:0};
     const status=requirementState(cr.current>=pr.min,pr.current>=pr.min);
@@ -2164,11 +2163,32 @@ function renderPlanWarnings(){
   if(conflicts.length)warnings.push(`<div class="plan-warning danger"><b>시간표 충돌</b> · ${[...new Set(conflicts)].map(esc).join(' · ')}</div>`);
   box.innerHTML=warnings.join('');
 }
+const PLAN_LIST_CATEGORY_PRIORITY={
+  major_required:0,major_elective:1,teaching:2,common:3,prerequisite:4,
+  report:5,thesis:6,research_guidance:7,lifelong:8,audit:9,unknown:99
+};
+function sortedPlannedRecords(records){
+  const dayOrder={월:0,화:1,수:2,목:3,금:4,토:5,일:6};
+  return records.map((r,i)=>({r,i})).sort((a,b)=>{
+    const termDiff=termIndex(a.r.term)-termIndex(b.r.term);
+    if(termDiff)return termDiff;
+    const ao=offeringForPlanRecord(a.r)||a.r,bo=offeringForPlanRecord(b.r)||b.r;
+    const at=timeRangeForPlanRecord(a.r),bt=timeRangeForPlanRecord(b.r);
+    const ad=dayOrder[ao.day??a.r.day]??99,bd=dayOrder[bo.day??b.r.day]??99;
+    if(ad!==bd)return ad-bd;
+    const as=at?.start??99999,bs=bt?.start??99999;
+    if(as!==bs)return as-bs;
+    const ac=PLAN_LIST_CATEGORY_PRIORITY[a.r.category]??98,bc=PLAN_LIST_CATEGORY_PRIORITY[b.r.category]??98;
+    if(ac!==bc)return ac-bc;
+    return String(a.r.courseName||'').localeCompare(String(b.r.courseName||''),'ko');
+  });
+}
+
 function renderPlan(){
   renderGapCandidates();
   const sc=currentScenario(), body=document.getElementById('planBody');
   if(!sc.planned.length){body.innerHTML=`<tr><td colspan="6" class="empty">현재 시트의 계획 과목이 없습니다.</td></tr>`;renderPlanTimetable();renderScheduleReferences();renderPlanWarnings();return;}
-  body.innerHTML=sc.planned.map((r,i)=>{
+  body.innerHTML=sortedPlannedRecords(sc.planned).map(({r,i})=>{
     const av=r.availability||'manual';
     const badge=av==='actual'?`<span class="badge actual">실제개설</span>`:av==='planned'?`<span class="badge planned">개설예정</span>`:av==='special'?`<span class="badge match">학위/공통</span>`:`<span class="badge manual">직접입력</span>`;
     return `<tr><td>${esc(r.term)}</td><td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.sectionCode||r.courseCode||'')}</div></td>

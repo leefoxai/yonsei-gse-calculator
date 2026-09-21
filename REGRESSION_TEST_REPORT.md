@@ -1,8 +1,8 @@
 # Regression Test Report
 
-- App version: **3.1.10**
-- Generated: **2026-09-21 06:28 UTC**
-- Data/markup validation: **76/77 checks passed**
+- App version: **3.1.11**
+- Generated: **2026-09-21 07:28 UTC**
+- Data/markup validation: **80/81 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -10,14 +10,14 @@
 
 | File | Schema | Pack version | App version | Snapshot | Source data updated | Metadata updated |
 | --- | ---: | --- | --- | --- | --- | --- |
-| data-pack.json | 1 | 2026-2.1 | 3.1.10 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
-| rules-pack.json | 1 | 2026-2.1 | 3.1.10 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
-| certificate-rules.json | 1 | 2026-2.2 | 3.1.10 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
+| data-pack.json | 1 | 2026-2.1 | 3.1.11 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
+| rules-pack.json | 1 | 2026-2.1 | 3.1.11 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
+| certificate-rules.json | 1 | 2026-2.2 | 3.1.11 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-21 |
 
 ## Data / markup validation
 
 ```text
-Validation: 76/77 checks passed
+Validation: 80/81 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -26,14 +26,14 @@ PASS - data pack type
 PASS - rules pack type 
 PASS - cert pack type 
 PASS - snapshot一致 ({'2026-2'})
-PASS - app version detectable (3.1.10)
+PASS - app version detectable (3.1.11)
 PASS - footer version sync 
 PASS - gap status vocabulary confirmed scheduled 
 PASS - five-term timetable accordion 
 PASS - timetable independent from plan dropdown 
 PASS - confirmed timetable default open 
 PASS - timetable status badges removed 
-PASS - pack appVersion sync (['3.1.10', '3.1.10', '3.1.10'])
+PASS - pack appVersion sync (['3.1.11', '3.1.11', '3.1.11'])
 PASS - packVersion metadata (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - packVersion snapshot prefix (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - pack compatibility metadata (['>=3.0.0', '>=3.0.0', '>=3.0.0'])
@@ -95,6 +95,10 @@ PASS - compact scenario controls
 PASS - current sheet delete control 
 PASS - gap candidates precede plan builder 
 PASS - backup outside optional catalog 
+PASS - cohort helper removed 
+PASS - quick guide descriptions removed 
+PASS - history guidance wording 
+PASS - planned list ordering helper 
 
 FAILED:
 - gap tabs distinguish actual/planned:
