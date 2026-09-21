@@ -1,8 +1,8 @@
 # Regression Test Report
 
 - App version: **3.1.13**
-- Generated: **2026-09-21 09:16 UTC**
-- Data/markup validation: **88/89 checks passed**
+- Generated: **2026-09-21 10:15 UTC**
+- Data/markup validation: **89/89 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -17,7 +17,7 @@
 ## Data / markup validation
 
 ```text
-Validation: 88/89 checks passed
+Validation: 89/89 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -72,7 +72,7 @@ PASS - ocr canvas release present
 PASS - integrated analysis and optional catalog 
 PASS - field confidence present 
 PASS - gap term tabs present 
-FAIL - gap tabs distinguish actual/planned 
+PASS - gap tabs distinguish confirmed/scheduled 
 PASS - gap add carries selected term 
 PASS - special courses separated 
 PASS - gap candidate category priority 
@@ -102,14 +102,11 @@ PASS - planned list ordering helper
 PASS - plan status header renamed 
 PASS - planned status wording 
 PASS - 국어 기본이수 8번 교과교육 과대산입 방지 ({'SKE6595', 'SKE6594'})
-PASS - 역사 기본이수 6번 교과교육 과대산입 방지 ({'SHE6535', 'SHE6536', 'SHE6547'})
-PASS - 통합과학 기본이수 13번 교과교육 과대산입 방지 ({'SGS6833', 'SGS6803'})
+PASS - 역사 기본이수 6번 교과교육 과대산입 방지 ({'SHE6536', 'SHE6547', 'SHE6535'})
+PASS - 통합과학 기본이수 13번 교과교육 과대산입 방지 ({'SGS6803', 'SGS6833'})
 PASS - 전문상담1급 10과목 구조 ({'type': 'groups', 'requiredGroups': [2, 3, 4, 5, 6, 7, 8, 18], 'choiceGroups': [{'groups': [16, 17, 19, 20, 21], 'min': 2}], 'minGroups': 10, 'minCredits': 0, 'sourceNote': '연세대학교 교육대학원 전문상담교사 1급 안내: 필수 7과목 + 상담실습및사례연구 1과목 + 선택 2과목 이상. 관리번호 18은 필수 실습으로 선택 2과목에 중복 산입하지 않음.'})
 PASS - 전문상담1급 실습 중복선택 방지 ([{'groups': [16, 17, 19, 20, 21], 'min': 2}])
 PASS - 전문상담2급 2026학번 7과목/13필수 ({'type': 'groups', 'minGroups': 7, 'minCredits': 14, 'requiredGroups': [13], 'choiceGroups': [], 'sourceNote': '2026학번부터 7과목 이상, 1~18 중 6과목 이상, 관리번호 13 필수'})
-
-FAILED:
-- gap tabs distinguish actual/planned:
 ```
 
 ## Application regression
