@@ -96,7 +96,6 @@ c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')==
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
-
 check('modular css linked','styles.css?v=3.1.13' in html)
 check('modular js linked','app.js?v=3.1.13' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
@@ -109,12 +108,11 @@ check('integrated analysis and optional catalog','id="analysisWorkspace"' in htm
 check('field confidence present','function fieldConfidenceHtml(' in app and '.field-confidence' in css)
 
 check('gap term tabs present','function gapCandidateTerms()' in app and 'data-gap-term' in app and '.gap-term-tabs' in css)
-check('gap tabs distinguish actual/planned',"gapTermKind(term){return term===DATA.snapshot?'실제':'계획';}" in app)
+check('gap tabs distinguish confirmed/scheduled',"gapTermKind(term){return term===DATA.snapshot?'확정':'예정';}" in app)
 check('gap add carries selected term','const [term,code,name,category]=raw.split' in app and 'gapCandidateTerm=targetTerm' in app)
 check('special courses separated','학기별 개설표와 별도로 관리되는 요건 과목' in app)
 
 check('gap candidate category priority',"gapPriority={major_required:0,major_elective:1,teaching:2,common:3}" in app)
-
 check('category priority order',"const CATEGORY_OPTIONS = ['major_required','major_elective','teaching','common','prerequisite'" in app)
 check('mobile catalog plan add','data-offering-plan' in app and 'catalog-plan-btn' in css and '<th>계획</th>' in html)
 
@@ -126,7 +124,6 @@ check('test title applied',"[테스트]연세대학교 교육대학원 졸업요
 check('category filter exact order',"const ordered=['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance']" in app and '<option value="lifelong">평생교육사</option>' in app)
 check('audit label simplified',"audit:'청강'" in app)
 
-# Parse the real HTML topology to keep workflow sections adjacent and accessible.
 from html.parser import HTMLParser
 class WorkflowMarkup(HTMLParser):
     def __init__(self):
@@ -152,17 +149,14 @@ check('scenario controls belong to plan','planSection' in markup.nodes['scenario
 check('compact scenario controls', 'class="plan-scenario-inline no-print"' in html and 'id="renameScenario"' in html and 'id="addScenario"' in html)
 check('current sheet delete control', 'id="deleteScenario"' in html and '>현재 시트 삭제<' in html)
 check('gap candidates precede plan builder', html.find('id="planGapCandidates"') < html.find('class="plan-builder"'))
-
 check('backup outside optional catalog','extraFeatures' not in markup.nodes['exportData']['ancestors'])
 
 check('cohort helper removed','id="cohortText"' not in html and "getElementById('cohortText')" not in app)
 check('quick guide descriptions removed','전공·입학학기·과정/졸업유형을 선택하고 기본정보를 확인합니다.' not in html and '성적조회 PDF를 불러오거나, 여러 장의 캡처 OCR' not in html)
 check('history guidance wording','과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.' in html and '졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.' in html)
 check('planned list ordering helper','function sortedPlannedRecords(records)' in app and 'sortedPlannedRecords(sc.planned)' in app and 'PLAN_LIST_CATEGORY_PRIORITY' in app)
-
 check('plan status header renamed','<th>데이터 상태</th>' not in html and '<th>상태</th>' in html)
 check('planned status wording','>개설예정<' not in app and '<span class=\"badge planned\">예정</span>' not in app and '>개설 예정<' in app)
-
 
 # Official teacher-certificate audit (2026-06-17 table + current Yonsei GSE counselor guide)
 def _variant(major, vid=None):
@@ -189,4 +183,3 @@ if errors:
     print('\nFAILED:')
     for e in errors: print('-',e)
     sys.exit(1)
-
