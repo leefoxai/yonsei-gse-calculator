@@ -1,8 +1,8 @@
 # Regression Test Report
 
 - App version: **3.1.7**
-- Generated: **2026-09-21 02:59 UTC**
-- Data/markup validation: **71/71 checks passed**
+- Generated: **2026-09-21 04:11 UTC**
+- Data/markup validation: **72/72 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -17,7 +17,7 @@
 ## Data / markup validation
 
 ```text
-Validation: 71/71 checks passed
+Validation: 72/72 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -27,6 +27,7 @@ PASS - rules pack type
 PASS - cert pack type 
 PASS - snapshot一致 ({'2026-2'})
 PASS - app version detectable (3.1.7)
+PASS - footer version sync 
 PASS - pack appVersion sync (['3.1.7', '3.1.7', '3.1.7'])
 PASS - packVersion metadata (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - packVersion snapshot prefix (['2026-2.1', '2026-2.1', '2026-2.2'])

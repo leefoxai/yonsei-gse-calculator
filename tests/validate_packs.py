@@ -29,6 +29,7 @@ check('snapshot一致',len(snapshots)==1 and None not in snapshots,str(snapshots
 app_version_match=re.search(r"const APP_VERSION = '([^']+)';",app)
 app_version=app_version_match.group(1) if app_version_match else ''
 check('app version detectable',bool(app_version),app_version)
+check('footer version sync',f'<b>v{app_version}:</b>' in html)
 check('pack appVersion sync',all(p.get('appVersion')==app_version for p in (data,rules,cert)),str([p.get('appVersion') for p in (data,rules,cert)]))
 check('packVersion metadata',all(bool(p.get('packVersion')) for p in (data,rules,cert)),str([p.get('packVersion') for p in (data,rules,cert)]))
 check('packVersion snapshot prefix',all(str(p.get('packVersion','')).startswith(str(p.get('snapshot',''))+'.') for p in (data,rules,cert)),str([p.get('packVersion') for p in (data,rules,cert)]))
