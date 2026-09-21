@@ -26,6 +26,13 @@ check('rules pack type',rules.get('packType')=='yonsei-gse-rules')
 check('cert pack type',cert.get('packType')=='yonsei-gse-certificate-rules')
 snapshots={data.get('snapshot'),rules.get('snapshot'),cert.get('snapshot')}
 check('snapshot一致',len(snapshots)==1 and None not in snapshots,str(snapshots))
+app_version_match=re.search(r"const APP_VERSION = '([^']+)';",app)
+app_version=app_version_match.group(1) if app_version_match else ''
+check('app version detectable',bool(app_version),app_version)
+check('pack appVersion sync',all(p.get('appVersion')==app_version for p in (data,rules,cert)),str([p.get('appVersion') for p in (data,rules,cert)]))
+check('packVersion metadata',all(bool(p.get('packVersion')) for p in (data,rules,cert)),str([p.get('packVersion') for p in (data,rules,cert)]))
+check('pack compatibility metadata',all(bool(p.get('compatibleAppVersion')) for p in (data,rules,cert)),str([p.get('compatibleAppVersion') for p in (data,rules,cert)]))
+
 D=data.get('data',{})
 rows=list(D.get('offerings',[]))+list(D.get('globalOfferings',[]))+list(D.get('specialCourses',[]))
 check('course rows >=650',len(rows)>=650,str(len(rows)))
@@ -106,7 +113,7 @@ check('mobile catalog plan add','data-offering-plan' in app and 'catalog-plan-bt
 check('zero-term display preserved',"isZeroAcademicTerm(s)" in app and "return s;" in app)
 check('comparison program pre-admission migrates to zero term',"normalizeComparisonProgramTerm" in app and "SPG6658" in app and "comparisonProgramZeroTerm" in app)
 check('history accepts zero term',"validHistoryTermValue" in app and "[012]" in app)
-check('test title applied',"[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기" in html and "[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기" in app)
+check('test title applied',"[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기" in html and "[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기" in app)
 
 check('category filter exact order',"const ordered=['major_required','major_elective','teaching','common','prerequisite','report','thesis','research_guidance']" in app and '<option value="lifelong">평생교육사</option>' in app)
 check('audit label simplified',"audit:'청강'" in app)

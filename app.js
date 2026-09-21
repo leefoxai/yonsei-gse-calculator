@@ -1,4 +1,4 @@
-const APP_TITLE_DEFAULT='[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기';
+const APP_TITLE_DEFAULT='[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기';
 const APP_TITLE_KEY='yonsei-gse-calculator-custom-title';
 
 // ===== v3.0 on-demand external libraries =====

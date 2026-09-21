@@ -1,7 +1,7 @@
 {
   "packType": "yonsei-gse-data",
   "schemaVersion": 1,
-  "appVersion": "3.0.0",
+  "appVersion": "3.1.6",
   "snapshot": "2026-2",
   "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": "v2.3 validated baseline (removed 1 invalid empty row, 1 logical duplicate)",
@@ -18292,5 +18292,7 @@
       "role": "2026-2 실제 시간표 데이터"
     }
   ],
-  "validationNote": "v2.5 자동 무결성/회귀검증 기준 통과 데이터팩"
+  "validationNote": "v2.5 자동 무결성/회귀검증 기준 통과 데이터팩",
+  "compatibleAppVersion": ">=3.0.0",
+  "metadataUpdatedAt": "2026-09-21"
 }

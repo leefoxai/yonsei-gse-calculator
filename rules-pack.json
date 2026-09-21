@@ -1,7 +1,7 @@
 {
   "packType": "yonsei-gse-rules",
   "schemaVersion": 1,
-  "appVersion": "3.0.0",
+  "appVersion": "3.1.6",
   "snapshot": "2026-2",
   "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": "v2.2.1 embedded baseline",
@@ -164,5 +164,7 @@
       "role": "입학 코호트별 기존 공식 규정 스냅샷",
       "note": "2024-2 이전/2025-1 이후 규칙 분기 유지"
     }
-  ]
+  ],
+  "compatibleAppVersion": ">=3.0.0",
+  "metadataUpdatedAt": "2026-09-21"
 }
