@@ -34,7 +34,7 @@ jobs:
 
       - name: Require generated metadata in pull requests
         if: github.event_name == 'pull_request'
-        run: git diff --exit-code -- app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
+        run: git diff --exit-code -- index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
 
       - name: JavaScript syntax
         run: node --check app.js
@@ -51,12 +51,12 @@ jobs:
       - name: Commit maintenance output
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          if git diff --quiet -- app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md; then
+          if git diff --quiet -- index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md; then
             echo "No generated changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md
-          git commit -m "chore: sync release metadata and validation report [skip ci]"
+          git add index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md
+          git commit -m "chore: sync release metadata, UI and validation report [skip ci]"
           git push
