@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.10'
+RELEASE_VERSION = '3.1.11'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -29,23 +29,56 @@ def normalize_app() -> str:
     if count != 1:
         raise RuntimeError('APP_VERSION not found in app.js')
 
-    # Keep the 부족요건 학기 탭 vocabulary as 확정/예정.
-    text = text.replace("function gapTermKind(term){return term===DATA.snapshot?'실제':'계획';}",
-                        "function gapTermKind(term){return term===DATA.snapshot?'확정':'예정';}")
-    text = text.replace("gapTermKind(t)==='실제'?'실제':'계획'", "gapTermKind(t)==='확정'?'확정':'예정'")
-    text = text.replace("const note=selectedKind==='실제'", "const note=selectedKind==='확정'")
-
     # Timetable accordion titles show only semester + course count.
     status_line = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
-    if status_line in text:
-        text = text.replace(status_line, '', 1)
-    else:
-        # Accept the same template without escaped quotes as a fallback.
-        status_line_plain = "        <span class=\"plan-term-status ${confirmed?'confirmed':'scheduled'}\">${confirmed?'확정':'예정'}</span>\n"
-        if status_line_plain in text:
-            text = text.replace(status_line_plain, '', 1)
+    text = text.replace(status_line, '', 1)
+    status_line_plain = "        <span class=\"plan-term-status ${confirmed?'confirmed':'scheduled'}\">${confirmed?'확정':'예정'}</span>\n"
+    text = text.replace(status_line_plain, '', 1)
     if 'plan-term-status' in text:
         raise RuntimeError('plan-term-status markup still remains in app.js')
+
+    # Cohort/rule helper under 입학학기 is no longer displayed.
+    text = re.sub(
+        r"\s*document\.getElementById\('cohortText'\)\.textContent=`적용: \$\{cohort\.label\} · \$\{rule\.label\}`;",
+        '',
+        text,
+        count=1,
+    )
+
+    # Plan-list sorting: semester -> weekday/time -> category priority -> course name.
+    helper = r'''const PLAN_LIST_CATEGORY_PRIORITY={
+  major_required:0,major_elective:1,teaching:2,common:3,prerequisite:4,
+  report:5,thesis:6,research_guidance:7,lifelong:8,audit:9,unknown:99
+};
+function sortedPlannedRecords(records){
+  const dayOrder={월:0,화:1,수:2,목:3,금:4,토:5,일:6};
+  return records.map((r,i)=>({r,i})).sort((a,b)=>{
+    const termDiff=termIndex(a.r.term)-termIndex(b.r.term);
+    if(termDiff)return termDiff;
+    const ao=offeringForPlanRecord(a.r)||a.r,bo=offeringForPlanRecord(b.r)||b.r;
+    const at=timeRangeForPlanRecord(a.r),bt=timeRangeForPlanRecord(b.r);
+    const ad=dayOrder[ao.day??a.r.day]??99,bd=dayOrder[bo.day??b.r.day]??99;
+    if(ad!==bd)return ad-bd;
+    const as=at?.start??99999,bs=bt?.start??99999;
+    if(as!==bs)return as-bs;
+    const ac=PLAN_LIST_CATEGORY_PRIORITY[a.r.category]??98,bc=PLAN_LIST_CATEGORY_PRIORITY[b.r.category]??98;
+    if(ac!==bc)return ac-bc;
+    return String(a.r.courseName||'').localeCompare(String(b.r.courseName||''),'ko');
+  });
+}
+'''
+    if 'function sortedPlannedRecords(records)' not in text:
+        marker = 'function renderPlan(){'
+        if marker not in text:
+            raise RuntimeError('renderPlan marker not found')
+        text = text.replace(marker, helper + '\n' + marker, 1)
+
+    old_map = "body.innerHTML=sc.planned.map((r,i)=>{"
+    new_map = "body.innerHTML=sortedPlannedRecords(sc.planned).map(({r,i})=>{"
+    if old_map in text:
+        text = text.replace(old_map, new_map, 1)
+    elif new_map not in text:
+        raise RuntimeError('planned course map not found')
 
     write_if_changed(path, text)
     return RELEASE_VERSION
@@ -61,6 +94,27 @@ def normalize_index(app_version: str) -> None:
                   f'<meta name="application-version" content="{app_version}">', text, count=1)
     text = re.sub(r'<footer class="footer">\s*<b>v[0-9.]+:</b>',
                   f'<footer class="footer">\n    <b>v{app_version}:</b>', text, count=1)
+
+    # 입학학기 하단의 적용 범위 보조문구 제거.
+    text = text.replace('<div class="card"><label>입학학기</label><select id="admissionSelect"></select><div class="muted" id="cohortText"></div></div>',
+                        '<div class="card"><label>입학학기</label><select id="admissionSelect"></select></div>', 1)
+
+    # 사용방법 3단계는 단계명만 남김.
+    text = text.replace('<div><b>1. 기본정보 입력</b><span>전공·입학학기·과정/졸업유형을 선택하고 기본정보를 확인합니다.</span></div>',
+                        '<div><b>1. 기본정보 입력</b></div>', 1)
+    text = text.replace('<div><b>2. 수강이력 입력</b><span>성적조회 PDF를 불러오거나, 여러 장의 캡처 OCR·강의 찾기·직접 입력으로 등록합니다.</span></div>',
+                        '<div><b>2. 수강이력 입력</b></div>', 1)
+    text = text.replace('<div><b>3. 결과 확인</b><span>졸업 인정학점·평점·종별 요건과 교원자격 이수현황을 확인합니다.</span></div>',
+                        '<div><b>3. 결과 확인</b></div>', 1)
+
+    # 수강이력 안내문구 간결화.
+    old_callout = '''    <div class="callout">\n      과거에 이수한 과목은 최신 개설표에서 사라져도 <b>기록과 계산에 그대로 유지</b>됩니다.<br>\n      전공에 개설된 <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 인정종별을 바꿀 수 있습니다(과목명 옆 표시).<br>\n      성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, <b>누적평점 3.00 이상</b>이 별도 졸업요건입니다.\n    </div>'''
+    new_callout = '''    <div class="callout">\n      과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.<br>\n      <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 종별을 바꿀 수 있습니다.<br>\n      성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, 졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.\n    </div>'''
+    if old_callout in text:
+        text = text.replace(old_callout, new_callout, 1)
+    elif '과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.' not in text:
+        raise RuntimeError('history guidance callout not found')
+
     write_if_changed(path, text)
 
 
@@ -71,16 +125,16 @@ def normalize_validator(app_version: str) -> None:
     text = re.sub(r"'styles\.css\?v=[0-9.]+'", f"'styles.css?v={app_version}'", text)
     text = re.sub(r"'app\.js\?v=[0-9.]+'", f"'app.js?v={app_version}'", text)
 
-    if "check('timetable status badges removed'" not in text:
-        anchor = "check('confirmed timetable default open','openPlanTimetableTerms.add(DATA.snapshot)' in app)"
-        check_line = "check('timetable status badges removed','plan-term-status' not in app)"
-        if anchor in text:
-            text = text.replace(anchor, anchor + "\n" + check_line, 1)
-        else:
-            marker = "passed=sum(1 for _,ok,_ in checks if ok)"
-            if marker not in text:
-                raise RuntimeError('validator insertion marker not found')
-            text = text.replace(marker, check_line + "\n\n" + marker, 1)
+    checks = """check('cohort helper removed','id=\"cohortText\"' not in html and "getElementById('cohortText')" not in app)
+check('quick guide descriptions removed','전공·입학학기·과정/졸업유형을 선택하고 기본정보를 확인합니다.' not in html and '성적조회 PDF를 불러오거나, 여러 장의 캡처 OCR' not in html)
+check('history guidance wording','과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.' in html and '졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.' in html)
+check('planned list ordering helper','function sortedPlannedRecords(records)' in app and 'sortedPlannedRecords(sc.planned)' in app and 'PLAN_LIST_CATEGORY_PRIORITY' in app)
+"""
+    if "check('cohort helper removed'" not in text:
+        marker = "passed=sum(1 for _,ok,_ in checks if ok)"
+        if marker not in text:
+            raise RuntimeError('validator insertion marker not found')
+        text = text.replace(marker, checks + '\n' + marker, 1)
 
     write_if_changed(path, text)
 
