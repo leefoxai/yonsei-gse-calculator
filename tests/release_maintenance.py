@@ -24,7 +24,6 @@ def write_if_changed(path: Path, content: str) -> bool:
 def normalize_app() -> str:
     path = ROOT / 'app.js'
     text = path.read_text(encoding='utf-8')
-    # Keep the JS fallback title in sync with the visible HTML title.
     text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)
     text, count = re.subn(r"const APP_VERSION = '[^']+';", f"const APP_VERSION = '{RELEASE_VERSION}';", text, count=1)
     if count != 1:
@@ -40,6 +39,7 @@ def normalize_plan_ui() -> None:
     html = re.sub(r'styles\.css\?v=[0-9.]+', f'styles.css?v={RELEASE_VERSION}', html, count=1)
     html = re.sub(r'app\.js\?v=[0-9.]+', f'app.js?v={RELEASE_VERSION}', html, count=1)
     html = re.sub(r'<meta name="application-version" content="[^"]+">', f'<meta name="application-version" content="{RELEASE_VERSION}">', html, count=1)
+    html = re.sub(r'<footer class="footer">\s*<b>v[0-9.]+:</b>', f'<footer class="footer">\n    <b>v{RELEASE_VERSION}:</b>', html, count=1)
 
     old_head = '''<details class="card section input-section step-details" id="planSection" open>
     <summary class="section-title-row"><h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2></summary>
@@ -71,7 +71,6 @@ def normalize_plan_ui() -> None:
     elif 'class="plan-scenario-inline no-print"' not in html:
         raise RuntimeError('plan scenario block not found in index.html')
 
-    # Move the requirement-gap candidates above the manual course-add builder.
     later_gap = '    <div id="planGapCandidates" class="gap-candidates"></div>\n    <div id="planWarnings"></div>'
     if later_gap in html:
         html = html.replace(later_gap, '    <div id="planWarnings"></div>', 1)
@@ -127,6 +126,10 @@ def normalize_validator() -> None:
         if ui_anchor not in text:
             raise RuntimeError('validate_packs.py scenario anchor not found')
         text = text.replace(ui_anchor, ui_anchor + ui_checks, 1)
+    footer_check = "check('footer version sync',f'<b>v{app_version}:</b>' in html)"
+    if "check('footer version sync'" not in text:
+        anchor = "check('app version detectable',bool(app_version),app_version)"
+        text = text.replace(anchor, anchor + "\n" + footer_check, 1)
     write_if_changed(path, text)
 
 
