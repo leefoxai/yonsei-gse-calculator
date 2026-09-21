@@ -1,0 +1,62 @@
+name: Validate calculator
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.actor != 'github-actions[bot]' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Normalize release metadata
+        run: python tests/release_maintenance.py
+
+      - name: Require generated metadata in pull requests
+        if: github.event_name == 'pull_request'
+        run: git diff --exit-code -- app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
+
+      - name: JavaScript syntax
+        run: node --check app.js
+
+      - name: Data and markup validation
+        run: python tests/validate_packs.py | tee validation.log
+
+      - name: Application regression
+        run: node tests/projection_regression.cjs | tee application.log
+
+      - name: Generate regression report
+        run: python tests/generate_regression_report.py --validation-log validation.log --application-log application.log
+
+      - name: Commit maintenance output
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if git diff --quiet -- app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md
+          git commit -m "chore: sync release metadata and validation report [skip ci]"
+          git push
