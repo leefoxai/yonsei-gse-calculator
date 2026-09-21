@@ -56,7 +56,7 @@ let CERT_RULES = {"snapshot":"2026-2","source":{"title":"연세대학교 교육�
 const EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))
 const STORAGE_KEY = 'yonsei-gse-degree-calculator-v1';
 const SCHEMA_VERSION = 3;
-const APP_VERSION = '3.1.11';
+const APP_VERSION = '3.1.12';
 const ALLOW_LOCAL_PACK_OVERRIDES = false;
 const DATA_PACK_SCHEMA_VERSION = 1;
 const RULES_PACK_SCHEMA_VERSION = 1;
@@ -2008,7 +2008,7 @@ function buildWeeklyScheduleHtml(records,settings){
 function planTimetableExtraHtml(unplaced,outOfRange){
   let extra='';
   if(unplaced.length)extra+=`<h4>시간 미정 과목</h4><div class="table-wrap"><table><thead><tr><th>학정번호</th><th>과목명 / 강의정보</th><th>전공/구분</th><th>종별</th><th>상태</th></tr></thead><tbody>${unplaced.map(({r,o})=>{
-    const badge=(r.availability||o.availability)==='actual'?'<span class="badge actual">확정</span>':(r.availability||o.availability)==='planned'?'<span class="badge planned">예정</span>':'<span class="badge manual">시간 미정</span>';
+    const badge=(r.availability||o.availability)==='actual'?'<span class="badge actual">확정</span>':(r.availability||o.availability)==='planned'?'<span class="badge planned">개설 예정</span>':'<span class="badge manual">시간 미정</span>';
     const si=scheduleInfoWithSettings(o||r,state.scheduleSettings||defaultState().scheduleSettings);
     const sub=[o?.professor||r.professor||'',o?.day||r.day||'',si.time!=='시간 미정'?si.time:'',o?.room||r.room||''].filter(Boolean).join(' ');
     return `<tr><td class="mono">${esc(r.courseCode||'')}</td><td><div class="course-name">${esc(r.courseName)}</div><div class="muted">${esc(sub||'요일·시간 정보 없음')}</div></td><td>${esc(courseOriginLabel(o||r))}</td><td>${esc(CATEGORY_LABELS[r.category||o.category||'unknown'])}</td><td>${badge}</td></tr>`;
@@ -2190,7 +2190,7 @@ function renderPlan(){
   if(!sc.planned.length){body.innerHTML=`<tr><td colspan="6" class="empty">현재 시트의 계획 과목이 없습니다.</td></tr>`;renderPlanTimetable();renderScheduleReferences();renderPlanWarnings();return;}
   body.innerHTML=sortedPlannedRecords(sc.planned).map(({r,i})=>{
     const av=r.availability||'manual';
-    const badge=av==='actual'?`<span class="badge actual">실제개설</span>`:av==='planned'?`<span class="badge planned">개설예정</span>`:av==='special'?`<span class="badge match">학위/공통</span>`:`<span class="badge manual">직접입력</span>`;
+    const badge=av==='actual'?`<span class="badge actual">실제개설</span>`:av==='planned'?`<span class="badge planned">개설 예정</span>`:av==='special'?`<span class="badge match">학위/공통</span>`:`<span class="badge manual">직접입력</span>`;
     return `<tr><td>${esc(r.term)}</td><td><div class="course-name">${esc(r.courseName)}</div><div class="muted mono">${esc(r.sectionCode||r.courseCode||'')}</div></td>
       <td><select class="inline-select plan-cat" data-i="${i}">${categoryOptionsHtml(r.category)}</select></td>
       <td><input class="plan-credit" data-i="${i}" type="number" min="0" step="1" value="${Number(r.credits||0)}" style="width:72px;padding:6px"></td>
@@ -2302,7 +2302,7 @@ function renderCatalog(){
   list.sort((a,b)=>(DAY_ORDER[a.day]||9)-(DAY_ORDER[b.day]||9)||scheduleInfo(a).order-scheduleInfo(b).order||(a.courseName||'').localeCompare(b.courseName||'','ko'));
   const body=document.getElementById('catalogBody');
   body.innerHTML=list.length?list.map(o=>{
-    let badge=o.availability==='actual'?`<span class="badge actual">실제개설</span>`:o.availability==='planned'?`<span class="badge planned">개설예정</span>`:o.availability==='planned_missing_actual'?`<span class="badge missing">실제미확인</span>`:`<span class="badge match">특수</span>`;
+    let badge=o.availability==='actual'?`<span class="badge actual">실제개설</span>`:o.availability==='planned'?`<span class="badge planned">개설 예정</span>`:o.availability==='planned_missing_actual'?`<span class="badge missing">실제미확인</span>`:`<span class="badge match">특수</span>`;
     const p=scheduleInfo(o);
     const sub=[o.professor||'',o.day||'',p.time!=='시간 미정'?p.time:'',o.room||''].filter(Boolean).join(' ');
     const displayCode=(o.sectionCodes||[])[0]||o.courseCode||'';
