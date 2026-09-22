@@ -38,6 +38,9 @@ jobs:
       - name: Apply UX feedback patch
         run: python tests/ux_feedback_patch.py
 
+      - name: Apply plan add toggle patch
+        run: python tests/plan_add_toggle_patch.py
+
       - name: Require generated metadata in pull requests
         if: github.event_name == 'pull_request'
         run: git diff --exit-code -- index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
