@@ -1,7 +1,7 @@
 {
   "packType": "yonsei-gse-data",
   "schemaVersion": 1,
-  "appVersion": "3.1.13",
+  "appVersion": "3.1.14",
   "snapshot": "2026-2",
   "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": "v2.3 validated baseline (removed 1 invalid empty row, 1 logical duplicate)",
@@ -4207,8 +4207,7 @@
         "courseCode": "SCE6572",
         "courseName": "가족상담",
         "aliases": [
-          "가족상담",
-          "이상심리학"
+          "가족상담"
         ],
         "credits": 3,
         "category": "major_elective",
@@ -4525,8 +4524,7 @@
         "courseCode": "SCE6572",
         "courseName": "가족상담",
         "aliases": [
-          "가족상담",
-          "이상심리학"
+          "가족상담"
         ],
         "credits": 3,
         "category": "major_elective",
@@ -4712,8 +4710,7 @@
         "courseCode": "SCE6572",
         "courseName": "가족상담",
         "aliases": [
-          "가족상담",
-          "이상심리학"
+          "가족상담"
         ],
         "credits": 3,
         "category": "major_elective",
@@ -5041,8 +5038,7 @@
         "courseCode": "SCE6572",
         "courseName": "가족상담",
         "aliases": [
-          "가족상담",
-          "이상심리학"
+          "가족상담"
         ],
         "credits": 3,
         "category": "major_elective",
@@ -5228,8 +5224,7 @@
         "courseCode": "SCE6572",
         "courseName": "가족상담",
         "aliases": [
-          "가족상담",
-          "이상심리학"
+          "가족상담"
         ],
         "credits": 3,
         "category": "major_elective",

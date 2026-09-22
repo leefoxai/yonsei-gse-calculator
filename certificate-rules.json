@@ -1,7 +1,7 @@
 {
   "packType": "yonsei-gse-certificate-rules",
   "schemaVersion": 1,
-  "appVersion": "3.1.13",
+  "appVersion": "3.1.14",
   "snapshot": "2026-2",
   "updatedAt": "2026-09-18T13:44:00+09:00",
   "source": {
@@ -400,16 +400,21 @@
             },
             {
               "no": 10,
-              "basicSubject": "아동심리학",
+              "basicSubject": "임상심리학",
               "courses": []
             },
             {
               "no": 11,
-              "basicSubject": "청소년심리",
+              "basicSubject": "아동심리학",
               "courses": []
             },
             {
               "no": 12,
+              "basicSubject": "청소년심리",
+              "courses": []
+            },
+            {
+              "no": 13,
               "basicSubject": "상담실습",
               "courses": [
                 {
@@ -419,22 +424,22 @@
               ]
             },
             {
-              "no": 13,
+              "no": 14,
               "basicSubject": "직업교육론",
               "courses": []
             },
             {
-              "no": 14,
+              "no": 15,
               "basicSubject": "직업정보",
               "courses": []
             },
             {
-              "no": 15,
+              "no": 16,
               "basicSubject": "진로지도",
               "courses": []
             },
             {
-              "no": 16,
+              "no": 17,
               "basicSubject": "학습심리학",
               "courses": [
                 {
@@ -448,22 +453,12 @@
               ]
             },
             {
-              "no": 17,
+              "no": 18,
               "basicSubject": "이상심리학",
               "courses": [
                 {
                   "code": "SCE6550",
                   "courseName": "이상심리학"
-                }
-              ]
-            },
-            {
-              "no": 18,
-              "basicSubject": "상담실습",
-              "courses": [
-                {
-                  "code": "SCE6577",
-                  "courseName": "상담실습및사례연구"
                 }
               ]
             }

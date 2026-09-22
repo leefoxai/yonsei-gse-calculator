@@ -96,8 +96,8 @@ c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')==
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
-check('modular css linked','styles.css?v=3.1.13' in html)
-check('modular js linked','app.js?v=3.1.13' in html)
+check('modular css linked','styles.css?v=3.1.14' in html)
+check('modular js linked','app.js?v=3.1.14' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -174,6 +174,10 @@ check('전문상담1급 10과목 구조',int(c1br.get('minGroups',0))==10 and se
 check('전문상담1급 실습 중복선택 방지',c1br.get('choiceGroups',[{}])[0].get('groups')==[16,17,19,20,21] and int(c1br.get('choiceGroups',[{}])[0].get('min',0))==2,str(c1br.get('choiceGroups')))
 c2=_variant('상담교육','counselor2'); c2r=next((r.get('basicRule',{}) for r in c2.get('rulesByAdmission',[]) if r.get('from')=='2026-1'),{})
 check('전문상담2급 2026학번 7과목/13필수',int(c2r.get('minGroups',0))==7 and 13 in c2r.get('requiredGroups',[]),str(c2r))
+
+check('plan forecast uncertainty notice','id="planForecastNotice"' in html and '수강신청 전 실제 시간표를 반드시 확인' in html)
+check('requirement evidence drilldown','function requirementEvidenceHtml(' in app and 'kpi-evidence' in css and '인정·계획 과목' in app)
+check('teacher evidence drilldown','id="teacherEvidenceDetails"' in html and 'function teacherEvidenceHtml(' in app and 'teacher-evidence-details' in css)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')
