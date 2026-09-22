@@ -96,8 +96,8 @@ c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')==
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
-check('modular css linked','styles.css?v=3.1.14' in html)
-check('modular js linked','app.js?v=3.1.14' in html)
+check('modular css linked','styles.css?v=3.1.15' in html)
+check('modular js linked','app.js?v=3.1.15' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -178,6 +178,8 @@ check('전문상담2급 2026학번 7과목/13필수',int(c2r.get('minGroups',0))
 check('plan forecast uncertainty notice','id="planForecastNotice"' in html and '수강신청 전 실제 시간표를 반드시 확인' in html)
 check('requirement evidence drilldown','function requirementEvidenceHtml(' in app and 'kpi-evidence' in css and '인정·계획 과목' in app)
 check('teacher evidence drilldown','id="teacherEvidenceDetails"' in html and 'function teacherEvidenceHtml(' in app and 'teacher-evidence-details' in css)
+
+check('plan add toggle open by default','id="planAddSection" open' in html and 'plan-builder-toggle' in css)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')

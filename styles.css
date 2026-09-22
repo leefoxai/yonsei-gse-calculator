@@ -1521,3 +1521,23 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   .evidence-row .term{display:none}
 }
 @media print{.kpi-evidence,.teacher-evidence-wrap,.plan-forecast-notice{display:none!important}}
+
+
+/* v3.1.15 plan add toggle */
+.plan-builder-toggle{
+  margin:10px 0 8px;border:1px solid var(--line);border-radius:11px;background:#fff;overflow:hidden
+}
+.plan-builder-toggle>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:11px 13px;font-size:13px;font-weight:900;color:#344054;background:#fbfcfe
+}
+.plan-builder-toggle>summary::-webkit-details-marker{display:none}
+.plan-builder-toggle>summary::after{content:'›';font-size:18px;line-height:1;color:#667085;transition:transform .15s ease}
+.plan-builder-toggle[open]>summary::after{transform:rotate(90deg)}
+.plan-builder-toggle>.plan-builder{margin:0;border:0;border-top:1px solid var(--line);border-radius:0}
+.plan-builder-help{margin:0 0 10px;font-size:11px;line-height:1.45}
+@media(max-width:620px){
+  .plan-builder-toggle>summary{padding:10px 11px;font-size:12px}
+  .plan-builder-help{font-size:10px}
+}
+@media print{.plan-builder-toggle{border:0}.plan-builder-toggle>summary{display:none!important}}

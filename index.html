@@ -10,8 +10,8 @@
 <title>[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.1.14">
-<meta name="application-version" content="3.1.14">
+<link rel="stylesheet" href="styles.css?v=3.1.15">
+<meta name="application-version" content="3.1.15">
 </head>
 <body>
 <div class="app">
@@ -352,13 +352,10 @@
     </div>
     <div id="planGapCandidates" class="gap-candidates"></div>
 
-<div class="plan-builder">
-      <div class="pdf-import-head">
-        <div>
-          <h3>계획 과목 추가</h3>
-          <div class="muted" style="margin-top:4px">학기·종별·검색으로 개설 과목을 찾아 수강계획에 추가하세요. 추가하면 이수현황과 시간표가 즉시 다시 계산됩니다.</div>
-        </div>
-      </div>
+<details class="plan-builder-toggle no-print-ui" id="planAddSection" open>
+      <summary><span>계획 과목 추가</span></summary>
+      <div class="plan-builder">
+        <div class="muted plan-builder-help">학기·종별·검색으로 개설 과목을 찾아 수강계획에 추가하세요. 추가하면 이수현황과 시간표가 즉시 다시 계산됩니다.</div>
       <div class="plan-filter-row">
         <div><label>계획학기</label><select id="planTerm"></select></div>
         <div><label>종별 필터</label><select id="planFilterCategory"></select></div>
@@ -374,7 +371,8 @@
         <div><label>학점</label><input id="planCredits" type="number" min="0" step="1"></div>
         <button class="btn primary" id="addPlan">계획에 추가</button>
       </div>
-    </div>
+      </div>
+    </details>
     <div id="planSelectionNote" class="selection-note"></div>
     <div class="callout warnbox" style="margin-top:10px">
       2026-2는 <b>실제 시간표(.xls)</b>를 우선합니다. 5학기 예정표에는 있었으나 실제 시간표에서 확인되지 않은 과목은 미개설/변경 가능 항목으로 표시하고 기본 선택에서 제외합니다.
@@ -454,7 +452,7 @@
   </section>
 
   <footer class="footer">
-    <b>v3.1.14:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>v3.1.15:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 3단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -472,6 +470,6 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.1.14"></script>
+<script defer src="app.js?v=3.1.15"></script>
 </body>
 </html>
