@@ -1541,3 +1541,42 @@ code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f1f4
   .plan-builder-help{font-size:10px}
 }
 @media print{.plan-builder-toggle{border:0}.plan-builder-toggle>summary{display:none!important}}
+
+
+/* v3.1.16 unified left disclosure toggles */
+/* Every collapsible box uses one disclosure icon placed before its title. */
+details > summary{
+  list-style:none;
+}
+details > summary::-webkit-details-marker{
+  display:none;
+}
+details > summary::before{
+  content:'›';
+  display:inline-block;
+  flex:0 0 auto;
+  width:14px;
+  margin-right:7px;
+  color:#667085;
+  font-size:17px;
+  font-weight:800;
+  line-height:1;
+  text-align:center;
+  transform-origin:50% 50%;
+  transition:transform .15s ease;
+  vertical-align:-1px;
+}
+details[open] > summary::before{
+  transform:rotate(90deg);
+}
+/* Previous component-specific right-side arrows are disabled. */
+details > summary::after{
+  content:none!important;
+  display:none!important;
+}
+/* Keep title/action summaries aligned when they use flex/grid layouts. */
+.plan-section-summary::before,
+.analysis-heading::before,
+.section-title-row::before{
+  align-self:center;
+}
