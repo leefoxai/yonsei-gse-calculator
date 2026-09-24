@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.13'
+RELEASE_VERSION = '3.1.17'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -40,37 +40,64 @@ def keep_codes(group: dict, allowed_codes: set[str]) -> None:
     group['courses'] = [c for c in group.get('courses', []) if c.get('code') in allowed_codes]
 
 
+def counselor2_groups() -> list[dict]:
+    """2026-06-17 official Yonsei GSE basic-subject table, 상담교육 page."""
+    return [
+        {'no': 1, 'basicSubject': '심리학개론', 'courses': []},
+        {'no': 2, 'basicSubject': '심리검사', 'courses': [{'code': 'SCE6575', 'courseName': '심리검사'}]},
+        {'no': 3, 'basicSubject': '성격심리학', 'courses': [{'code': 'SCE6557', 'courseName': '성격심리학'}]},
+        {'no': 4, 'basicSubject': '특수아상담', 'courses': [{'code': 'SCE6594', 'courseName': '특수아상담'}]},
+        {'no': 5, 'basicSubject': '집단상담', 'courses': [{'code': 'SCE6505', 'courseName': '집단상담'}]},
+        {'no': 6, 'basicSubject': '가족상담', 'courses': [{'code': 'SCE6572', 'courseName': '가족상담'}]},
+        {'no': 7, 'basicSubject': '진로상담', 'courses': [{'code': 'SCE6573', 'courseName': '진로상담'}]},
+        {'no': 8, 'basicSubject': '상담이론과실제', 'courses': [{'code': 'SCE6506', 'courseName': '상담이론과실제'}]},
+        {'no': 9, 'basicSubject': '심리치료', 'courses': [{'code': 'SCE6548', 'courseName': '상담과심리치료'}]},
+        {'no': 10, 'basicSubject': '임상심리학', 'courses': []},
+        {'no': 11, 'basicSubject': '아동심리학', 'courses': []},
+        {'no': 12, 'basicSubject': '청소년심리', 'courses': []},
+        {'no': 13, 'basicSubject': '상담실습', 'courses': [{'code': 'SCE6565', 'courseName': '상담기법및실습'}]},
+        {'no': 14, 'basicSubject': '직업교육론', 'courses': []},
+        {'no': 15, 'basicSubject': '직업정보', 'courses': []},
+        {'no': 16, 'basicSubject': '진로지도', 'courses': []},
+        {'no': 17, 'basicSubject': '학습심리학', 'courses': [
+            {'code': 'SCE6592', 'courseName': '(구)학습심리학'},
+            {'code': 'SCE6584', 'courseName': '학습심리학'},
+        ]},
+        {'no': 18, 'basicSubject': '이상심리학', 'courses': [{'code': 'SCE6550', 'courseName': '이상심리학'}]},
+    ]
+
+
+def normalize_data_domain() -> None:
+    """Source-backed data corrections that must remain stable across releases."""
+    path = ROOT / 'data-pack.json'
+    pack = json.loads(path.read_text(encoding='utf-8'))
+    data = pack.get('data', {})
+    for bucket in ('offerings', 'globalOfferings', 'specialCourses'):
+        for row in data.get(bucket, []):
+            if row.get('courseCode') != 'SCE6572':
+                continue
+            aliases = list(dict.fromkeys(row.get('aliases') or []))
+            aliases = [a for a in aliases if a != '이상심리학']
+            if '가족상담' not in aliases:
+                aliases.insert(0, '가족상담')
+            row['aliases'] = aliases
+    write_if_changed(path, json.dumps(pack, ensure_ascii=False, indent=2) + '\n')
+
+
 def normalize_certificate_rules_domain() -> None:
-    """Apply source-backed corrections found during the 2026-09-21 certificate audit.
-
-    Sources:
-    - 2026-06-17 official basic-subject/pedagogy table (13 pages)
-    - current Yonsei GSE counselor certificate guide
-
-    The critical distinction is that rows printed *below* a basic-subject management
-    group as standalone 교과교육 rows must not automatically satisfy that basic group.
-    """
+    """Apply the consolidated official-rule corrections used by the public app."""
     path = ROOT / 'certificate-rules.json'
     cert = json.loads(path.read_text(encoding='utf-8'))
 
-    # 국어교육 p.1: 관리번호 8 기본이수 영역은 SKE6594/SKE6595.
-    # SKE6592/SKE6593/SKE6599 are standalone 교과교육 rows and must not satisfy group 8.
     korean = cert['majors']['국어교육']['variants'][0]
     keep_codes(find_group(korean, 8), {'SKE6594', 'SKE6595'})
 
-    # 역사교육 p.5: 관리번호 6 기본이수 영역 ends at SHE6547.
-    # SHE6592~6595 are standalone 교과교육 rows, not basic-group 6 alternatives.
     history = cert['majors']['역사교육']['variants'][0]
     keep_codes(find_group(history, 6), {'SHE6535', 'SHE6536', 'SHE6547'})
 
-    # 통합과학교육 p.13: 관리번호 13(대기과학)은 SGS6833/SGS6803 only.
-    # SGS6692/6693/6694/6796 are standalone 교과교육 rows.
     science = cert['majors']['통합과학교육']['variants'][0]
     keep_codes(find_group(science, 13), {'SGS6833', 'SGS6803'})
 
-    # 전문상담교사 1급: current official website states 7 required subjects +
-    # 상담실습및사례연구 1 + 선택 2과목 이상. Therefore required group 18
-    # must NOT double-count as one of the two selection subjects.
     counselor1 = find_variant(cert, '상담교육', 'counselor1')
     counselor1['basicRule']['requiredGroups'] = [2, 3, 4, 5, 6, 7, 8, 18]
     counselor1['basicRule']['choiceGroups'] = [{'groups': [16, 17, 19, 20, 21], 'min': 2}]
@@ -81,20 +108,18 @@ def normalize_certificate_rules_domain() -> None:
         '선택 2과목에 중복 산입하지 않음.'
     )
 
-    # 전문상담교사 2급 2026학번 분기는 공식 2026-06-17 표의 빨간 문구와 일치.
     counselor2 = find_variant(cert, '상담교육', 'counselor2')
-    counselor2['conditionText'] = '5과목 14학점 이상 이수 / 2026학번부터 7과목 이상 (1~18 중 6과목 이상, 13 필수)'
-    by_admission = counselor2.setdefault('rulesByAdmission', [])
-    for rule in by_admission:
+    counselor2['groups'] = counselor2_groups()
+    counselor2['conditionText'] = '5과목 14학점 이상 이수 / 2026학번부터 7과목 이상 (기본이수 6과목 이상, 13 상담실습 필수)'
+    for rule in counselor2.setdefault('rulesByAdmission', []):
         if rule.get('from') == '2026-1':
-            br = rule.setdefault('basicRule', {})
-            br.update({
+            rule.setdefault('basicRule', {}).update({
                 'type': 'groups',
                 'minGroups': 7,
                 'minCredits': 14,
                 'requiredGroups': [13],
                 'choiceGroups': [],
-                'sourceNote': '2026학번부터 7과목 이상, 1~18 중 6과목 이상, 관리번호 13 필수',
+                'sourceNote': '2026학번부터 상담실습(관리번호 13) 필수 + 기본이수과목 6과목 이상, 총 7과목 이상',
             })
 
     write_if_changed(path, json.dumps(cert, ensure_ascii=False, indent=2) + '\n')
@@ -102,7 +127,6 @@ def normalize_certificate_rules_domain() -> None:
 
 def sync_embedded_certificate_rules(text: str) -> str:
     cert = json.loads((ROOT / 'certificate-rules.json').read_text(encoding='utf-8'))
-    # The fallback should contain the same domain rules as the external pack.
     embedded = json.dumps(cert, ensure_ascii=False, separators=(',', ':'))
     pattern = r"let CERT_RULES = .*?;\nconst EMBEDDED_CERT_RULES = JSON\.parse\(JSON\.stringify\(CERT_RULES\)\)"
     replacement = f"let CERT_RULES = {embedded};\nconst EMBEDDED_CERT_RULES = JSON.parse(JSON.stringify(CERT_RULES))"
@@ -120,8 +144,13 @@ def normalize_app() -> str:
     if count != 1:
         raise RuntimeError('APP_VERSION not found in app.js')
 
-    # Keep external certificate-rules.json and the embedded fallback identical.
     text = sync_embedded_certificate_rules(text)
+
+    # Keep the embedded DATA fallback consistent with the corrected external pack.
+    text = text.replace(
+        '"courseCode":"SCE6572","courseName":"가족상담","aliases":["가족상담","이상심리학"]',
+        '"courseCode":"SCE6572","courseName":"가족상담","aliases":["가족상담"]'
+    )
 
     # Timetable accordion titles show only semester + course count.
     status_line = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
@@ -131,7 +160,6 @@ def normalize_app() -> str:
     if 'plan-term-status' in text:
         raise RuntimeError('plan-term-status markup still remains in app.js')
 
-    # Cohort/rule helper under 입학학기 is no longer displayed.
     text = re.sub(
         r"\s*document\.getElementById\('cohortText'\)\.textContent=`적용: \$\{cohort\.label\} · \$\{rule\.label\}`;",
         '',
@@ -140,12 +168,13 @@ def normalize_app() -> str:
     )
 
     # Plan-list sorting: semester -> weekday/time -> category priority -> course name.
+    # Regular timetable priority is Mon -> Tue -> Thu; other weekdays follow.
     helper = r'''const PLAN_LIST_CATEGORY_PRIORITY={
   major_required:0,major_elective:1,teaching:2,common:3,prerequisite:4,
   report:5,thesis:6,research_guidance:7,lifelong:8,audit:9,unknown:99
 };
 function sortedPlannedRecords(records){
-  const dayOrder={월:0,화:1,수:2,목:3,금:4,토:5,일:6};
+  const dayOrder={월:0,화:1,목:2,수:3,금:4,토:5,일:6};
   return records.map((r,i)=>({r,i})).sort((a,b)=>{
     const termDiff=termIndex(a.r.term)-termIndex(b.r.term);
     if(termDiff)return termDiff;
@@ -166,6 +195,13 @@ function sortedPlannedRecords(records){
         if marker not in text:
             raise RuntimeError('renderPlan marker not found')
         text = text.replace(marker, helper + '\n' + marker, 1)
+    else:
+        text = re.sub(
+            r"const dayOrder=\{월:\d+,화:\d+,수:\d+,목:\d+,금:\d+,토:\d+,일:\d+\};",
+            'const dayOrder={월:0,화:1,목:2,수:3,금:4,토:5,일:6};',
+            text,
+            count=1,
+        )
 
     old_map = "body.innerHTML=sc.planned.map((r,i)=>{"
     new_map = "body.innerHTML=sortedPlannedRecords(sc.planned).map(({r,i})=>{"
@@ -222,6 +258,13 @@ def normalize_validator(app_version: str) -> None:
             raise RuntimeError('validator insertion marker not found')
         text = text.replace(marker, teacher_checks + '\n' + marker, 1)
 
+    weekday_check = "check('plan weekday priority Mon Tue Thu',\"const dayOrder={월:0,화:1,목:2,수:3,금:4,토:5,일:6};\" in app)"
+    if "check('plan weekday priority Mon Tue Thu'" not in text:
+        marker = "passed=sum(1 for _,ok,_ in checks if ok)"
+        if marker not in text:
+            raise RuntimeError('validator insertion marker not found')
+        text = text.replace(marker, weekday_check + '\n\n' + marker, 1)
+
     write_if_changed(path, text)
 
 
@@ -247,7 +290,8 @@ def normalize_pack(path: Path, app_version: str) -> None:
 
 
 def main() -> None:
-    # Correct domain rules before syncing metadata/fallback code.
+    # All previously separate patch scripts are consolidated here.
+    normalize_data_domain()
     normalize_certificate_rules_domain()
     for name in PACK_FILES:
         normalize_pack(ROOT / name, RELEASE_VERSION)
