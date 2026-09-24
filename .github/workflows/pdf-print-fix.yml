@@ -1,0 +1,59 @@
+name: Apply PDF print layout fix
+
+on:
+  push:
+    branches: [fix/pdf-print-layout]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-print:
+    if: github.actor != 'github-actions[bot]' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply print layout fix
+        run: python tests/apply_pdf_print_fix.py
+
+      - name: Normalize release metadata
+        run: python tests/release_maintenance.py
+
+      - name: JavaScript syntax
+        run: node --check app.js
+
+      - name: Data and markup validation
+        run: python tests/validate_packs.py | tee validation.log
+
+      - name: Application regression
+        run: node tests/projection_regression.cjs | tee application.log
+
+      - name: Generate regression report
+        run: python tests/generate_regression_report.py --validation-log validation.log --application-log application.log
+
+      - name: Commit generated changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add styles.css index.html app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git commit -m "fix: use structured requirements table in PDF output [skip ci]"
+          git push
