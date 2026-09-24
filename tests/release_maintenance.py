@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.17'
+RELEASE_VERSION = '3.1.18'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -215,6 +215,87 @@ function sortedPlannedRecords(records){
     text = text.replace("<span class=\\\"badge planned\\\">예정</span>", "<span class=\\\"badge planned\\\">개설 예정</span>")
     text = text.replace("<span class=\"badge planned\">예정</span>", "<span class=\"badge planned\">개설 예정</span>")
 
+    action_nav_helpers = r'''
+function actionNavigationTarget(action){
+  const text=String(action?.text||'');
+  if(action?.kind==='exam'){
+    if(text.includes('종합시험'))return 'graduationComprehensivePassed';
+    if(text.includes('전공영어'))return 'graduationEnglishStatus';
+    return 'graduationChecklistSection';
+  }
+  if(action?.kind==='teacher'){
+    const mapping=[
+      ['전문상담교사 1급 기존자격','teacherCounselor1ExperienceYears'],
+      ['관련전공·표시과목','teacherRelatedMajorConfirmed'],
+      ['교원자격 전공학점','teacherRecognizedMajorCredits'],
+      ['전문상담교사 교과목','teacherBasicCourseCount'],
+      ['기본이수','teacherBasicCourseCount'],
+      ['교과교육','teacherRecognizedPedagogyCredits'],
+      ['교직이론','teacherRecognizedTheoryCount'],
+      ['교직소양','teacherRecognizedLiteracyCount'],
+      ['학교현장실습','teacherPracticeExemptApproved'],
+      ['교육봉사','teacherVolunteerHours'],
+      ['교직 평균성적','teacherTeachingAverage100'],
+      ['전공 평균성적','teacherMajorAverage100'],
+      ['교직과정 이수신청서','teacherApplicationSubmitted'],
+      ['교직적성·인성검사','teacherAptitudeCount'],
+      ['응급처치·심폐소생술','teacherCprCount'],
+      ['성인지교육','teacherGenderCount'],
+      ['교원자격무시험검정원서','teacherNoExamSubmitted'],
+      ['약물중독','teacherDrugCertificateSubmitted']
+    ];
+    return mapping.find(([needle])=>text.includes(needle))?.[1]||'teacherChecklistSection';
+  }
+  if(text.includes('평점'))return 'historySection';
+  if(text.includes('졸업 인정학점'))return 'planAddSection';
+  if(action?.kind==='degree')return 'planGapCandidates';
+  return 'resultDetailsPanel';
+}
+function navigateToAction(action){
+  const id=actionNavigationTarget(action),target=document.getElementById(id);
+  if(!target)return;
+  for(let el=target;el;el=el.parentElement){if(el.tagName==='DETAILS')el.open=true;}
+  target.scrollIntoView({behavior:'smooth',block:'center'});
+  window.setTimeout(()=>{
+    document.querySelectorAll('.action-target-flash').forEach(el=>el.classList.remove('action-target-flash'));
+    const focusTarget=target.matches('input,select,textarea,button')?target:null;
+    const flashTarget=focusTarget||target;
+    flashTarget.classList.add('action-target-flash');
+    window.setTimeout(()=>flashTarget.classList.remove('action-target-flash'),1500);
+    if(focusTarget&&!focusTarget.disabled){
+      try{focusTarget.focus({preventScroll:true});}catch(e){focusTarget.focus();}
+    }
+  },320);
+}
+'''
+    if 'function actionNavigationTarget(action)' not in text:
+        marker = 'function renderActionSummary(){'
+        if marker not in text:
+            raise RuntimeError('renderActionSummary marker not found')
+        text = text.replace(marker, action_nav_helpers + '\n' + marker, 1)
+
+    old_list = '''  const list=shown.length?shown.map((a,i)=>`<div class="next-action ${esc(a.kind)}"><span class="next-action-num">${i+1}</span><span>${esc(a.text)}</span></div>`).join(''):`<div class="next-action ok"><span class="next-action-num">✓</span><span>현재 입력된 학점·평점·체크리스트 기준 추가 확인 항목이 없습니다.</span></div>`;'''
+    new_list = '''  const list=shown.length?shown.map((a,i)=>`<div class="next-action ${esc(a.kind)} actionable" data-action-index="${i}" role="button" tabindex="0" aria-label="${esc(a.text)} 위치로 이동"><span class="next-action-num">${i+1}</span><span>${esc(a.text)}</span><span class="next-action-go" aria-hidden="true">›</span></div>`).join(''):`<div class="next-action ok"><span class="next-action-num">✓</span><span>현재 입력된 학점·평점·체크리스트 기준 추가 확인 항목이 없습니다.</span></div>`;'''
+    if old_list in text:
+        text = text.replace(old_list, new_list, 1)
+    elif 'data-action-index="${i}"' not in text:
+        raise RuntimeError('action-summary list template not found')
+
+    old_render_end = '''  wrap.innerHTML=`<div class="result-headline-card ${mode}"><div class="result-headline-kicker">현재 입력 기준</div><div class="result-headline-title">${esc(title)}</div><div class="result-headline-sub">${esc(sub)}</div></div><div class="next-actions-card"><div class="next-actions-head"><h3>지금 해야 할 일 · 현재 이수 기준</h3><span class="action-count">${actions.length}개</span></div><div class="next-action-list">${list}${extra?`<div class="muted" style="margin-top:3px">외 ${extra}개 항목은 상세 계산에서 확인할 수 있습니다.</div>`:''}</div></div>`;
+}'''
+    new_render_end = '''  wrap.innerHTML=`<div class="result-headline-card ${mode}"><div class="result-headline-kicker">현재 입력 기준</div><div class="result-headline-title">${esc(title)}</div><div class="result-headline-sub">${esc(sub)}</div></div><div class="next-actions-card"><div class="next-actions-head"><h3>지금 해야 할 일 · 현재 이수 기준</h3><span class="action-count">${actions.length}개</span></div><div class="next-action-list">${list}${extra?`<div class="muted" style="margin-top:3px">외 ${extra}개 항목은 상세 계산에서 확인할 수 있습니다.</div>`:''}</div></div>`;
+  wrap.querySelectorAll('.next-action[data-action-index]').forEach(el=>{
+    const action=shown[Number(el.dataset.actionIndex)];
+    const go=()=>navigateToAction(action);
+    el.addEventListener('click',go);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+  });
+}'''
+    if old_render_end in text:
+        text = text.replace(old_render_end, new_render_end, 1)
+    elif "wrap.querySelectorAll('.next-action[data-action-index]')" not in text:
+        raise RuntimeError('action-summary render end not found')
+
     write_if_changed(path, text)
     return RELEASE_VERSION
 
@@ -244,6 +325,52 @@ def normalize_index(app_version: str) -> None:
     write_if_changed(path, text)
 
 
+def normalize_styles() -> None:
+    path = ROOT / 'styles.css'
+    text = path.read_text(encoding='utf-8')
+    marker = '/* v3.1.18 action summary navigation */'
+    if marker not in text:
+        text += r'''
+
+/* v3.1.18 action summary navigation */
+.next-action.actionable{
+  grid-template-columns:22px minmax(0,1fr) auto;
+  cursor:pointer;
+  transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease
+}
+.next-action.actionable:hover{
+  border-color:#bfd0e5;
+  box-shadow:0 2px 8px rgba(16,24,40,.06);
+  transform:translateY(-1px)
+}
+.next-action.actionable:focus-visible{
+  outline:2px solid #0b57a4;
+  outline-offset:2px
+}
+.next-action-go{
+  align-self:center;
+  color:#667085;
+  font-size:18px;
+  font-weight:900;
+  line-height:1
+}
+.action-target-flash{
+  animation:actionTargetFlash 1.5s ease
+}
+@keyframes actionTargetFlash{
+  0%{outline:0 solid rgba(11,87,164,0);outline-offset:2px}
+  25%{outline:4px solid rgba(11,87,164,.28);outline-offset:2px}
+  70%{outline:4px solid rgba(11,87,164,.16);outline-offset:2px}
+  100%{outline:0 solid rgba(11,87,164,0);outline-offset:2px}
+}
+@media print{
+  .next-action.actionable{cursor:default;transform:none!important}
+  .next-action-go{display:none!important}
+}
+'''
+    write_if_changed(path, text)
+
+
 def normalize_validator(app_version: str) -> None:
     path = ROOT / 'tests' / 'validate_packs.py'
     text = path.read_text(encoding='utf-8')
@@ -264,6 +391,13 @@ def normalize_validator(app_version: str) -> None:
         if marker not in text:
             raise RuntimeError('validator insertion marker not found')
         text = text.replace(marker, weekday_check + '\n\n' + marker, 1)
+
+    action_nav_check = "check('action summary navigates to relevant inputs',\"function actionNavigationTarget(action)\" in app and \"data-action-index\" in app and \"graduationComprehensivePassed\" in app and \"teacherAptitudeCount\" in app and \".next-action.actionable\" in css and \"actionTargetFlash\" in css)"
+    if "check('action summary navigates to relevant inputs'" not in text:
+        marker = "passed=sum(1 for _,ok,_ in checks if ok)"
+        if marker not in text:
+            raise RuntimeError('validator insertion marker not found')
+        text = text.replace(marker, action_nav_check + '\n\n' + marker, 1)
 
     write_if_changed(path, text)
 
@@ -297,6 +431,7 @@ def main() -> None:
         normalize_pack(ROOT / name, RELEASE_VERSION)
     app_version = normalize_app()
     normalize_index(app_version)
+    normalize_styles()
     normalize_validator(app_version)
     print(f'Release maintenance complete - app {app_version}')
 
