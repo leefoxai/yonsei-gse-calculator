@@ -1,6 +1,8 @@
 name: Hide interactive UI in print
 
 on:
+  push:
+    branches: [fix/pdf-print-layout]
   workflow_dispatch:
 
 permissions:
@@ -8,6 +10,7 @@ permissions:
 
 jobs:
   patch:
+    if: github.actor != 'github-actions[bot]' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
