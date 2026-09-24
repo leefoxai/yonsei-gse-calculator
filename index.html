@@ -32,18 +32,19 @@
   </header>
 
   <details class="card quick-guide no-print" id="quickGuide" open>
-    <summary>사용방법 · 3단계</summary>
+    <summary>사용방법 · 4단계</summary>
     <div class="quick-guide-grid">
       <div><b>1. 기본정보 입력</b></div>
       <div><b>2. 수강이력 입력</b></div>
-      <div><b>3. 결과 확인</b></div>
+      <div><b>3. 이수현황 확인</b></div>
+      <div><b>4. 향후 수강계획</b></div>
     </div>
     <div class="quick-guide-extra">
-      <span class="quick-guide-extra-title">결과 확인과 수강계획</span>
+      <span class="quick-guide-extra-title">핵심 흐름</span>
       <div class="quick-guide-extra-list">
-        <span class="quick-guide-extra-item">수강계획 · 필요한 과목을 학기별로 확인</span>
-        <span class="quick-guide-extra-item">시나리오 · 향후 수강계획에서 저장·비교</span>
-        <span class="quick-guide-extra-item">개설예정 · 학기별 개설 예정 과목 조회</span>
+        <span class="quick-guide-extra-item">현재 충족 요건과 부족 요건 확인</span>
+        <span class="quick-guide-extra-item">계획 과목을 추가해 충족 예정 상태 확인</span>
+        <span class="quick-guide-extra-item">필요할 때 시간표·개설정보 확인</span>
       </div>
     </div>
   </details>
@@ -53,7 +54,9 @@
     <span class="workflow-arrow">→</span>
     <div class="workflow-step" data-step="history"><span class="num">2</span><span>수강이력</span></div>
     <span class="workflow-arrow">→</span>
-    <div class="workflow-step" data-step="result"><span class="num">3</span><span>결과확인</span></div>
+    <div class="workflow-step" data-step="result"><span class="num">3</span><span>이수현황</span></div>
+    <span class="workflow-arrow">→</span>
+    <div class="workflow-step" data-step="plan"><span class="num">4</span><span>수강계획</span></div>
   </div>
 
   <details class="input-zone no-print-ui step-details" id="inputZone" open>
@@ -208,7 +211,7 @@
 
   <details class="analysis-zone step-details" id="analysisZone" open>
     <summary class="analysis-heading no-print">
-      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황 분석 결과</span></h2><p>현재 요건과 향후 수강계획을 함께 확인합니다. 값을 수정하면 즉시 다시 계산됩니다.</p></div>
+      <div><h2 class="step-title"><span class="step-no">3</span><span>이수현황</span></h2><p>현재 충족 상태와 부족한 요건을 먼저 확인합니다. 상세 계산 근거는 아래에서 펼쳐볼 수 있습니다.</p></div>
       <div id="resultStatus" class="result-status"></div>
     </summary>
     <div class="analysis-empty no-print" id="dashboardEmptyState">
@@ -220,12 +223,12 @@
   <section id="projectionControls" class="card projection-controls" aria-label="계획 반영 범위"></section>
   <div id="resultPrimarySummary" class="result-primary-summary"></div>
   <nav class="analysis-links no-print" aria-label="분석과 수강계획 이동">
-    <button type="button" class="btn small" data-analysis-target="resultDetailsPanel">요건·체크리스트</button>
-    <button type="button" class="btn small" data-analysis-target="planSection">향후 수강계획</button>
+    <button type="button" class="btn small" data-analysis-target="resultDetailsPanel">상세 계산 근거</button>
+    <button type="button" class="btn small" data-analysis-target="planSection">4. 향후 수강계획</button>
   </nav>
   <div class="analysis-workspace" id="analysisWorkspace">
   <details class="result-details-panel" id="resultDetailsPanel" open>
-    <summary>상세 계산 · 체크리스트</summary>
+    <summary>상세 계산 근거 · 체크리스트</summary>
   <section class="kpi-wrap" id="kpiSection">
     <h2 class="req-cards-title">이수요건 판정</h2>
     <div class="grid kpi" id="kpiGrid"></div>
@@ -251,10 +254,11 @@
 
     <div id="teacherCertificateVariantWrap" class="teacher-cert-variant"></div>
     <div id="teacherRuleNotice" class="callout warnbox" style="margin-top:10px"></div>
+    <h3 class="teacher-subtitle">자동 계산</h3>
     <div id="teacherChecklistAuto" class="teacher-auto-grid teacher-auto-grid-v2"></div>
     <div id="teacherEvidenceDetails" class="teacher-evidence-wrap"></div>
 
-    <h3 class="teacher-subtitle">개인별 인정 결과</h3>
+    <h3 class="teacher-subtitle">본인 · 행정 확인 필요</h3>
     <div class="teacher-manual-grid teacher-manual-grid-v2">
       <label class="teacher-check teacher-secondary-only"><input type="checkbox" id="teacherRelatedMajorConfirmed"> 학부 전공 ↔ 교육대학원 전공의 관련전공/표시과목 일치 확인</label>
       <label class="teacher-check"><input type="checkbox" id="teacherApplicationSubmitted"> 입학 첫 학기 교직과정 이수신청서 제출</label>
@@ -336,7 +340,7 @@
   </details>
 <details class="card section input-section step-details" id="planSection" open>
     <summary class="section-title-row plan-section-summary">
-      <h2 class="step-title"><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2>
+      <h2 class="step-title"><span class="step-no">4</span><span>향후 수강계획</span><span class="addon-badge">시뮬레이터</span></h2>
       <div class="plan-scenario-inline no-print" onclick="event.stopPropagation()">
         <div id="scenarioTabs" class="tabs plan-title-tabs"></div>
         <button class="btn small plan-icon-btn" id="renameScenario" type="button" title="현재 시트 이름 수정" aria-label="현재 시트 이름 수정">✎</button>
