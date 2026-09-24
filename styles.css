@@ -1580,3 +1580,40 @@ details > summary::after{
 .section-title-row::before{
   align-self:center;
 }
+
+
+/* v3.1.18 action summary navigation */
+.next-action.actionable{
+  grid-template-columns:22px minmax(0,1fr) auto;
+  cursor:pointer;
+  transition:border-color .15s ease,box-shadow .15s ease,transform .15s ease
+}
+.next-action.actionable:hover{
+  border-color:#bfd0e5;
+  box-shadow:0 2px 8px rgba(16,24,40,.06);
+  transform:translateY(-1px)
+}
+.next-action.actionable:focus-visible{
+  outline:2px solid #0b57a4;
+  outline-offset:2px
+}
+.next-action-go{
+  align-self:center;
+  color:#667085;
+  font-size:18px;
+  font-weight:900;
+  line-height:1
+}
+.action-target-flash{
+  animation:actionTargetFlash 1.5s ease
+}
+@keyframes actionTargetFlash{
+  0%{outline:0 solid rgba(11,87,164,0);outline-offset:2px}
+  25%{outline:4px solid rgba(11,87,164,.28);outline-offset:2px}
+  70%{outline:4px solid rgba(11,87,164,.16);outline-offset:2px}
+  100%{outline:0 solid rgba(11,87,164,0);outline-offset:2px}
+}
+@media print{
+  .next-action.actionable{cursor:default;transform:none!important}
+  .next-action-go{display:none!important}
+}

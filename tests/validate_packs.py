@@ -96,8 +96,8 @@ c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')==
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
-check('modular css linked','styles.css?v=3.1.17' in html)
-check('modular js linked','app.js?v=3.1.17' in html)
+check('modular css linked','styles.css?v=3.1.18' in html)
+check('modular js linked','app.js?v=3.1.18' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -184,6 +184,8 @@ check('plan add toggle open by default','id="planAddSection" open' in html and '
 check('all disclosure toggles aligned left',"details > summary::before" in css and "details > summary::after" in css and "content:none!important" in css)
 
 check('plan weekday priority Mon Tue Thu',"const dayOrder={월:0,화:1,목:2,수:3,금:4,토:5,일:6};" in app)
+
+check('action summary navigates to relevant inputs',"function actionNavigationTarget(action)" in app and "data-action-index" in app and "graduationComprehensivePassed" in app and "teacherAptitudeCount" in app and ".next-action.actionable" in css and "actionTargetFlash" in css)
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')
