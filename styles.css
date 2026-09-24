@@ -1700,3 +1700,9 @@ details > summary::after{
     page-break-inside:avoid!important;
   }
 }
+
+
+/* v3.1.19 print interaction cleanup */
+@media print{
+  .no-print-ui{display:none!important}
+}
