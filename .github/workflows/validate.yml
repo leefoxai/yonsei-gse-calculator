@@ -29,20 +29,8 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Apply source-backed domain corrections
-        run: python tests/domain_data_corrections.py
-
-      - name: Normalize release metadata
+      - name: Normalize release and apply maintained corrections
         run: python tests/release_maintenance.py
-
-      - name: Apply UX feedback patch
-        run: python tests/ux_feedback_patch.py
-
-      - name: Apply plan add toggle patch
-        run: python tests/plan_add_toggle_patch.py
-
-      - name: Apply unified toggle position patch
-        run: python tests/toggle_position_patch.py
 
       - name: Require generated metadata in pull requests
         if: github.event_name == 'pull_request'
@@ -70,5 +58,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py REGRESSION_TEST_REPORT.md
-          git commit -m "chore: sync domain rules, UX and validation report [skip ci]"
+          git commit -m "chore: sync release metadata, rules and validation report [skip ci]"
           git push
