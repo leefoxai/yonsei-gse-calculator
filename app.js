@@ -2538,7 +2538,7 @@ function renderUxState(){
 
   const steps=[...document.querySelectorAll('#workflowStrip .workflow-step')];
   if(steps.length){
-    steps.forEach(x=>x.classList.remove('active','done'));
+    steps.forEach(x=>x.classList.remove('active','done','available'));
     if(!profileConfirmed){
       steps[0]?.classList.add('active');
     }else if(historyCount===0){
@@ -2548,6 +2548,7 @@ function renderUxState(){
       steps[0]?.classList.add('done');
       steps[1]?.classList.add('done');
       steps[2]?.classList.add('active');
+      steps[3]?.classList.add('available');
     }
   }
 }
@@ -4404,6 +4405,16 @@ if(historySummary)historySummary.addEventListener('click',e=>{
     document.getElementById('profileSection')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 });
+document.querySelectorAll('#workflowStrip .workflow-step').forEach(step=>step.addEventListener('click',()=>{
+  const target={profile:'inputZone',history:'historySection',result:'analysisZone',plan:'planSection'}[step.dataset.step];
+  const el=document.getElementById(target);
+  if(!el)return;
+  if('open' in el)el.open=true;
+  if(step.dataset.step==='plan'){
+    const parent=document.getElementById('analysisZone');if(parent)parent.open=true;
+  }
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}));
 document.getElementById('historyTerm').onchange=()=>{updateHistoryCreditNote();applyHistorySelection();};
 document.getElementById('historyFilterCategory').onchange=refreshHistoryCourse;
 document.getElementById('historyScope').onchange=refreshHistoryCourse;

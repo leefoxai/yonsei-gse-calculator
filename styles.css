@@ -1617,3 +1617,15 @@ details > summary::after{
   .next-action.actionable{cursor:default;transform:none!important}
   .next-action-go{display:none!important}
 }
+
+
+/* === v3.2 four-step information architecture === */
+.quick-guide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.workflow-step{cursor:pointer}
+.workflow-step.available{color:#0b57a4}
+.workflow-step.available .num{background:#eef4ff;color:#0b57a4;border:1px solid #9fc3e8}
+#planSection{border-left:4px solid #0b57a4}
+#planSection>.plan-section-summary .step-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#planSection>.plan-section-summary .step-no{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:999px;background:#0b57a4;color:#fff;font-size:12px}
+@media(max-width:760px){.quick-guide-grid{grid-template-columns:1fr 1fr}.workflow-step{font-size:11px}}
+@media(max-width:480px){.quick-guide-grid{grid-template-columns:1fr}}
