@@ -90,7 +90,7 @@
   }
 
   function statusSummary(cell) {
-    if (!cell) return '정보확인';
+    if (!cell) return '정상';
     const text = (cell.textContent || '').replace(/\s+/g, ' ').trim();
     if (/이미 등록됨/.test(text)) return '이미 등록됨';
 
@@ -104,7 +104,13 @@
     if (/학정번호.*보정|1글자 보정/.test(text) && !issues.some(x => x.startsWith('학정번호 '))) issues.push('학정번호 확인 필요');
 
     const unique = [...new Set(issues)];
-    return unique.length ? unique.join(' · ') : '정보확인';
+    return unique.length ? unique.join(' · ') : '정상';
+  }
+
+  function updatePublicNotice() {
+    const notice = document.getElementById('publicCautionNotice');
+    if (!notice) return;
+    notice.innerHTML = '<div class="public-caution-title"><b>본 이수현황 계산 내용은 개인이 만든 것으로, 참고용 으로만 활용하세요.</b></div><div class="public-caution-detail"><b>정확한 졸업 여부 및 교원자격 취득 여부는 교육대학원 행정실에 문의하시기 바랍니다.</b></div><div class="public-caution-detail"><b>학점 인정·선수과목 인정·교원자격 관련 행정승인 등은 실제 심사 결과와 다를 수 있습니다.</b></div>';
   }
 
   function ensureTarget(result, targetId) {
@@ -211,6 +217,7 @@
 
   function renderAll() {
     renderQueued = false;
+    updatePublicNotice();
     renderImport('portalPdfResult','mobilePdfReviewCardsV2',true);
     renderImport('ocrResult','mobileOcrReviewCardsV2',false);
   }
@@ -229,6 +236,7 @@
 
   function init() {
     installStyles();
+    updatePublicNotice();
     observe('portalPdfResult');
     observe('ocrResult');
     window.addEventListener('resize', queueRender, { passive:true });
