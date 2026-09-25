@@ -52,7 +52,6 @@ jobs:
               '    text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)\n',
               '    text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)\n    text = text.replace(LEGACY_TEST_TITLE, CORRECT_TITLE)\n',
           )
-          needle="    text = re.sub(r'<footer class=\\\"footer\\\">\\\\s*<b>v[0-9.]+:</b>',"
           if "3단계 사용흐름', '4단계 사용흐름" not in s:
               marker="    text = text.replace('<th>데이터 상태</th>', '<th>상태</th>', 1)"
               s=s.replace(marker, "    text = text.replace('3단계 사용흐름', '4단계 사용흐름')\n"+marker, 1)
@@ -65,7 +64,6 @@ jobs:
           from pathlib import Path
           import re
 
-          # Keep the report-only profile summary printable; hide only the plan-entry controls.
           index=Path('index.html')
           html=index.read_text(encoding='utf-8')
           html=html.replace('class="input-zone no-print-ui step-details" id="inputZone"', 'class="input-zone step-details" id="inputZone"', 1)
@@ -74,13 +72,6 @@ jobs:
 
           css_path=Path('styles.css')
           css=css_path.read_text(encoding='utf-8')
-          css=re.sub(
-              r'\n*/\* v3\.1\.19 print interaction cleanup \*/\s*@media print\{\s*\.no-print-ui\{display:none!important\}\s*\}\s*',
-              '\n',
-              css,
-              flags=re.S,
-          )
-          # Fallback for exact block shape.
           css=css.replace('''\n\n/* v3.1.19 print interaction cleanup */\n@media print{\n  .no-print-ui{display:none!important}\n}\n''','\n')
           marker='/* v3.2.0 print interaction cleanup */'
           if marker not in css:
@@ -124,6 +115,12 @@ jobs:
 
       - name: Diff sanity
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('REGRESSION_TEST_REPORT.md')
+          if p.exists():
+              p.write_text('\n'.join(line.rstrip() for line in p.read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')
+          PY
           git diff --check
           grep -q 'styles.css?v=3.2.0' index.html
           grep -q 'app.js?v=3.2.0' index.html
