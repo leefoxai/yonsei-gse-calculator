@@ -113,6 +113,11 @@
     notice.innerHTML = '<div class="public-caution-title"><b>본 이수현황 계산기는 개인이 만든 것으로, 참고용으로만 활용하세요.</b></div><div class="public-caution-detail"><b>정확한 졸업 여부 및 교원자격 취득 여부는 교육대학원 행정실에 문의하시기 바랍니다.</b></div><div class="public-caution-detail"><b>학점 인정·선수과목 인정·교원자격 관련 행정승인 등은 실제 심사 결과와 다를 수 있습니다.</b></div>';
   }
 
+  function updateExtraFeaturesHeading() {
+    const heading = document.querySelector('#extraFeatures > summary .extras-summary-copy h2');
+    if (heading) heading.textContent = '개설예정 강의 확인하기';
+  }
+
   function ensureTarget(result, targetId) {
     let target = document.getElementById(targetId);
     if (!target) {
@@ -218,6 +223,7 @@
   function renderAll() {
     renderQueued = false;
     updatePublicNotice();
+    updateExtraFeaturesHeading();
     renderImport('portalPdfResult','mobilePdfReviewCardsV2',true);
     renderImport('ocrResult','mobileOcrReviewCardsV2',false);
   }
@@ -237,6 +243,7 @@
   function init() {
     installStyles();
     updatePublicNotice();
+    updateExtraFeaturesHeading();
     observe('portalPdfResult');
     observe('ocrResult');
     window.addEventListener('resize', queueRender, { passive:true });
