@@ -1,0 +1,15 @@
+PASS - All plans: 24 current credits, 30 projected credits, current GPA only
+PASS - Selected mode starts with no implicit semester; checkbox changes recompute results
+PASS - Selection survives save/reload and old backups default to all plans
+PASS - Only the active scenario is projected; a stale selection adds no courses
+PASS - Duplicate planned course does not double count; failed history can be planned again
+PASS - Teacher current/projected values and summary use the same three states
+PASS - Teacher score cards explain thresholds; failing scores remain in action items
+PASS - Comprehensive and English exam edits refresh the action summary immediately
+PASS - Teacher non-course checkbox edits refresh the action summary immediately
+PASS - Planned credits never imply a passing future GPA
+PASS - A planned teaching practicum is labelled planned, not already completed
+PASS - Counselor certificate variant edits refresh eligibility actions
+PASS - Steps open on entry, including saved sessions; edits preserve manual folding
+PASS - Navigation opens the plan and its ancestor, never the unrelated catalog
+Application regression: 14/14 passed

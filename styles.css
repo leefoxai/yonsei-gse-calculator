@@ -1702,7 +1702,8 @@ details > summary::after{
 }
 
 
-/* v3.1.19 print interaction cleanup */
+
+/* v3.2.0 print interaction cleanup */
 @media print{
-  .no-print-ui{display:none!important}
+  #planAddSection{display:none!important}
 }
