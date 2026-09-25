@@ -1,8 +1,8 @@
 # Regression Test Report
 
-- App version: **3.2.0**
-- Generated: **2026-09-25 04:39 UTC**
-- Data/markup validation: **98/98 checks passed**
+- App version: **3.2.1**
+- Generated: **2026-09-25 05:19 UTC**
+- Data/markup validation: **99/99 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -10,14 +10,14 @@
 
 | File | Schema | Pack version | App version | Snapshot | Source data updated | Metadata updated |
 | --- | ---: | --- | --- | --- | --- | --- |
-| data-pack.json | 1 | 2026-2.1 | 3.2.0 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
-| rules-pack.json | 1 | 2026-2.1 | 3.2.0 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
-| certificate-rules.json | 1 | 2026-2.2 | 3.2.0 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
+| data-pack.json | 1 | 2026-2.1 | 3.2.1 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
+| rules-pack.json | 1 | 2026-2.1 | 3.2.1 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
+| certificate-rules.json | 1 | 2026-2.2 | 3.2.1 | 2026-2 | 2026-09-18T13:44:00+09:00 | 2026-09-25 |
 
 ## Data / markup validation
 
 ```text
-Validation: 98/98 checks passed
+Validation: 99/99 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -26,14 +26,14 @@ PASS - data pack type
 PASS - rules pack type 
 PASS - cert pack type 
 PASS - snapshot一致 ({'2026-2'})
-PASS - app version detectable (3.2.0)
+PASS - app version detectable (3.2.1)
 PASS - footer version sync 
 PASS - gap status vocabulary confirmed scheduled 
 PASS - five-term timetable accordion 
 PASS - timetable independent from plan dropdown 
 PASS - confirmed timetable default open 
 PASS - timetable status badges removed 
-PASS - pack appVersion sync (['3.2.0', '3.2.0', '3.2.0'])
+PASS - pack appVersion sync (['3.2.1', '3.2.1', '3.2.1'])
 PASS - packVersion metadata (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - packVersion snapshot prefix (['2026-2.1', '2026-2.1', '2026-2.2'])
 PASS - pack compatibility metadata (['>=3.0.0', '>=3.0.0', '>=3.0.0'])
@@ -115,7 +115,8 @@ PASS - all disclosure toggles aligned left
 PASS - plan weekday priority Mon Tue Thu 
 PASS - action summary navigates to relevant inputs 
 PASS - print controls scoped 
-PASS - four-step footer wording
+PASS - four-step footer wording 
+PASS - result summary print cleanup
 ```
 
 ## Application regression

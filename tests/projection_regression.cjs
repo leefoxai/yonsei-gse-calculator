@@ -55,6 +55,8 @@ test('All plans: 24 current credits, 30 projected credits, current GPA only', ()
   assert.equal(run('evaluateBoth().projected.totalCredits'),30);
   assert.equal(run('evaluateBoth().projected.complete'),true);
   assert.match(html('kpiGrid'), /2027-1학기 이수 후 충족/);
+  assert.doesNotMatch(html('resultPrimarySummary'), /result-headline-card/);
+  assert.match(html('resultPrimarySummary'), /next-actions-card/);
   assert.match(html('evaluationNotes'), /2027-1학기 이수 후 학점 요건 충족 \/ 현재 누적평점 기준 충족/);
   assert.doesNotMatch(html('evaluationNotes'), /이번 학기|학점·평점 이수요건 충족/);
   assert.match(html('requirementsGrid'), /성적 확정 후 확인/);
@@ -144,7 +146,7 @@ test('Planned credits never imply a passing future GPA', () => {
   setup();
   run("state.history.forEach(r=>{if(r.credits)r.grade='C0';});render();");
   assert.match(html('evaluationNotes'), /학점 요건 충족 \/ 현재 누적평점 기준 미충족/);
-  assert.match(html('resultPrimarySummary'), /현재 누적평점 기준 미충족/);
+  assert.match(html('resultPrimarySummary'), /누적평점 3.00 이상 필요/);
   run("state.history.forEach(r=>{if(r.credits)r.grade='';});render();");
   assert.match(html('evaluationNotes'), /현재 누적평점 확인 필요/);
   assert.match(html('resultPrimarySummary'), /성적 미입력 과목 확인/);
