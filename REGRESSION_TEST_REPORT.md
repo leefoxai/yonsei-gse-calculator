@@ -1,8 +1,8 @@
 # Regression Test Report
 
 - App version: **3.3.1**
-- Generated: **2026-09-25 15:23 UTC**
-- Data/markup validation: **101/101 checks passed**
+- Generated: **2026-09-25 16:23 UTC**
+- Data/markup validation: **100/101 checks passed**
 - Application regression: **14/14 passed**
 - JavaScript syntax (`node --check app.js`): **PASS**
 
@@ -17,7 +17,7 @@
 ## Data / markup validation
 
 ```text
-Validation: 101/101 checks passed
+Validation: 100/101 checks passed
 PASS - public admin UI removed 
 PASS - public local override disabled 
 PASS - cache bypass enabled 
@@ -101,7 +101,7 @@ PASS - history guidance wording
 PASS - planned list ordering helper 
 PASS - plan status header renamed 
 PASS - planned status wording 
-PASS - 국어 기본이수 8번 교과교육 과대산입 방지 ({'SKE6595', 'SKE6594'})
+PASS - 국어 기본이수 8번 교과교육 과대산입 방지 ({'SKE6594', 'SKE6595'})
 PASS - 역사 기본이수 6번 교과교육 과대산입 방지 ({'SHE6547', 'SHE6535', 'SHE6536'})
 PASS - 통합과학 기본이수 13번 교과교육 과대산입 방지 ({'SGS6833', 'SGS6803'})
 PASS - 전문상담1급 10과목 구조 ({'type': 'groups', 'requiredGroups': [2, 3, 4, 5, 6, 7, 8, 18], 'choiceGroups': [{'groups': [16, 17, 19, 20, 21], 'min': 2}], 'minGroups': 10, 'minCredits': 0, 'sourceNote': '연세대학교 교육대학원 전문상담교사 1급 안내: 필수 7과목 + 상담실습및사례연구 1과목 + 선택 2과목 이상. 관리번호 18은 필수 실습으로 선택 2과목에 중복 산입하지 않음.'})
@@ -117,8 +117,11 @@ PASS - action summary navigates to relevant inputs
 PASS - print controls scoped 
 PASS - four-step footer wording 
 PASS - result summary print cleanup 
-PASS - mobile presentation layer 
-PASS - mobile import guide routes
+FAIL - mobile presentation layer 
+PASS - mobile import guide routes 
+
+FAILED:
+- mobile presentation layer:
 ```
 
 ## Application regression
