@@ -32,6 +32,29 @@ jobs:
       - name: Normalize release and apply maintained corrections
         run: python tests/release_maintenance.py
 
+      - name: Refresh modular mobile validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/validate_packs.py')
+          text = path.read_text(encoding='utf-8')
+          old = """mobile=(ROOT/'mobile.js').read_text(encoding='utf-8') if (ROOT/'mobile.js').exists() else ''
+          check('mobile presentation layer','mobile.js?v=' in html and 'mobile-mode' in mobile and 'mobileImportGuide' in html and 'mobileHistoryCards' in mobile and 'mobilePlanCards' in mobile and 'mobilePlanCoursePicker' in mobile)
+          """
+          new = """mobile=(ROOT/'mobile.js').read_text(encoding='utf-8') if (ROOT/'mobile.js').exists() else ''
+          mobile_base=(ROOT/'mobile-base.js').read_text(encoding='utf-8') if (ROOT/'mobile-base.js').exists() else ''
+          mobile_enhancements=(ROOT/'mobile-enhancements.js').read_text(encoding='utf-8') if (ROOT/'mobile-enhancements.js').exists() else ''
+          mobile_hotfix=(ROOT/'mobile-hotfix.js').read_text(encoding='utf-8') if (ROOT/'mobile-hotfix.js').exists() else ''
+          mobile_png=(ROOT/'mobile-png-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-png-fix.js').exists() else ''
+          mobile_nav=(ROOT/'mobile-action-nav-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-action-nav-fix.js').exists() else ''
+          mobile_bundle='\\n'.join([mobile,mobile_base,mobile_enhancements,mobile_hotfix,mobile_png,mobile_nav])
+          check('mobile presentation layer','mobile.js?v=' in html and 'mobile-base.js' in mobile and 'mobile-enhancements.js' in mobile and 'mobile-mode' in mobile_bundle and 'mobileImportGuide' in html and 'mobileHistoryCards' in mobile_bundle and 'mobilePlanCards' in mobile_bundle and 'mobilePlanCoursePicker' in mobile_bundle)
+          """
+          if old not in text:
+              raise SystemExit('mobile validation pattern not found')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+
       - name: Require generated metadata in pull requests
         if: github.event_name == 'pull_request'
         run: git diff --exit-code -- index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
