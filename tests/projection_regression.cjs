@@ -54,8 +54,8 @@ test('All plans: 24 current credits, 30 projected credits, current GPA only', ()
   assert.equal(run('evaluateBoth().current.totalCredits'),24);
   assert.equal(run('evaluateBoth().projected.totalCredits'),30);
   assert.equal(run('evaluateBoth().projected.complete'),true);
-  assert.match(html('kpiGrid'), /계획 시 충족/);
-  assert.match(html('evaluationNotes'), /\(전체\) 계획 이수 후 학점 요건 충족 \/ 현재 누적평점 기준 충족/);
+  assert.match(html('kpiGrid'), /2027-1학기 이수 후 충족/);
+  assert.match(html('evaluationNotes'), /2027-1학기 이수 후 학점 요건 충족 \/ 현재 누적평점 기준 충족/);
   assert.doesNotMatch(html('evaluationNotes'), /이번 학기|학점·평점 이수요건 충족/);
   assert.match(html('requirementsGrid'), /성적 확정 후 확인/);
 });
@@ -98,7 +98,7 @@ test('Teacher current/projected values and summary use the same three states', (
   teacherSetup();
   assert.match(html('teacherChecklistAuto'), /44 \/ 50학점/);
   assert.match(html('teacherChecklistAuto'), /50 \/ 50학점/);
-  assert.match(html('teacherChecklistSummary'), /교과목·학점 요건 · 계획 시 충족/);
+  assert.match(html('teacherChecklistSummary'), /교과목·학점 요건 · 계획 이수 후 충족/);
   run("state.projection={mode:'selected',terms:['2026-2']};render();");
   assert.match(html('teacherChecklistAuto'), /47 \/ 50학점/);
   assert.match(html('teacherChecklistSummary'), /교과목·학점 요건 · 미충족/);
@@ -155,7 +155,7 @@ test('A planned teaching practicum is labelled planned, not already completed', 
     currentScenario().planned.push({id:'practice',courseCode:'SPT9001',courseName:'교육실습',category:'prerequisite',credits:2,term:'2027-1'});render();`);
   const cards=html('teacherChecklistAuto');
   const practice=cards.slice(cards.indexOf('학교현장실습'),cards.indexOf('교육봉사'));
-  assert.match(practice,/계획 시 충족/);
+  assert.match(practice,/계획 이수 후 충족/);
   assert.match(practice,/미이수/);
   assert.equal(run('teacherRequirementModel(state.history).practiceSatisfied'),false);
   assert.equal(run('teacherRequirementModel(planCombinedRecords()).practiceSatisfied'),true);

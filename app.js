@@ -377,8 +377,22 @@ function projectionPlannedRecords(){
   return settings.mode==='all'?planned:planned.filter(r=>settings.terms.includes(r.term));
 }
 function requirementState(currentOk,projectedOk){return currentOk?'ok':projectedOk?'plan':'bad';}
-function requirementStateLabel(status){return {ok:'충족',plan:'계획 시 충족',bad:'미충족',pending:'확인 필요',exempt:'해당 없음'}[status]||'확인 필요';}
-function requirementBadge(status){return `<span class="requirement-status ${status}">${requirementStateLabel(status)}</span>`;}
+function projectionTermsInOrder(){return [...new Set(projectionPlannedRecords().map(r=>String(r.term||'')).filter(Boolean))].sort((a,b)=>termIndex(a)-termIndex(b));}
+function earliestProjectionTerm(test){
+  const history=state.history.filter(r=>r.passed!==false);
+  if(test(history))return '';
+  const planned=projectionPlannedRecords();let records=[...history];
+  for(const term of projectionTermsInOrder()){
+    records.push(...planned.filter(r=>String(r.term||'')===term).map(r=>({...r,passed:true})));
+    if(test(records))return term;
+  }
+  return '';
+}
+function requirementProgressValue(evaluation,key){if(key==='total')return Number(evaluation.totalCredits||0);return Number((evaluation.requirements||[]).find(r=>r.key===key)?.current||0);}
+function requirementSatisfactionTerm(key,min){return earliestProjectionTerm(records=>requirementProgressValue(evaluate(records),key)>=Number(min||0));}
+function overallSatisfactionTerm(){return earliestProjectionTerm(records=>{const result=evaluate(records);return result.complete&&result.unknowns.length===0;});}
+function requirementStateLabel(status,term=''){if(status==='plan')return term?`${term}학기 이수 후 충족`:'계획 이수 후 충족';return {ok:'충족',bad:'미충족',pending:'확인 필요',exempt:'해당 없음'}[status]||'확인 필요';}
+function requirementBadge(status,term=''){return `<span class="requirement-status ${status}">${requirementStateLabel(status,term)}</span>`;}
 function comparisonValues(current,projected){
   return `<div class="requirement-comparison"><div><span>현재</span><b>${esc(current)}</b></div><div><span>${projectionLabel()}</span><b>${esc(projected)}</b></div></div>`;
 }
@@ -1404,7 +1418,8 @@ function renderKpis(){
   const {current,projected}=evaluateBoth(),rule=getRule(),g=gpaRequirementStatus(state.history);
   const card=(key,label,cur,proj,min,unit)=>{
     const status=requirementState(cur>=min,proj>=min);
-    return `<div class="card ${status==='bad'?'kpi-card-unmet':''}"><div class="kpi-top"><span class="kpi-label">${esc(label)}</span>${requirementBadge(status)}</div>
+    const satisfactionTerm=status==='plan'?requirementSatisfactionTerm(key,min):'';
+    return `<div class="card ${status==='bad'?'kpi-card-unmet':''}"><div class="kpi-top"><span class="kpi-label">${esc(label)}</span>${requirementBadge(status,satisfactionTerm)}</div>
       ${comparisonValues(`${fmtCredits(cur)} / ${fmtCredits(min)}${unit}`,`${fmtCredits(proj)} / ${fmtCredits(min)}${unit}`)}
       <div class="kpi-bar"><div style="width:${min>0?Math.min(100,Math.round(cur/min*100)):0}%"></div></div>
       <div class="sub">기준 ${fmtCredits(min)}${unit} 이상${cur<min?` · 현재 부족 ${fmtCredits(min-cur)}${unit}`:''}</div>
@@ -1541,7 +1556,9 @@ function renderActionSummary(){
   if(current.complete&&g.state==='pass'){
     mode='ok';title='현재 학점 요건 충족 / 현재 누적평점 기준 충족';sub='시험·교원자격·행정절차는 아래 남은 확인 항목과 상세 체크리스트를 함께 확인하십시오.';
   }else if(projected.complete){
-    mode='plan';title=`${projectionLabel()} 학점 요건 충족 / ${g.state==='pass'?'현재 누적평점 기준 충족':g.state==='fail'?'현재 누적평점 기준 미충족':'현재 누적평점 확인 필요'}`;sub='계획 이수 후 누적평점은 성적 확정 후 확인합니다. 시험·교원자격·행정절차도 별도 확인이 필요합니다.';
+    const completionTerm=overallSatisfactionTerm();
+    const completionLabel=completionTerm?`${completionTerm}학기 이수 후`:projectionLabel();
+    mode='plan';title=`${completionLabel} 학점 요건 충족 / ${g.state==='pass'?'현재 누적평점 기준 충족':g.state==='fail'?'현재 누적평점 기준 미충족':'현재 누적평점 확인 필요'}`;sub='계획 이수 후 누적평점은 성적 확정 후 확인합니다. 시험·교원자격·행정절차도 별도 확인이 필요합니다.';
   }
   const max=8,shown=actions.slice(0,max),extra=Math.max(0,actions.length-max);
   const list=shown.length?shown.map((a,i)=>`<div class="next-action ${esc(a.kind)} actionable" data-action-index="${i}" role="button" tabindex="0" aria-label="${esc(a.text)} 위치로 이동"><span class="next-action-num">${i+1}</span><span>${esc(a.text)}</span><span class="next-action-go" aria-hidden="true">›</span></div>`).join(''):`<div class="next-action ok"><span class="next-action-num">✓</span><span>현재 입력된 학점·평점·체크리스트 기준 추가 확인 항목이 없습니다.</span></div>`;
@@ -1852,7 +1869,8 @@ function renderRequirements(){
   const reqs=projected.requirements.map(pr=>{
     const cr=current.requirements.find(x=>x.key===pr.key)||{current:0};
     const status=requirementState(cr.current>=pr.min,pr.current>=pr.min);
-    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`최소 ${fmtCredits(pr.min)}${pr.unit} 이상 · ${requirementBadge(status)}`];
+    const satisfactionTerm=status==='plan'?requirementSatisfactionTerm(pr.key,pr.min):'';
+    return [pr.label,`${fmtCredits(cr.current)} ${pr.unit}`,`${fmtCredits(pr.current)} ${pr.unit}`,`최소 ${fmtCredits(pr.min)}${pr.unit} 이상 · ${requirementBadge(status,satisfactionTerm)}`];
   });
   const gStatus=g.state==='pass'?'ok':g.state==='fail'?'bad':'pending';
   reqs.push(['현재 누적평점',g.gpa==null?'-':`${fmtGpa(g.gpa)} / 4.3`,'성적 확정 후 확인',`B0(3.00) 이상 · ${requirementBadge(gStatus)}`]);
@@ -1861,8 +1879,11 @@ function renderRequirements(){
   const shortages=projected.requirements.filter(pr=>pr.current<pr.min).map(pr=>`${pr.label} ${fmtCredits(pr.min-pr.current)}${pr.unit}`);
   if(projected.unknowns.length)shortages.push(`종별 확인 필요 ${projected.unknowns.length}건`);
   const creditComplete=projected.complete&&projected.unknowns.length===0;
+  const currentCreditComplete=current.complete&&current.unknowns.length===0;
+  const completionTerm=!currentCreditComplete&&creditComplete?overallSatisfactionTerm():'';
+  const completionLabel=currentCreditComplete?'현재':completionTerm?`${completionTerm}학기 이수 후`:projectionLabel();
   const gpaText=g.state==='pass'?'현재 누적평점 기준 충족':g.state==='fail'?'현재 누적평점 기준 미충족':g.state==='incomplete'?'현재 누적평점 확인 필요 · 성적 일부 미입력':'현재 누적평점 확인 필요 · 평점자료 없음';
-  document.getElementById('evaluationNotes').innerHTML=`<div class="result-summary ${creditComplete&&g.state==='pass'?'ok':'bad'}"><b>${projectionLabel()} 학점 요건 ${creditComplete?'충족':'미충족'} / ${gpaText}</b>${shortages.length?`<div>계획 반영 후 추가 확인: ${shortages.join(' · ')}</div>`:''}</div>
+  document.getElementById('evaluationNotes').innerHTML=`<div class="result-summary ${creditComplete&&g.state==='pass'?'ok':'bad'}"><b>${completionLabel} 학점 요건 ${creditComplete?'충족':'미충족'} / ${gpaText}</b>${shortages.length?`<div>계획 반영 후 추가 확인: ${shortages.join(' · ')}</div>`:''}</div>
     <div class="muted" style="margin-top:7px">계획 이수 후 누적평점은 성적 확정 후 확인합니다. 종합시험, 개별논문지도 진행요건, 연구윤리, 논문·졸업연구보고서 심사 등 별도 학사절차는 학점 계산의 자동 판정 대상이 아닙니다.</div>`;
 }
 
