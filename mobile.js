@@ -17,6 +17,15 @@
     return coarsePointer() && Math.min(w, h) <= PHONE_SHORT_SIDE && Math.max(w, h) <= PHONE_LANDSCAPE_WIDTH;
   }
 
+  function installPrintCleanup() {
+    if (document.getElementById('printHistoryCleanup')) return;
+    const style = document.createElement('style');
+    style.id = 'printHistoryCleanup';
+    style.media = 'print';
+    style.textContent = '#historySection{display:none!important}';
+    document.head.appendChild(style);
+  }
+
   function syncMobileMode() {
     document.body.classList.toggle('mobile-mode', isPhoneMode());
     queueRenderAll();
@@ -320,6 +329,7 @@
   }
 
   function init() {
+    installPrintCleanup();
     syncMobileMode();
     wireMobileGuide();
     initObservers();
