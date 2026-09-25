@@ -16,10 +16,10 @@ app,count=re.subn(
 if count!=1:
     raise RuntimeError('result headline state block not found')
 
-# Keep only the action card in renderResultPrimarySummary().
-fn_start=app.find('function renderResultPrimarySummary()')
+# Keep only the action card in renderActionSummary().
+fn_start=app.find('function renderActionSummary()')
 if fn_start<0:
-    raise RuntimeError('renderResultPrimarySummary not found')
+    raise RuntimeError('renderActionSummary not found')
 assign_start=app.find('wrap.innerHTML=`',fn_start)
 if assign_start<0:
     raise RuntimeError('result summary assignment not found')
@@ -69,7 +69,7 @@ validator_path=ROOT/'tests/validate_packs.py'
 v=validator_path.read_text(encoding='utf-8')
 if "result summary print cleanup" not in v:
     anchor="passed=sum(1 for _,ok,_ in checks if ok)"
-    check="check('result summary print cleanup','#resultPrimarySummary{display:none!important}' in css and 'result-headline-card' not in re.search(r'function renderResultPrimarySummary\\(\\).*?\\n}',app,re.S).group(0))\n\n"
+    check="check('result summary print cleanup','#resultPrimarySummary{display:none!important}' in css and 'result-headline-card' not in re.search(r'function renderActionSummary\\(\\).*?\\n}',app,re.S).group(0))\n\n"
     if anchor not in v:
         raise RuntimeError('validator insertion marker not found')
     v=v.replace(anchor,check+anchor,1)
