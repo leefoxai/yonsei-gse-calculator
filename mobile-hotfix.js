@@ -110,7 +110,7 @@
   function updatePublicNotice() {
     const notice = document.getElementById('publicCautionNotice');
     if (!notice) return;
-    notice.innerHTML = '<div class="public-caution-title"><b>본 이수현황 계산 내용은 개인이 만든 것으로, 참고용 으로만 활용하세요.</b></div><div class="public-caution-detail"><b>정확한 졸업 여부 및 교원자격 취득 여부는 교육대학원 행정실에 문의하시기 바랍니다.</b></div><div class="public-caution-detail"><b>학점 인정·선수과목 인정·교원자격 관련 행정승인 등은 실제 심사 결과와 다를 수 있습니다.</b></div>';
+    notice.innerHTML = '<div class="public-caution-title"><b>본 이수현황 계산기는 개인이 만든 것으로, 참고용으로만 활용하세요.</b></div><div class="public-caution-detail"><b>정확한 졸업 여부 및 교원자격 취득 여부는 교육대학원 행정실에 문의하시기 바랍니다.</b></div><div class="public-caution-detail"><b>학점 인정·선수과목 인정·교원자격 관련 행정승인 등은 실제 심사 결과와 다를 수 있습니다.</b></div>';
   }
 
   function ensureTarget(result, targetId) {
