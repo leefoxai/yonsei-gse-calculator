@@ -10,8 +10,8 @@
 <title>연세대학교 교육대학원 졸업요건 이수현황 계산기</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
-<link rel="stylesheet" href="styles.css?v=3.2.1">
-<meta name="application-version" content="3.2.1">
+<link rel="stylesheet" href="styles.css?v=3.3.0">
+<meta name="application-version" content="3.3.0">
 </head>
 <body>
 <div class="app">
@@ -99,6 +99,24 @@
       <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 종별을 바꿀 수 있습니다.<br>
       성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, 졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.
     </div>
+    <details class="mobile-import-guide mobile-only no-print" id="mobileImportGuide" open>
+      <summary>📱 모바일에서 성적 가져오기</summary>
+      <div class="mobile-import-guide-body">
+        <div class="mobile-import-method recommended">
+          <b>PDF 파일이 있는 경우 · 권장</b>
+          <p>모바일 학사포털에서는 성적표를 PDF로 직접 출력하기 어렵습니다. 카카오톡·메일 등으로 받은 <b>전체성적조회 PDF</b>를 휴대폰에 저장한 뒤 불러오세요.</p>
+          <p class="ios-note"><b>iPhone:</b> PDF 열기 → 공유 → <b>파일에 저장</b> → 파일 앱의 다운로드·iCloud Drive·나의 iPhone에서 선택</p>
+          <p><b>Android:</b> PDF 다운로드 → 다운로드/내 파일에 저장 → 저장된 PDF 선택</p>
+          <button class="btn primary" type="button" data-mobile-import-pane="pdfImportPane">PDF 파일 불러오기</button>
+        </div>
+        <div class="mobile-import-method">
+          <b>PDF 파일이 없는 경우</b>
+          <p>연세포털의 <b>전체성적조회 화면을 여러 장 캡처</b>한 뒤 한 번에 선택하세요. 학정번호·과목명·학점·성적이 잘리지 않도록 캡처하고, OCR 결과의 수강학기와 성적을 반드시 확인하세요.</p>
+          <button class="btn" type="button" data-mobile-import-pane="ocrImportPane">캡처 여러 장 OCR</button>
+        </div>
+      </div>
+      <div class="mobile-import-tip">가능하면 PDF 불러오기를 우선 권장합니다. OCR은 화면 캡처 상태에 따라 인식 결과를 추가 확인해야 합니다.</div>
+    </details>
     <div class="tabs import-tabs no-print" id="importTabs">
       <button class="tab active" type="button" data-pane="pdfImportPane">성적조회 PDF 불러오기 (권장)</button>
       <button class="tab" type="button" data-pane="ocrImportPane">캡처 OCR</button>
@@ -456,7 +474,7 @@
   </section>
 
   <footer class="footer">
-    <b>v3.2.1:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 4단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
+    <b>v3.3.0:</b> 학정번호 중심 OCR·저신뢰 행 재인식·신뢰도 표시, 학점·평점 이수현황, 교원자격 기본이수·교과교육 공식 학정코드 자동판정, 상담교육 자격/2026학번 분기, 전공50학점·교직/실습·성적·공통필수·무시험검정 체크리스트, 평생교육사 안내, 시트 기반 수강계획, 수강한도·시간충돌 경고, 학기별 GPA, 계획 시간표, 데이터팩 캐시 방지·자동 회귀검증, PDF 직접 추출 우선 OCR 보완, 최신 교원자격 수강·면제·전문상담1급 자격요건, 4단계 사용흐름·다중 캡처 OCR·지금 해야 할 일·부족요건 후보·학기별 개설계획 탭·개설계획 수록 학기·지연 로딩·모듈 분리를 지원합니다.<br>
     <b>공식 참고:</b>
     <a href="https://gse.yonsei.ac.kr/gse/process/course.do" target="_blank" rel="noopener">석사·연구과정 학점기준</a> ·
     <a href="https://gse.yonsei.ac.kr/gse/select05.do" target="_blank" rel="noopener">교직 이수자 안내</a> ·
@@ -474,6 +492,7 @@
 
 <button id="scrollTopBtn" class="scroll-top no-print" type="button" aria-label="맨 위로">⌃</button>
 
-<script defer src="app.js?v=3.2.1"></script>
+<script defer src="app.js?v=3.3.0"></script>
+<script defer src="mobile.js?v=3.3.0"></script>
 </body>
 </html>
