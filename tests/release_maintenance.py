@@ -10,7 +10,7 @@ CORRECT_TITLE = '연세대학교 교육대학원 졸업요건 이수현황 계�
 LEGACY_TEST_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.2.0'
+RELEASE_VERSION = '3.2.1'
 
 
 def write_if_changed(path: Path, content: str) -> bool:

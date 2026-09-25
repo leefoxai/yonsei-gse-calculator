@@ -96,8 +96,8 @@ c1=next((x for x in M.get('상담교육',{}).get('variants',[]) if x.get('id')==
 check('counselor1 pre-admission experience 3y',c1.get('eligibility',{}).get('minPreAdmissionTeachingYears')==3 and c1.get('eligibility',{}).get('experienceMustBeBeforeAdmission') is True)
 check('PDF-first OCR helper present',"portalPdfPreferDirect('credit',r.pdfCredits,ocrCredit)" in app and 'pdfCredits:creditMatch?Number(creditMatch[0]):null' in app)
 
-check('modular css linked','styles.css?v=3.2.0' in html)
-check('modular js linked','app.js?v=3.2.0' in html)
+check('modular css linked','styles.css?v=3.2.1' in html)
+check('modular js linked','app.js?v=3.2.1' in html)
 check('eager OCR/PDF/XLSX removed','tesseract.min.js' not in html and 'pdf.min.js' not in html and 'xlsx.full.min.js' not in html)
 check('lazy loaders present','ensurePdfJsLib' in app and 'ensureTesseractLib' in app and 'ensureXlsxLib' in app)
 check('result action summary present','function renderActionSummary()' in app and 'id="resultPrimarySummary"' in html)
@@ -188,6 +188,8 @@ check('plan weekday priority Mon Tue Thu',"const dayOrder={월:0,화:1,목:2,수
 check('action summary navigates to relevant inputs',"function actionNavigationTarget(action)" in app and "data-action-index" in app and "graduationComprehensivePassed" in app and "teacherAptitudeCount" in app and ".next-action.actionable" in css and "actionTargetFlash" in css)
 check('print controls scoped','#planAddSection{display:none!important}' in css and '.no-print-ui{display:none!important}' not in css and 'class=\"input-zone no-print-ui' not in html)
 check('four-step footer wording','4단계 사용흐름' in html and '3단계 사용흐름' not in html)
+
+check('result summary print cleanup','#resultPrimarySummary{display:none!important}' in css and 'result-headline-card' not in re.search(r'function renderActionSummary\(\).*?\n}',app,re.S).group(0))
 
 passed=sum(1 for _,ok,_ in checks if ok)
 print(f'Validation: {passed}/{len(checks)} checks passed')
