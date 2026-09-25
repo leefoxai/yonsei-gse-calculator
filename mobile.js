@@ -26,6 +26,47 @@
     document.head.appendChild(style);
   }
 
+  function installPublicNotices() {
+    if (!document.getElementById('publicNoticesStyle')) {
+      const style = document.createElement('style');
+      style.id = 'publicNoticesStyle';
+      style.textContent = `
+        .public-caution-notice{margin:12px 0 14px;padding:12px 14px;border:1px solid #f1cf8b;border-left:4px solid #c78300;border-radius:10px;background:#fffaf0;color:#4b3a17;font-size:13px;line-height:1.55}
+        .public-caution-title{font-weight:600}.public-caution-detail{margin-top:3px;color:#665632}
+        .data-privacy-notice{margin:12px 0;border:1px solid #c9d8ea;border-radius:10px;background:#f7fbff;overflow:hidden}
+        .data-privacy-notice>summary{cursor:pointer;padding:11px 13px;font-weight:800;color:#123b64;list-style:none}
+        .data-privacy-notice>summary::-webkit-details-marker{display:none}
+        .data-privacy-notice>summary::after{content:'펼쳐보기';float:right;font-size:11px;font-weight:700;color:#667085}
+        .data-privacy-notice[open]>summary::after{content:'접기'}
+        .data-privacy-body{padding:0 13px 11px;color:#344054;font-size:12px;line-height:1.6}
+        .data-privacy-body p{margin:7px 0}
+        @media(max-width:760px){.public-caution-notice{margin:10px 0 12px;padding:10px 11px;font-size:12px}.public-caution-detail{margin-top:4px}.data-privacy-notice>summary{padding:10px 11px}.data-privacy-body{padding:0 11px 10px}}
+        @media print{.public-caution-notice{margin:4mm 0 3mm;padding:2.5mm 3mm;border:1px solid #b8b8b8;border-left:3px solid #666;background:#fff;color:#222;font-size:8.5pt;line-height:1.35}.public-caution-detail{color:#444}.data-privacy-notice{display:none!important}}
+      `;
+      document.head.appendChild(style);
+    }
+
+    const header = document.querySelector('.header');
+    if (header && !document.getElementById('publicCautionNotice')) {
+      const notice = document.createElement('div');
+      notice.id = 'publicCautionNotice';
+      notice.className = 'public-caution-notice';
+      notice.setAttribute('role', 'note');
+      notice.innerHTML = '<div class="public-caution-title"><b>참고용 자동 계산</b> · 최종 졸업 및 교원자격 취득 여부는 교육대학원의 공식 심사 결과를 따릅니다.</div><div class="public-caution-detail">입력한 수강이력과 공개된 학사 기준을 바탕으로 계산하며, 학점 인정·선수과목 인정·교원자격 관련 행정승인 등은 실제 심사 결과와 다를 수 있습니다.</div>';
+      header.insertAdjacentElement('afterend', notice);
+    }
+
+    const history = document.getElementById('historySection');
+    const historyCallout = history?.querySelector('.callout');
+    if (historyCallout && !document.getElementById('dataPrivacyNotice')) {
+      const privacy = document.createElement('details');
+      privacy.id = 'dataPrivacyNotice';
+      privacy.className = 'data-privacy-notice no-print';
+      privacy.innerHTML = '<summary>🔒 입력 데이터 처리 안내</summary><div class="data-privacy-body"><p><b>입력한 성적정보와 선택한 PDF·캡처 파일은 별도 서버로 업로드하거나 저장하지 않습니다.</b> 파일 분석과 계산은 사용 중인 브라우저에서 처리됩니다.</p><p>등록한 수강이력과 수강계획은 해당 기기의 브라우저 저장공간에 저장됩니다. 브라우저 데이터 삭제·시크릿 모드 사용·기기 변경 시 저장 내용이 사라질 수 있습니다.</p><p>앱 실행에 필요한 라이브러리와 글꼴을 불러오기 위해 외부 CDN에 접속할 수 있으나, 선택한 성적표 내용·캡처 이미지·수강계획을 해당 CDN으로 전송하도록 구현되어 있지 않습니다.</p></div>';
+      historyCallout.insertAdjacentElement('afterend', privacy);
+    }
+  }
+
   function syncMobileMode() {
     document.body.classList.toggle('mobile-mode', isPhoneMode());
     queueRenderAll();
@@ -330,6 +371,7 @@
 
   function init() {
     installPrintCleanup();
+    installPublicNotices();
     syncMobileMode();
     wireMobileGuide();
     initObservers();
