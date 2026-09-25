@@ -2,9 +2,119 @@
   'use strict';
 
   let renderQueued = false;
+  const TEXT_CORRECTIONS = [
+    ['사용방법 · 4단계', '사용 방법 · 4단계'],
+    ['기본정보를 확인해주세요.', '기본 정보를 확인해 주세요.'],
+    ['성적 미입력 시 이수여부', '성적 미입력 시 이수 여부'],
+    ['직접입력 저장', '직접 입력 저장'],
+    ['종합시험 합격 과목수', '종합시험 합격 과목 수'],
+    ['공인영어성적으로 대체', '공인 영어 성적으로 대체'],
+    ['5학기 개설예정표', '5학기 개설 예정표'],
+    ['현재 개설예정표', '현재 개설 예정표'],
+    ['개설정보 더 보기', '개설 예정 강의 확인하기'],
+    ['개설예정 강의 확인하기', '개설 예정 강의 확인하기'],
+    ['학기별 개설정보', '학기별 개설 정보'],
+    ['과목명 / 강의정보', '과목명 / 강의 정보'],
+    ['최근 자동백업 복구', '최근 자동 백업 복구'],
+    ['PDF저장하기', 'PDF 저장하기'],
+    ['자동 안전백업', '자동 안전 백업'],
+    ['전공50학점', '전공 50학점'],
+    ['자동판정', '자동 판정'],
+    ['수강한도', '수강 한도'],
+    ['시간충돌', '시간 충돌'],
+    ['회귀검증', '회귀 검증'],
+    ['자격요건', '자격 요건'],
+    ['사용흐름', '사용 흐름'],
+    ['부족요건', '부족 요건'],
+    ['개설계획', '개설 계획'],
+    ['학점기준', '학점 기준'],
+    ['전역객체', '전역 객체'],
+    ['자동백업', '자동 백업'],
+    ['저장공간', '저장 공간'],
+    ['성적정보', '성적 정보'],
+    ['과목수', '과목 수'],
+    ['시험결과', '시험 결과'],
+    ['응시학기', '응시 학기'],
+    ['시험과목', '시험 과목'],
+    ['검사결과', '검사 결과'],
+    ['입학년도', '입학 연도'],
+    ['인정결과', '인정 결과'],
+    ['중등2급', '중등 2급'],
+    ['전문상담1급', '전문상담 1급'],
+    ['수강내역', '수강 내역'],
+    ['자격취득', '자격 취득'],
+    ['학사학위', '학사 학위'],
+    ['졸업학기', '졸업 학기'],
+    ['진급요건', '진급 요건']
+  ];
+  const SPELLCHECK_ATTRIBUTES = ['placeholder', 'title', 'aria-label'];
 
   function isMobile() {
     return document.body.classList.contains('mobile-mode');
+  }
+
+  function correctText(value) {
+    let next = String(value ?? '');
+    for (const [from, to] of TEXT_CORRECTIONS) next = next.split(from).join(to);
+    return next;
+  }
+
+  function correctElementAttributes(element) {
+    if (!(element instanceof Element)) return;
+    for (const attribute of SPELLCHECK_ATTRIBUTES) {
+      if (!element.hasAttribute(attribute)) continue;
+      const before = element.getAttribute(attribute) || '';
+      const after = correctText(before);
+      if (after !== before) element.setAttribute(attribute, after);
+    }
+  }
+
+  function correctNode(root) {
+    if (!root) return;
+    if (root.nodeType === Node.TEXT_NODE) {
+      const before = root.nodeValue || '';
+      const after = correctText(before);
+      if (after !== before) root.nodeValue = after;
+      return;
+    }
+    if (!(root instanceof Element) && root !== document) return;
+    if (root instanceof Element) correctElementAttributes(root);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    while (node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const before = node.nodeValue || '';
+        const after = correctText(before);
+        if (after !== before) node.nodeValue = after;
+      } else if (node instanceof Element) {
+        correctElementAttributes(node);
+      }
+      node = walker.nextNode();
+    }
+  }
+
+  function installSpellcheckLayer() {
+    const app = document.querySelector('.app');
+    if (!app || app.dataset.spellcheckLayer === '1') return;
+    app.dataset.spellcheckLayer = '1';
+    correctNode(app);
+
+    new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'characterData') {
+          correctNode(mutation.target);
+          continue;
+        }
+        mutation.addedNodes.forEach(correctNode);
+      }
+    }).observe(app, { childList:true, subtree:true, characterData:true });
+
+    const nativeAlert = window.alert?.bind(window);
+    const nativeConfirm = window.confirm?.bind(window);
+    const nativePrompt = window.prompt?.bind(window);
+    if (nativeAlert) window.alert = message => nativeAlert(correctText(message));
+    if (nativeConfirm) window.confirm = message => nativeConfirm(correctText(message));
+    if (nativePrompt) window.prompt = (message, defaultValue) => nativePrompt(correctText(message), defaultValue);
   }
 
   function installStyles() {
@@ -115,7 +225,7 @@
 
   function updateExtraFeaturesHeading() {
     const heading = document.querySelector('#extraFeatures > summary .extras-summary-copy h2');
-    if (heading) heading.textContent = '개설예정 강의 확인하기';
+    if (heading) heading.textContent = '개설 예정 강의 확인하기';
   }
 
   function ensureTarget(result, targetId) {
@@ -224,6 +334,7 @@
     renderQueued = false;
     updatePublicNotice();
     updateExtraFeaturesHeading();
+    correctNode(document.querySelector('.app'));
     renderImport('portalPdfResult','mobilePdfReviewCardsV2',true);
     renderImport('ocrResult','mobileOcrReviewCardsV2',false);
   }
@@ -244,6 +355,7 @@
     installStyles();
     updatePublicNotice();
     updateExtraFeaturesHeading();
+    installSpellcheckLayer();
     observe('portalPdfResult');
     observe('ocrResult');
     window.addEventListener('resize', queueRender, { passive:true });
