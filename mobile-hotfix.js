@@ -90,7 +90,7 @@
   }
 
   function statusSummary(cell) {
-    if (!cell) return '수강편람 확인';
+    if (!cell) return '정보확인';
     const text = (cell.textContent || '').replace(/\s+/g, ' ').trim();
     if (/이미 등록됨/.test(text)) return '이미 등록됨';
 
@@ -104,7 +104,7 @@
     if (/학정번호.*보정|1글자 보정/.test(text) && !issues.some(x => x.startsWith('학정번호 '))) issues.push('학정번호 확인 필요');
 
     const unique = [...new Set(issues)];
-    return unique.length ? unique.join(' · ') : '수강편람 확인';
+    return unique.length ? unique.join(' · ') : '정보확인';
   }
 
   function ensureTarget(result, targetId) {
@@ -181,11 +181,11 @@
 
       const grid = document.createElement('div');
       grid.className = 'mobile-import-v2-grid';
-      grid.appendChild(makeField('학기', termIndex >= 0 ? cells[termIndex] : null, termText));
-      grid.appendChild(makeField('포털 종별', portalIndex >= 0 ? cells[portalIndex] : null, ''));
-      grid.appendChild(makeField('학점', creditIndex >= 0 ? cells[creditIndex] : null, ''));
-      grid.appendChild(makeField('인정 종별', categoryIndex >= 0 ? cells[categoryIndex] : null, ''));
       grid.appendChild(makeField('상태', null, statusSummary(statusIndex >= 0 ? cells[statusIndex] : null)));
+      grid.appendChild(makeField('포털 종별', portalIndex >= 0 ? cells[portalIndex] : null, ''));
+      grid.appendChild(makeField('수강학기', termIndex >= 0 ? cells[termIndex] : null, termText));
+      grid.appendChild(makeField('인정 종별', categoryIndex >= 0 ? cells[categoryIndex] : null, ''));
+      grid.appendChild(makeField('학점', creditIndex >= 0 ? cells[creditIndex] : null, ''));
       grid.appendChild(makeField('성적', gradeIndex >= 0 ? cells[gradeIndex] : null, ''));
       card.appendChild(grid);
       target.appendChild(card);
