@@ -10,7 +10,7 @@ CORRECT_TITLE = '연세대학교 교육대학원 졸업요건 이수현황 계�
 LEGACY_TEST_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.2.1'
+RELEASE_VERSION = '3.3.0'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -309,6 +309,7 @@ def normalize_index(app_version: str) -> None:
     text = text.replace(LEGACY_TEST_TITLE, CORRECT_TITLE)
     text = re.sub(r'styles\.css\?v=[0-9.]+', f'styles.css?v={app_version}', text, count=1)
     text = re.sub(r'app\.js\?v=[0-9.]+', f'app.js?v={app_version}', text, count=1)
+    text = re.sub(r'mobile\.js\?v=[0-9.]+', f'mobile.js?v={app_version}', text, count=1)
     text = re.sub(r'<meta name="application-version" content="[^"]+">',
                   f'<meta name="application-version" content="{app_version}">', text, count=1)
     text = re.sub(r'<footer class="footer">\s*<b>v[0-9.]+:</b>',
