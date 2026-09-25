@@ -192,7 +192,13 @@ check('four-step footer wording','4단계 사용흐름' in html and '3단계 사
 check('result summary print cleanup','#resultPrimarySummary{display:none!important}' in css and 'result-headline-card' not in re.search(r'function renderActionSummary\(\).*?\n}',app,re.S).group(0))
 
 mobile=(ROOT/'mobile.js').read_text(encoding='utf-8') if (ROOT/'mobile.js').exists() else ''
-check('mobile presentation layer','mobile.js?v=' in html and 'mobile-mode' in mobile and 'mobileImportGuide' in html and 'mobileHistoryCards' in mobile and 'mobilePlanCards' in mobile and 'mobilePlanCoursePicker' in mobile)
+mobile_base=(ROOT/'mobile-base.js').read_text(encoding='utf-8') if (ROOT/'mobile-base.js').exists() else ''
+mobile_enhancements=(ROOT/'mobile-enhancements.js').read_text(encoding='utf-8') if (ROOT/'mobile-enhancements.js').exists() else ''
+mobile_hotfix=(ROOT/'mobile-hotfix.js').read_text(encoding='utf-8') if (ROOT/'mobile-hotfix.js').exists() else ''
+mobile_png=(ROOT/'mobile-png-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-png-fix.js').exists() else ''
+mobile_nav=(ROOT/'mobile-action-nav-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-action-nav-fix.js').exists() else ''
+mobile_bundle='\n'.join([mobile,mobile_base,mobile_enhancements,mobile_hotfix,mobile_png,mobile_nav])
+check('mobile presentation layer','mobile.js?v=' in html and 'mobile-base.js' in mobile and 'mobile-enhancements.js' in mobile and 'mobile-mode' in mobile_bundle and 'mobileImportGuide' in html and 'mobileHistoryCards' in mobile_bundle and 'mobilePlanCards' in mobile_bundle and 'mobilePlanCoursePicker' in mobile_bundle)
 check('mobile import guide routes','data-mobile-import-pane=\"pdfImportPane\"' in html and 'data-mobile-import-pane=\"ocrImportPane\"' in html)
 
 passed=sum(1 for _,ok,_ in checks if ok)
