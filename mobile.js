@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION = '3.3.2-mobile-r3';
+  const VERSION = '3.3.2-mobile-r4';
   function load(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
