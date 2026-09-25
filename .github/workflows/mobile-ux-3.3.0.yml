@@ -51,10 +51,11 @@ jobs:
           grep -q 'mobilePlanCoursePicker' mobile.js
           grep -q 'body.mobile-mode' styles.css
           grep -q "RELEASE_VERSION = '3.3.0'" tests/release_maintenance.py
-          git diff --check -- index.html styles.css app.js mobile.js data-pack.json rules-pack.json certificate-rules.json tests/release_maintenance.py tests/validate_packs.py .github/workflows/validate.yml
+          git diff --check -- index.html styles.css app.js mobile.js data-pack.json rules-pack.json certificate-rules.json tests/release_maintenance.py tests/validate_packs.py
 
       - name: Remove one-time migration files
         run: |
+          git checkout -- .github/workflows/validate.yml
           rm -f tests/apply_mobile_ux.py
           rm -f .github/workflows/mobile-ux-3.3.0.yml
           rm -f validation.log application.log
