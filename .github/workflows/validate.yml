@@ -37,13 +37,26 @@ jobs:
         run: git diff --exit-code -- index.html styles.css app.js data-pack.json rules-pack.json certificate-rules.json tests/validate_packs.py
 
       - name: JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check mobile.js
+          node --check mobile-base.js
+          node --check mobile-enhancements.js
+          node --check mobile-hotfix.js
+          node --check mobile-png-fix.js
+          node --check mobile-action-nav-fix.js
 
       - name: Data and markup validation
-        run: python tests/validate_packs.py | tee validation.log
+        shell: bash
+        run: |
+          set -o pipefail
+          python tests/validate_packs.py | tee validation.log
 
       - name: Application regression
-        run: node tests/projection_regression.cjs | tee application.log
+        shell: bash
+        run: |
+          set -o pipefail
+          node tests/projection_regression.cjs | tee application.log
 
       - name: Generate regression report
         run: python tests/generate_regression_report.py --validation-log validation.log --application-log application.log
