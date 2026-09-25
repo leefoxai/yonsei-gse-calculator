@@ -31,8 +31,8 @@
       const style = document.createElement('style');
       style.id = 'publicNoticesStyle';
       style.textContent = `
-        .public-caution-notice{margin:12px 0 14px;padding:12px 14px;border:1px solid #f1cf8b;border-left:4px solid #c78300;border-radius:10px;background:#fffaf0;color:#4b3a17;font-size:13px;line-height:1.55}
-        .public-caution-title{font-weight:600}.public-caution-detail{margin-top:3px;color:#665632}
+        .public-caution-notice{margin:12px 0 14px;padding:14px 16px;border:1px solid #f2a7ae;border-left:5px solid #d92d20;border-radius:10px;background:#fff1f2;color:#7a271a;font-size:15px;line-height:1.6}
+        .public-caution-title{font-size:16px;font-weight:800}.public-caution-detail{margin-top:5px;color:#912018;font-size:14px;font-weight:600}
         .data-privacy-notice{margin:12px 0;border:1px solid #c9d8ea;border-radius:10px;background:#f7fbff;overflow:hidden}
         .data-privacy-notice>summary{cursor:pointer;padding:11px 13px;font-weight:800;color:#123b64;list-style:none}
         .data-privacy-notice>summary::-webkit-details-marker{display:none}
@@ -40,8 +40,8 @@
         .data-privacy-notice[open]>summary::after{content:'접기'}
         .data-privacy-body{padding:0 13px 11px;color:#344054;font-size:12px;line-height:1.6}
         .data-privacy-body p{margin:7px 0}
-        @media(max-width:760px){.public-caution-notice{margin:10px 0 12px;padding:10px 11px;font-size:12px}.public-caution-detail{margin-top:4px}.data-privacy-notice>summary{padding:10px 11px}.data-privacy-body{padding:0 11px 10px}}
-        @media print{.public-caution-notice{margin:4mm 0 3mm;padding:2.5mm 3mm;border:1px solid #b8b8b8;border-left:3px solid #666;background:#fff;color:#222;font-size:8.5pt;line-height:1.35}.public-caution-detail{color:#444}.data-privacy-notice{display:none!important}}
+        @media(max-width:760px){.public-caution-notice{margin:10px 0 12px;padding:12px 13px;font-size:14px}.public-caution-title{font-size:15px}.public-caution-detail{margin-top:5px;font-size:13.5px}.data-privacy-notice>summary{padding:10px 11px}.data-privacy-body{padding:0 11px 10px}}
+        @media print{.public-caution-notice{margin:4mm 0 3mm;padding:2.5mm 3mm;border:1px solid #b8b8b8;border-left:3px solid #666;background:#fff;color:#222;font-size:8.5pt;line-height:1.35}.public-caution-title{font-size:9pt}.public-caution-detail{color:#444;font-size:8pt;font-weight:400}.data-privacy-notice{display:none!important}}
       `;
       document.head.appendChild(style);
     }
