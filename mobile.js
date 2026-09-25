@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION = '3.3.2-mobile-r8';
+  const VERSION = '3.3.2-mobile-r9';
   function load(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
@@ -15,5 +15,6 @@
     .then(() => load('mobile-enhancements.js'))
     .then(() => load('mobile-hotfix.js'))
     .then(() => load('mobile-png-fix.js'))
+    .then(() => load('mobile-action-nav-fix.js'))
     .catch(error => console.error('[mobile] 초기화 실패', error));
 })();
