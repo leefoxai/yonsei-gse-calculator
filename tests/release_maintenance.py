@@ -10,7 +10,7 @@ CORRECT_TITLE = '연세대학교 교육대학원 졸업요건 이수현황 계�
 LEGACY_TEST_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.3.0'
+RELEASE_VERSION = '3.3.1'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -148,13 +148,11 @@ def normalize_app() -> str:
 
     text = sync_embedded_certificate_rules(text)
 
-    # Keep the embedded DATA fallback consistent with the corrected external pack.
     text = text.replace(
         '"courseCode":"SCE6572","courseName":"가족상담","aliases":["가족상담","이상심리학"]',
         '"courseCode":"SCE6572","courseName":"가족상담","aliases":["가족상담"]'
     )
 
-    # Timetable accordion titles show only semester + course count.
     status_line = "        <span class=\\\"plan-term-status ${confirmed?'confirmed':'scheduled'}\\\">${confirmed?'확정':'예정'}</span>\n"
     text = text.replace(status_line, '', 1)
     status_line_plain = "        <span class=\"plan-term-status ${confirmed?'confirmed':'scheduled'}\">${confirmed?'확정':'예정'}</span>\n"
@@ -169,8 +167,6 @@ def normalize_app() -> str:
         count=1,
     )
 
-    # Plan-list sorting: semester -> weekday/time -> category priority -> course name.
-    # Regular timetable priority is Mon -> Tue -> Thu; other weekdays follow.
     helper = r'''const PLAN_LIST_CATEGORY_PRIORITY={
   major_required:0,major_elective:1,teaching:2,common:3,prerequisite:4,
   report:5,thesis:6,research_guidance:7,lifelong:8,audit:9,unknown:99
@@ -430,7 +426,6 @@ def normalize_pack(path: Path, app_version: str) -> None:
 
 
 def main() -> None:
-    # All previously separate patch scripts are consolidated here.
     normalize_data_domain()
     normalize_certificate_rules_domain()
     for name in PACK_FILES:
