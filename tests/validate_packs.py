@@ -197,7 +197,8 @@ mobile_enhancements=(ROOT/'mobile-enhancements.js').read_text(encoding='utf-8') 
 mobile_hotfix=(ROOT/'mobile-hotfix.js').read_text(encoding='utf-8') if (ROOT/'mobile-hotfix.js').exists() else ''
 mobile_png=(ROOT/'mobile-png-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-png-fix.js').exists() else ''
 mobile_nav=(ROOT/'mobile-action-nav-fix.js').read_text(encoding='utf-8') if (ROOT/'mobile-action-nav-fix.js').exists() else ''
-mobile_bundle='\n'.join([mobile,mobile_base,mobile_enhancements,mobile_hotfix,mobile_png,mobile_nav])
+copy_cleanup=(ROOT/'public-copy-cleanup.js').read_text(encoding='utf-8') if (ROOT/'public-copy-cleanup.js').exists() else ''
+mobile_bundle='\n'.join([mobile,mobile_base,mobile_enhancements,mobile_hotfix,mobile_png,mobile_nav,copy_cleanup])
 check('mobile presentation layer','mobile.js?v=' in html and 'mobile-base.js' in mobile and 'mobile-enhancements.js' in mobile and 'mobile-mode' in mobile_bundle and 'mobileImportGuide' in html and 'mobileHistoryCards' in mobile_bundle and 'mobilePlanCards' in mobile_bundle and 'mobilePlanCoursePicker' in mobile_bundle)
 check('mobile import guide routes','data-mobile-import-pane=\"pdfImportPane\"' in html and 'data-mobile-import-pane=\"ocrImportPane\"' in html)
 
