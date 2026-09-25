@@ -6,10 +6,11 @@ import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-CORRECT_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
+CORRECT_TITLE = '연세대학교 교육대학원 졸업요건 이수현황 계산기'
+LEGACY_TEST_TITLE = '[테스트]연세대학교 교육대학원 졸업요건 이수현황 계산기'
 LEGACY_TYPO_TITLE = '[테스트]연세대학교 교육대학원 조럽요건 이수현황 계산기'
 PACK_FILES = ('data-pack.json', 'rules-pack.json', 'certificate-rules.json')
-RELEASE_VERSION = '3.1.18'
+RELEASE_VERSION = '3.2.0'
 
 
 def write_if_changed(path: Path, content: str) -> bool:
@@ -140,6 +141,7 @@ def normalize_app() -> str:
     path = ROOT / 'app.js'
     text = path.read_text(encoding='utf-8')
     text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)
+    text = text.replace(LEGACY_TEST_TITLE, CORRECT_TITLE)
     text, count = re.subn(r"const APP_VERSION = '[^']+';", f"const APP_VERSION = '{RELEASE_VERSION}';", text, count=1)
     if count != 1:
         raise RuntimeError('APP_VERSION not found in app.js')
@@ -304,6 +306,7 @@ def normalize_index(app_version: str) -> None:
     path = ROOT / 'index.html'
     text = path.read_text(encoding='utf-8')
     text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)
+    text = text.replace(LEGACY_TEST_TITLE, CORRECT_TITLE)
     text = re.sub(r'styles\.css\?v=[0-9.]+', f'styles.css?v={app_version}', text, count=1)
     text = re.sub(r'app\.js\?v=[0-9.]+', f'app.js?v={app_version}', text, count=1)
     text = re.sub(r'<meta name="application-version" content="[^"]+">',
@@ -321,6 +324,7 @@ def normalize_index(app_version: str) -> None:
     new_callout = '''    <div class="callout">\n      과거에 이수한 과목은 최신 개설표에서 사라져도 <b>계산에 반영</b>됩니다.<br>\n      <b>전공교직 과목</b>은 교직 ↔ 전공선택으로 종별을 바꿀 수 있습니다.<br>\n      성적은 4.3 만점 기준 <b>C−(1.7) 이상만 이수로 인정</b>하며, 졸업요건 평점은 <b>누적평점 3.00 이상</b>입니다.\n    </div>'''
     if old_callout in text:
         text = text.replace(old_callout, new_callout, 1)
+    text = text.replace('3단계 사용흐름', '4단계 사용흐름')
     text = text.replace('<th>데이터 상태</th>', '<th>상태</th>', 1)
     write_if_changed(path, text)
 
@@ -375,6 +379,7 @@ def normalize_validator(app_version: str) -> None:
     path = ROOT / 'tests' / 'validate_packs.py'
     text = path.read_text(encoding='utf-8')
     text = text.replace(LEGACY_TYPO_TITLE, CORRECT_TITLE)
+    text = text.replace(LEGACY_TEST_TITLE, CORRECT_TITLE)
     text = re.sub(r"'styles\.css\?v=[0-9.]+'", f"'styles.css?v={app_version}'", text)
     text = re.sub(r"'app\.js\?v=[0-9.]+'", f"'app.js?v={app_version}'", text)
 
