@@ -1,10 +1,6 @@
 (() => {
   'use strict';
 
-  function isMobile() {
-    return document.body.classList.contains('mobile-mode');
-  }
-
   function openAncestorDetails(element) {
     for (let node = element; node; node = node.parentElement) {
       if (node.tagName === 'DETAILS') node.open = true;
@@ -32,7 +28,6 @@
   }
 
   function interceptAction(event) {
-    if (!isMobile()) return;
     const action = event.target.closest?.('.next-action.actionable,.next-action');
     if (!action) return;
     const text = (action.textContent || '').replace(/\s+/g, ' ').trim();
