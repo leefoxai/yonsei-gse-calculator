@@ -66,6 +66,7 @@ jobs:
           node --check mobile-png-fix.js
           node --check mobile-action-nav-fix.js
           node --check public-copy-cleanup.js
+          node --check tests/action_navigation_regression.cjs
 
       - name: Data and markup validation
         shell: bash
@@ -78,6 +79,7 @@ jobs:
         run: |
           set -o pipefail
           node tests/projection_regression.cjs | tee application.log
+          node tests/action_navigation_regression.cjs
 
       - name: Generate regression report
         run: python tests/generate_regression_report.py --validation-log validation.log --application-log application.log
