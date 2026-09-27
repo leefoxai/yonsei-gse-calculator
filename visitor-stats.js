@@ -2,6 +2,7 @@
   'use strict';
 
   const SITE_ID = 'leefoxai-gse-degree-planner';
+  const TRACK_URL = `https://icount.kr/c.js?id=${encodeURIComponent(SITE_ID)}`;
   const API_URL = `https://icount.kr/api.php?id=${encodeURIComponent(SITE_ID)}`;
 
   function isProductionPage() {
@@ -17,8 +18,9 @@
       .visitor-stats{display:flex;justify-content:center;align-items:center;gap:10px;margin:10px 0 18px;color:#667085;font-size:12px;line-height:1.4;font-variant-numeric:tabular-nums}
       .visitor-stats b{color:#344054;font-weight:700}
       .visitor-stats-sep{color:#98a2b3}
+      .visitor-tracker-host{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important}
       @media(max-width:640px){.visitor-stats{margin:8px 0 84px;font-size:11px}}
-      @media print{.visitor-stats{display:none!important}}
+      @media print{.visitor-stats,.visitor-tracker-host{display:none!important}}
     `;
     document.head.appendChild(style);
   }
@@ -36,6 +38,19 @@
     if (footer) footer.insertAdjacentElement('afterend', wrap);
     else (document.querySelector('.app') || document.body).appendChild(wrap);
     return wrap;
+  }
+
+  function loadTracker() {
+    if (document.getElementById('visitorTrackerScript')) return;
+    const host = document.createElement('span');
+    host.className = 'visitor-tracker-host';
+    host.setAttribute('aria-hidden', 'true');
+    const script = document.createElement('script');
+    script.id = 'visitorTrackerScript';
+    script.src = TRACK_URL;
+    script.async = true;
+    host.appendChild(script);
+    document.body.appendChild(host);
   }
 
   function formatCount(value) {
@@ -66,8 +81,9 @@
   function init() {
     if (!isProductionPage()) return;
     ensureCounter();
-    window.setTimeout(refreshStats, 1400);
-    window.setTimeout(refreshStats, 4500);
+    loadTracker();
+    window.setTimeout(refreshStats, 1600);
+    window.setTimeout(refreshStats, 5000);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once:true });
