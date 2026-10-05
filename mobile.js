@@ -16,6 +16,7 @@
     .then(() => load('mobile-hotfix.js'))
     .then(() => load('mobile-png-fix.js'))
     .then(() => load('mobile-action-nav-fix.js'))
+    .then(() => load('academic-fixes.js'))
     .then(() => load('public-copy-cleanup.js'))
     .then(() => load('visitor-stats.js'))
     .catch(error => console.error('[mobile] 초기화 실패', error));
