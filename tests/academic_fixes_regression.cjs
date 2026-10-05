@@ -14,7 +14,7 @@ function element(id = '') {
     innerHTML: '',
     className: '',
     parentElement: null,
-    remove() { elements.delete(id); },
+    remove() { elements.delete(this.id); },
     insertAdjacentElement(_where, child) { elements.set(child.id, child); child.parentElement = this; },
     prepend(child) { elements.set(child.id, child); child.parentElement = this; }
   };
